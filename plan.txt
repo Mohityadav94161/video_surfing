@@ -1,0 +1,99 @@
+Frontend (User Interface)
+
+
+Video.js or Plyr for video playback
+
+Key Pages:
+
+HomePage: Trending videos, categories
+
+VideoPage: Video player, description, comments
+
+SearchPage: Filtered results
+
+UserProfilePage: Uploads, watch history, likes
+
+UploadPage: Video upload form
+
+Folder Structure Example:
+
+/frontend
+  /components
+    Header.jsx
+    Footer.jsx
+    VideoCard.jsx
+    VideoPlayer.jsx
+  /pages
+    Home.jsx
+    Video.jsx
+    Search.jsx
+    Upload.jsx
+  /styles
+  /assets
+
+
+2. Backend (Server + API)
+Technologies:
+
+
+Core Features:
+
+User authentication (JWT)
+
+Video metadata API (title, tags, category)
+
+Upload & encoding queue
+
+Comments/likes/favorites
+
+Moderation/admin panel
+
+Folder Structure Example:
+ 
+ 
+/backend
+  /controllers
+    authController.js
+    videoController.js
+  /routes
+    authRoutes.js
+    videoRoutes.js
+  /models
+    User.js
+    Video.js
+    Comment.js
+  /middleware
+  /utils
+  server.js
+3. Video Storage & Streaming
+Components:
+
+Store videos on S3-compatible storage
+
+Use FFmpeg to transcode videos into HLS (m3u8) format
+
+Serve via CDN (Cloudflare, BunnyCDN, etc.)
+
+Stream via <video> tag or JavaScript player
+
+4. Admin Panel (Moderation)
+Features:
+
+Approve/delete videos
+
+View reports
+
+Manage users
+
+Analytics dashboard
+
+5. Security & Legal Compliance
+Security:
+
+Input sanitization
+
+Rate limiting
+
+Secure authentication
+
+HTTPS-only
