@@ -4,7 +4,7 @@ const User = require('../models/User');
 // Function to sign JWT token
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d', // Default to 7 days if not specified in env
   });
 };
 
@@ -12,12 +12,26 @@ const signToken = (id) => {
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
   
+  // Calculate token expiry for response
+  const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
+  let expiresIn = 7 * 24 * 60 * 60 * 1000; // Default to 7 days in milliseconds
+  
+  if (typeof tokenExpiry === 'string') {
+    const unit = tokenExpiry.slice(-1);
+    const value = parseInt(tokenExpiry);
+    
+    if (unit === 'd') expiresIn = value * 24 * 60 * 60 * 1000;
+    else if (unit === 'h') expiresIn = value * 60 * 60 * 1000;
+    else if (unit === 'm') expiresIn = value * 60 * 1000;
+  }
+  
   // Remove password from output
   user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
     token,
+    expiresIn,
     data: {
       user,
     },

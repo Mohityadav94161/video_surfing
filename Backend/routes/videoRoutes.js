@@ -38,6 +38,7 @@ router.use(authMiddleware.restrictTo('admin'));
 
 // Move admin stats route to be above the dynamic routes
 router.post('/extract-metadata', videoController.extractMetadata);
+router.post('/extract-from-page', videoController.extractVideosFromPage);
 router.post('/', videoController.addVideo);
 router.patch('/:id', videoController.updateVideo);
 router.delete('/:id', videoController.deleteVideo);

@@ -3,8 +3,10 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const session = require('express-session');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
+const { logRequest } = require('./middleware/analyticsMiddleware');
 
 // Load environment variables
 dotenv.config();
@@ -12,6 +14,8 @@ dotenv.config();
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const videoRoutes = require('./routes/videoRoutes');
+const homeSectionRoutes = require('./routes/homeSectionRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 // Initialize express app
 const app = express();
@@ -26,6 +30,34 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 
+// Session configuration for tracking user sessions
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'video-surfing-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Track page views for bounce rate calculation
+app.use((req, res, next) => {
+  if (req.session) {
+    if (!req.session.pageViews) {
+      req.session.pageViews = [];
+    }
+    req.session.pageViews.push({
+      path: req.originalUrl,
+      timestamp: new Date()
+    });
+  }
+  next();
+});
+
+// Analytics logging
+app.use(logRequest);
+
 // Rate limiting
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -38,6 +70,8 @@ app.use('/api', apiLimiter);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
+app.use('/api/home-sections', homeSectionRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -269,7 +269,7 @@ exports.getPopularTags = async (req, res, next) => {
   }
 };
 
-// Extract metadata from URL (admin only)
+// Extract video metadata from a URL (used in addVideo)
 exports.extractMetadata = async (req, res, next) => {
   try {
     const { url } = req.body;
@@ -280,8 +280,7 @@ exports.extractMetadata = async (req, res, next) => {
         message: 'URL is required',
       });
     }
-    
-    // Extract metadata
+
     const metadata = await extractMetadata(url);
     
     res.status(200).json({
@@ -294,7 +293,41 @@ exports.extractMetadata = async (req, res, next) => {
     console.error('Error extracting metadata:', err);
     res.status(500).json({
       status: 'error',
-      message: err.message || 'Error extracting metadata',
+      message: err.message || 'Failed to extract metadata',
+    });
+  }
+};
+
+// Extract all videos from a webpage (for bulk upload)
+exports.extractVideosFromPage = async (req, res, next) => {
+  try {
+    const { url, customSelectors, fileExtensions, options } = req.body;
+    
+    if (!url) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'URL is required',
+      });
+    }
+
+    // Import the page scraper utility
+    const { scrapePageForVideos } = require('../utils/metadataExtractor');
+    
+    // Extract all videos from the page with optional custom selectors
+    const videos = await scrapePageForVideos(url, customSelectors, fileExtensions, options);
+    
+    res.status(200).json({
+      status: 'success',
+      data: {
+        videos,
+        count: videos.length,
+      },
+    });
+  } catch (err) {
+    console.error('Error extracting videos from page:', err);
+    res.status(500).json({
+      status: 'error',
+      message: err.message || 'Failed to extract videos from page',
     });
   }
 };
