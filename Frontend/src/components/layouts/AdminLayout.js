@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, theme, Typography, Avatar, Dropdown, Space } from 'antd';
+import { Layout, Menu, theme, Typography, Avatar, Dropdown, Space, Spin } from 'antd';
 import {
   DashboardOutlined,
   VideoCameraAddOutlined,
@@ -8,7 +8,11 @@ import {
   UserOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
+  CloudUploadOutlined,
+  LayoutOutlined,
+  BarChartOutlined,
+  LineChartOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -18,7 +22,7 @@ const { Title } = Typography;
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, loading, initializing } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   
   const {
@@ -44,6 +48,15 @@ const AdminLayout = () => {
       icon: <LogoutOutlined />
     }
   ];
+
+  // Show a loading indicator while checking authentication
+  if (initializing) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" tip="Loading admin panel..." />
+      </div>
+    );
+  }
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -90,7 +103,27 @@ const AdminLayout = () => {
               key: 'add-video',
               icon: <VideoCameraAddOutlined />,
               label: <Link to="/admin/add-video">Add Video</Link>,
-            }
+            },
+            {
+              key: 'bulk-upload',
+              icon: <CloudUploadOutlined />,
+              label: <Link to="/admin/bulk-upload">Bulk Upload</Link>,
+            },
+            {
+              key: 'home-manager',
+              icon: <LayoutOutlined />,
+              label: <Link to="/admin/home-manager">Home Page Manager</Link>,
+            },
+            {
+              key: 'analytics',
+              icon: <BarChartOutlined />,
+              label: <Link to="/admin/analytics">Analytics & Tracking</Link>,
+            },
+            // {
+            //   key: 'test',
+            //   icon: <UserOutlined />,
+            //   label: <Link to="/admin/test">Test Component</Link>,
+            // }
           ]}
         />
       </Sider>

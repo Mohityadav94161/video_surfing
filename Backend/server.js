@@ -16,6 +16,7 @@ const authRoutes = require('./routes/authRoutes');
 const videoRoutes = require('./routes/videoRoutes');
 const homeSectionRoutes = require('./routes/homeSectionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const collectionRoutes = require('./routes/collectionRoutes');
 
 // Initialize express app
 const app = express();
@@ -72,6 +73,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/home-sections', homeSectionRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/collections', collectionRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -44,6 +44,12 @@ const videoSchema = new mongoose.Schema(
         'Other',
       ],
     },
+    videoType: {
+      type: String,
+      enum: ['normal', 'terbox'],
+      default: 'normal',
+      required: [true, 'Video type is required']
+    },
     addedBy: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',

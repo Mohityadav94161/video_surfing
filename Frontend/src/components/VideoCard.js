@@ -1,13 +1,15 @@
 import React from 'react';
-import { Card, Tag, Typography, Space, Row, Col } from 'antd';
+import { Card, Tag, Typography, Space, Row, Col, Button } from 'antd';
 import { Link } from 'react-router-dom';
 import {
   EyeOutlined,
   CalendarOutlined,
   GlobalOutlined,
-  PlayCircleOutlined
+  PlayCircleOutlined,
+  FolderAddOutlined
 } from '@ant-design/icons';
 import './VideoCard.css';
+import AddToCollection from './AddToCollection';
 
 const { Meta } = Card;
 const { Text, Title } = Typography;
@@ -47,6 +49,12 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
     return categoryColors[category] || 'default';
   };
 
+  // Handle click on add to collection button to prevent card link activation
+  const handleAddToCollectionClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   // List view component
   if (viewMode === 'list') {
     return (
@@ -54,6 +62,11 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
         <Card 
           className="video-card list-card"
           hoverable
+          actions={[
+            <div onClick={handleAddToCollectionClick}>
+              <AddToCollection video={video} compact={true} />
+            </div>
+          ]}
         >
           <Row gutter={16} align="middle">
             <Col xs={24} sm={8} md={6} className="list-thumbnail-container">
@@ -131,6 +144,11 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
             </div>
           </div>
         }
+        actions={[
+          <div onClick={handleAddToCollectionClick}>
+            <AddToCollection video={video} compact={true} />
+          </div>
+        ]}
       >
         <Meta
           title={<Title level={5} ellipsis={{ rows: 2 }} className="video-title">{title}</Title>}
@@ -169,4 +187,4 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
   );
 };
 
-export default VideoCard; 
+export default VideoCard;

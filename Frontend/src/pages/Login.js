@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Form, 
@@ -8,7 +8,8 @@ import {
   Typography, 
   Divider, 
   Alert, 
-  Space
+  Space,
+  Spin
 } from 'antd';
 import { 
   UserOutlined, 
@@ -21,22 +22,31 @@ const { Title, Text } = Typography;
 
 const Login = () => {
   const [form] = Form.useForm();
-  const { login } = useAuth();
+  const { login, isAuthenticated, loading, initializing } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   // Get redirect path from location state or default to home
   const from = location.state?.from?.pathname || '/';
   
-  const [loading, setLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !initializing) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, initializing, navigate, from]);
+
   const handleSubmit = async (values) => {
-    setLoading(true);
+    setFormLoading(true);
     setError(null);
     
     try {
-      const { email, password } = values;
+      const { username, password } = values;
+      // Convert username to email format for backend consistency
+      const email = username.includes('@') ? username : username + '@example.com';
       const result = await login(email, password);
       
       if (result.success) {
@@ -48,9 +58,18 @@ const Login = () => {
       console.error('Login error:', err);
       setError('An unexpected error occurred. Please try again.');
     } finally {
-      setLoading(false);
+      setFormLoading(false);
     }
   };
+
+  // Show loading spinner while authentication state is initializing
+  if (initializing) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', marginTop: '100px' }}>
+        <Spin size="large" tip="Loading..." />
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto' }}>
@@ -78,18 +97,17 @@ const Login = () => {
           onFinish={handleSubmit}
         >
           <Form.Item
-            name="email"
-            label="Email"
+            name="username"
+            label="Username"
             rules={[
-              { required: true, message: 'Please enter your email' },
-              { type: 'email', message: 'Please enter a valid email' }
+              { required: true, message: 'Please enter your username' }
             ]}
           >
             <Input 
               prefix={<UserOutlined />} 
-              placeholder="Email" 
+              placeholder="Username" 
               size="large" 
-              autoComplete="email"
+              autoComplete="username"
             />
           </Form.Item>
           
@@ -114,7 +132,7 @@ const Login = () => {
               htmlType="submit" 
               size="large" 
               block 
-              loading={loading}
+              loading={formLoading || loading}
               icon={<LoginOutlined />}
             >
               Log In

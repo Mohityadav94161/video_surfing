@@ -33,13 +33,15 @@ router.post('/:videoId/comments', commentController.addComment);
 router.delete('/comments/:id', commentController.deleteComment);
 router.post('/:videoId/reactions', reactionController.toggleReaction);
 
+// Allow authenticated users to extract metadata and add videos
+router.post('/extract-metadata', videoController.extractMetadata);
+router.post('/', videoController.addVideo);
+
 // Admin only routes
 router.use(authMiddleware.restrictTo('admin'));
 
-// Move admin stats route to be above the dynamic routes
-router.post('/extract-metadata', videoController.extractMetadata);
+// Admin-only endpoints
 router.post('/extract-from-page', videoController.extractVideosFromPage);
-router.post('/', videoController.addVideo);
 router.patch('/:id', videoController.updateVideo);
 router.delete('/:id', videoController.deleteVideo);
 

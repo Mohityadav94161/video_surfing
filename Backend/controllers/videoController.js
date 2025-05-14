@@ -112,10 +112,19 @@ exports.getVideo = async (req, res, next) => {
   }
 };
 
-// Add a new video (admin only)
+// Add a new video (for both regular users and admins)
 exports.addVideo = async (req, res, next) => {
   try {
-    const { originalUrl } = req.body;
+    const { 
+      originalUrl, 
+      videoType, 
+      title, 
+      thumbnailUrl, 
+      description, 
+      tags, 
+      category,
+      sourceWebsite
+    } = req.body;
     
     if (!originalUrl) {
       return res.status(400).json({
@@ -124,20 +133,63 @@ exports.addVideo = async (req, res, next) => {
       });
     }
 
-    // Extract metadata from URL
-    const metadata = await extractMetadata(originalUrl);
+    let videoData = {};
+
+    // If user provided complete data, use it
+    if (title && thumbnailUrl && category) {
+      videoData = {
+        originalUrl,
+        title,
+        thumbnailUrl,
+        description: description || '',
+        tags: tags || [],
+        category,
+        sourceWebsite: sourceWebsite || new URL(originalUrl).hostname,
+        videoType: videoType || 'normal',
+        addedBy: req.user.id,
+      };
+    } else {
+      // Otherwise extract metadata from URL
+      try {
+        const metadata = await extractMetadata(originalUrl);
+        
+        videoData = {
+          originalUrl,
+          title: title || metadata.title,
+          thumbnailUrl: thumbnailUrl || metadata.thumbnailUrl,
+          description: description || metadata.description,
+          tags: tags || metadata.tags,
+          category: category || metadata.category,
+          sourceWebsite: sourceWebsite || metadata.sourceWebsite,
+          videoType: videoType || 'normal',
+          addedBy: req.user.id,
+        };
+      } catch (metadataErr) {
+        // If metadata extraction fails, check if we have minimal required data
+        if (!title || !category) {
+          return res.status(400).json({
+            status: 'fail',
+            message: 'Could not extract metadata. Please provide title and category manually.',
+          });
+        }
+        
+        // Use provided data with defaults for missing fields
+        videoData = {
+          originalUrl,
+          title,
+          thumbnailUrl: thumbnailUrl || 'https://via.placeholder.com/640x360?text=No+Thumbnail',
+          description: description || '',
+          tags: tags || [],
+          category,
+          sourceWebsite: sourceWebsite || new URL(originalUrl).hostname,
+          videoType: videoType || 'normal',
+          addedBy: req.user.id,
+        };
+      }
+    }
 
     // Create new video
-    const newVideo = await Video.create({
-      originalUrl,
-      title: metadata.title,
-      thumbnailUrl: metadata.thumbnailUrl,
-      description: metadata.description,
-      tags: metadata.tags,
-      category: metadata.category,
-      sourceWebsite: metadata.sourceWebsite,
-      addedBy: req.user.id,
-    });
+    const newVideo = await Video.create(videoData);
 
     res.status(201).json({
       status: 'success',
@@ -157,7 +209,7 @@ exports.addVideo = async (req, res, next) => {
 // Update video (admin only)
 exports.updateVideo = async (req, res, next) => {
   try {
-    const updatableFields = ['title', 'description', 'tags', 'category', 'active'];
+    const updatableFields = ['title', 'description', 'tags', 'category', 'active', 'videoType'];
     
     // Filter out unwanted fields
     const updateData = {};

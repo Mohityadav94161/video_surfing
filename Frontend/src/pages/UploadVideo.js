@@ -22,17 +22,17 @@ import {
   FolderOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
-import { useCollections } from '../../contexts/CollectionContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useCollections } from '../contexts/CollectionContext';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
-const AddVideo = () => {
+const UploadVideo = () => {
   const [form] = Form.useForm();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { collections, fetchUserCollections, addVideoToCollection, createCollection } = useCollections();
   const navigate = useNavigate();
   
@@ -60,10 +60,20 @@ const AddVideo = () => {
     'Other',
   ];
 
+  const videoTypes = [
+    { value: 'normal', label: 'Normal Video' },
+    { value: 'terbox', label: 'Terbox Video' }
+  ];
+
   // Load user collections
   useEffect(() => {
     if (isAuthenticated) {
       fetchUserCollections();
+    } else {
+      // Redirect to login if not authenticated
+      navigate('/login', { 
+        state: { from: '/upload-video', message: 'Please login to upload videos' }
+      });
     }
   }, [isAuthenticated]);
 
@@ -80,7 +90,7 @@ const AddVideo = () => {
     setVideoInfo(null);
     
     try {
-      // Call the real metadata extraction API endpoint
+      // Call the metadata extraction API endpoint
       const response = await axios.post('/api/videos/extract-metadata', { url });
       const metadata = response.data.data.metadata;
       
@@ -92,12 +102,32 @@ const AddVideo = () => {
         description: metadata.description,
         category: metadata.category,
         tags: metadata.tags.join(', '),
+        videoType: 'normal' // Default to normal type
       });
       
     } catch (err) {
       console.error('Error extracting metadata:', err);
       const errorMessage = err.response?.data?.message || 'Failed to extract video information. Please try again or enter details manually.';
       setError(errorMessage);
+      
+      // Allow the user to enter details manually even if extraction fails
+      setVideoInfo({
+        title: '',
+        description: '',
+        category: 'Other',
+        tags: [],
+        sourceWebsite: new URL(url).hostname,
+        thumbnailUrl: 'https://via.placeholder.com/640x360?text=No+Thumbnail'
+      });
+      
+      form.setFieldsValue({
+        url: url,
+        title: '',
+        description: '',
+        category: 'Other',
+        tags: '',
+        videoType: 'normal' // Default to normal type
+      });
     } finally {
       setLoading(false);
     }
@@ -120,7 +150,7 @@ const AddVideo = () => {
       
       if (result.success) {
         message.success(`Collection "${newCollectionName}" created successfully`);
-        setSelectedCollections([...selectedCollections, result.collection.id]);
+        setSelectedCollections([...selectedCollections, result.collection._id]);
         setShowCreateCollectionModal(false);
         setNewCollectionName('');
         setNewCollectionDescription('');
@@ -156,11 +186,13 @@ const AddVideo = () => {
         tags: processedTags,
         thumbnailUrl: videoInfo?.thumbnailUrl || 'https://via.placeholder.com/640x360',
         sourceWebsite: videoInfo?.sourceWebsite || new URL(values.url).hostname,
+        videoType: values.videoType || 'normal', // Include video type
+        addedBy: user?.id // Include the user who added the video
       };
       
-      // Call the real API endpoint
+      // Call the API endpoint
       const response = await axios.post('/api/videos', payload);
-      const videoId = response.data.data.video.id;
+      const videoId = response.data.data.video._id || response.data.data.video.id;
       setAddedVideoId(videoId);
       
       // Add video to selected collections
@@ -190,11 +222,16 @@ const AddVideo = () => {
     }
   };
 
+  // Redirect if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div>
-      <Title level={2}>Add New Video</Title>
+      <Title level={2}>Upload Video</Title>
       <Text type="secondary">
-        Add external video links to the platform. The system will automatically extract metadata 
+        Share videos by uploading a link. The system will automatically extract metadata 
         from the provided URL.
       </Text>
       
@@ -204,7 +241,7 @@ const AddVideo = () => {
         <Form layout="vertical">
           <Form.Item 
             label="Enter video URL" 
-            extra="Paste the URL of the video you want to add"
+            extra="Paste the URL of the video you want to share"
           >
             <Input 
               prefix={<LinkOutlined />} 
@@ -285,7 +322,8 @@ const AddVideo = () => {
                 title: videoInfo.title,
                 description: videoInfo.description,
                 category: videoInfo.category,
-                tags: videoInfo.tags.join(', '),
+                tags: videoInfo.tags?.join(', ') || '',
+                videoType: 'normal'
               }}
             >
               <Form.Item
@@ -326,6 +364,24 @@ const AddVideo = () => {
               </Form.Item>
               
               <Form.Item
+                name="videoType"
+                label="Video Type"
+                rules={[{ required: true, message: 'Please select a video type' }]}
+                tooltip={{ 
+                  title: 'Choose the format of the video: Normal is standard video, Terbox is for interactive 3D content',
+                  icon: <InfoCircleOutlined />
+                }}
+              >
+                <Select>
+                  {videoTypes.map(type => (
+                    <Option key={type.value} value={type.value}>
+                      {type.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              
+              <Form.Item
                 name="tags"
                 label="Tags"
                 extra="Comma-separated list of tags"
@@ -333,44 +389,42 @@ const AddVideo = () => {
                 <Input placeholder="tag1, tag2, tag3" />
               </Form.Item>
 
-              {isAuthenticated && (
-                <Form.Item
-                  label="Add to Collections"
-                  extra="Select collections to add this video to"
+              <Form.Item
+                label="Add to Collections"
+                extra="Select collections to add this video to"
+              >
+                <Select
+                  mode="multiple"
+                  style={{ width: '100%' }}
+                  placeholder="Select collections"
+                  value={selectedCollections}
+                  onChange={handleCollectionChange}
+                  optionLabelProp="label"
+                  dropdownRender={(menu) => (
+                    <>
+                      {menu}
+                      <Divider style={{ margin: '8px 0' }} />
+                      <Button 
+                        type="link" 
+                        icon={<PlusOutlined />} 
+                        onClick={() => setShowCreateCollectionModal(true)}
+                        style={{ paddingLeft: 8 }}
+                      >
+                        Create new collection
+                      </Button>
+                    </>
+                  )}
                 >
-                  <Select
-                    mode="multiple"
-                    style={{ width: '100%' }}
-                    placeholder="Select collections"
-                    value={selectedCollections}
-                    onChange={handleCollectionChange}
-                    optionLabelProp="label"
-                    dropdownRender={(menu) => (
-                      <>
-                        {menu}
-                        <Divider style={{ margin: '8px 0' }} />
-                        <Button 
-                          type="link" 
-                          icon={<PlusOutlined />} 
-                          onClick={() => setShowCreateCollectionModal(true)}
-                          style={{ paddingLeft: 8 }}
-                        >
-                          Create new collection
-                        </Button>
-                      </>
-                    )}
-                  >
-                    {collections.map(collection => (
-                      <Option key={collection.id} value={collection.id} label={collection.name}>
-                        <Space>
-                          <FolderOutlined />
-                          {collection.name}
-                        </Space>
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              )}
+                  {collections.map(collection => (
+                    <Option key={collection._id} value={collection._id} label={collection.name}>
+                      <Space>
+                        <FolderOutlined />
+                        {collection.name}
+                      </Space>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
               
               <Form.Item>
                 <Button 
@@ -380,7 +434,7 @@ const AddVideo = () => {
                   icon={<CheckCircleOutlined />}
                   size="large"
                 >
-                  Add Video
+                  Upload Video
                 </Button>
               </Form.Item>
             </Form>
@@ -390,71 +444,55 @@ const AddVideo = () => {
       
       {success && (
         <Alert
-          message="Video Added Successfully"
+          message="Video Uploaded Successfully"
           description={
             <div>
-              <p>The video has been added to the platform and is now available for users to view.</p>
+              <p>Your video has been uploaded and is now available for others to view.</p>
               {selectedCollections.length > 0 && (
                 <p>The video was added to {selectedCollections.length} collection{selectedCollections.length !== 1 ? 's' : ''}.</p>
               )}
-              <div style={{ marginTop: 12 }}>
-                <Space>
-                  <Button type="primary" onClick={() => navigate(`/video/${addedVideoId}`)}>
-                    View Video
-                  </Button>
-                  {selectedCollections.length > 0 && (
-                    <Button onClick={() => navigate('/collections')}>
-                      Manage Collections
-                    </Button>
-                  )}
-                </Space>
+              <div style={{ marginTop: 16 }}>
+                <Button type="primary" onClick={() => navigate(`/video/${addedVideoId}`)}>
+                  View Video
+                </Button>
+                <Button style={{ marginLeft: 8 }} onClick={() => setSuccess(false)}>
+                  Upload Another Video
+                </Button>
               </div>
             </div>
           }
           type="success"
           showIcon
-          style={{ marginBottom: 20 }}
         />
       )}
       
-      <Card title="Video Addition Tips" style={{ marginTop: 20 }}>
-        <Space direction="vertical">
-          <div>
-            <InfoCircleOutlined style={{ marginRight: 8 }} />
-            <Text strong>Supported Sites:</Text> YouTube, Vimeo, Dailymotion, and most major video platforms
-          </div>
-          <div>
-            <InfoCircleOutlined style={{ marginRight: 8 }} />
-            <Text strong>Quality Content:</Text> Ensure videos are high-quality and relevant to your audience
-          </div>
-          <div>
-            <InfoCircleOutlined style={{ marginRight: 8 }} />
-            <Text strong>Accurate Tagging:</Text> Use specific tags to make videos easier to discover
-          </div>
-          {isAuthenticated && (
-            <div>
-              <InfoCircleOutlined style={{ marginRight: 8 }} />
-              <Text strong>Collections:</Text> Organize videos into collections for easy access later
-            </div>
-          )}
-        </Space>
-      </Card>
-
+      {/* Modal for creating a new collection */}
       <Modal
         title="Create New Collection"
         open={showCreateCollectionModal}
-        onOk={handleCreateCollection}
         onCancel={() => setShowCreateCollectionModal(false)}
-        confirmLoading={creatingCollection}
+        footer={[
+          <Button key="cancel" onClick={() => setShowCreateCollectionModal(false)}>
+            Cancel
+          </Button>,
+          <Button
+            key="create"
+            type="primary"
+            loading={creatingCollection}
+            onClick={handleCreateCollection}
+          >
+            Create
+          </Button>
+        ]}
       >
         <Form layout="vertical">
-          <Form.Item 
-            label="Collection Name" 
+          <Form.Item
+            label="Collection Name"
             required
             rules={[{ required: true, message: 'Please enter a collection name' }]}
           >
-            <Input 
-              placeholder="My Favorite Videos" 
+            <Input
+              placeholder="Enter collection name"
               value={newCollectionName}
               onChange={(e) => setNewCollectionName(e.target.value)}
               maxLength={50}
@@ -462,11 +500,11 @@ const AddVideo = () => {
           </Form.Item>
           
           <Form.Item label="Description (Optional)">
-            <TextArea 
-              rows={4} 
-              placeholder="Add a description for your collection" 
+            <TextArea
+              placeholder="Enter collection description"
               value={newCollectionDescription}
               onChange={(e) => setNewCollectionDescription(e.target.value)}
+              rows={3}
               maxLength={200}
             />
           </Form.Item>
@@ -476,4 +514,4 @@ const AddVideo = () => {
   );
 };
 
-export default AddVideo; 
+export default UploadVideo; 

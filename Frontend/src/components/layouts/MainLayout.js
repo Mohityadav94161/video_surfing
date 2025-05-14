@@ -11,7 +11,9 @@ import {
   DashboardOutlined,
   PlayCircleOutlined,
   VideoCameraOutlined,
-  MenuOutlined
+  MenuOutlined,
+  FolderOutlined,
+  UploadOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import './MainLayout.css';
@@ -130,6 +132,18 @@ const MainLayout = () => {
     }
     mobileMenuItems.push(
       {
+        key: 'upload-video',
+        label: 'Upload Video',
+        icon: <UploadOutlined />,
+        onClick: () => navigate('/upload-video')
+      },
+      {
+        key: 'collections',
+        label: 'My Collections',
+        icon: <FolderOutlined />,
+        onClick: () => navigate('/collections')
+      },
+      {
         key: 'profile',
         label: 'Profile',
         icon: <UserOutlined />,
@@ -194,6 +208,18 @@ const MainLayout = () => {
             <Menu.Item key="search" icon={<PlayCircleOutlined />}>
               <Link to="/search">Explore</Link>
             </Menu.Item>
+            
+            {isAuthenticated && (
+              <Menu.Item key="collections" icon={<FolderOutlined />}>
+                <Link to="/collections">My Collections</Link>
+              </Menu.Item>
+            )}
+            
+            {isAuthenticated && (
+              <Menu.Item key="upload-video" icon={<UploadOutlined />}>
+                <Link to="/upload-video">Upload Video</Link>
+              </Menu.Item>
+            )}
             
             {!isAuthenticated ? (
               <>

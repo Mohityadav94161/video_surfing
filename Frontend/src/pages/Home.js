@@ -54,9 +54,32 @@ const Home = () => {
   });
   const [visibleFilters, setVisibleFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [homeSections, setHomeSections] = useState([]);
+  const [sectionsLoading, setSectionsLoading] = useState(true);
+  const [sectionsError, setSectionsError] = useState(null);
 
   // Compute if any filters are applied
   const hasActiveFilters = filters.category || filters.tag || filters.search;
+
+  // Fetch home sections on mount
+  useEffect(() => {
+    const fetchHomeSections = async () => {
+      setSectionsLoading(true);
+      setSectionsError(null);
+      
+      try {
+        const response = await axios.get('/api/home-sections/active');
+        setHomeSections(response.data.data.sections || []);
+      } catch (err) {
+        console.error('Error fetching home sections:', err);
+        setSectionsError('Failed to load personalized sections. Showing default content instead.');
+      } finally {
+        setSectionsLoading(false);
+      }
+    };
+    
+    fetchHomeSections();
+  }, []);
 
   // Fetch categories and tags on mount
   useEffect(() => {
@@ -193,28 +216,99 @@ const Home = () => {
         </div>
       </div>
       
+      {/* Dynamic Home Sections */}
+      {sectionsLoading ? (
+        <div className="loading-container">
+          <Spin size="large" />
+          <Text className="loading-text">Loading customized content...</Text>
+        </div>
+      ) : sectionsError ? (
+        <Alert message={sectionsError} type="warning" showIcon style={{ marginBottom: 16 }} />
+      ) : homeSections.length > 0 ? (
+        <>
+          {homeSections.map((section) => (
+            <div key={section._id} className="home-section" style={{ 
+              backgroundColor: section.backgroundColor || '',
+              marginBottom: '32px'
+            }}>
+              <div className="section-header">
+                <Title level={3}>{section.title}</Title>
+                {section.description && (
+                  <Text type="secondary">{section.description}</Text>
+                )}
+              </div>
+              
+              {section.videos && section.videos.length > 0 ? (
+                <div className={`videos-container ${section.layout === 'list' ? 'list-view' : 'grid-view'}`}>
+                  {section.videos.map((video) => (
+                    <div 
+                      key={video._id} 
+                      className={`video-item ${section.layout === 'list' ? 'list-item' : 'grid-item'}`}
+                    >
+                      <VideoCard video={video} viewMode={section.layout} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Empty 
+                  description="No videos in this section" 
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  className="empty-container"
+                />
+              )}
+              
+              {section.sectionType === 'category' && (
+                <div className="see-more-container">
+                  <Button 
+                    type="primary" 
+                    onClick={() => {
+                      setFilters({ ...filters, category: section.category });
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
+                    See More {section.category} Videos
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </>
+      ) : null}
+
       {/* Filters Bar */}
       <Card className="filters-card">
         <div className="filters-row">
           <div className="filters-left">
             <Button 
-              type="primary"
-              icon={<FilterOutlined />}
+              icon={<FilterOutlined />} 
               onClick={() => setVisibleFilters(true)}
               className="filter-button"
             >
-              Filters
-              {hasActiveFilters && <Badge status="processing" className="filter-badge" />}
+              Filter Videos
+              {hasActiveFilters && 
+                <Badge status="processing" className="filter-badge" />
+              }
             </Button>
             
-            {/* Sort Dropdown - Always visible */}
             <Select
-              placeholder="Sort by"
+              placeholder="Category"
+              style={{ width: 150 }}
+              value={filters.category || undefined}
+              onChange={handleCategoryChange}
+              allowClear
+            >
+              {categories.map(category => (
+                <Option key={category} value={category}>
+                  {category}
+                </Option>
+              ))}
+            </Select>
+            
+            <Select
+              placeholder="Sort By"
+              style={{ width: 150 }}
               value={filters.sort}
               onChange={handleSortChange}
-              className="sort-select"
-              suffixIcon={<SortAscendingOutlined />}
-              dropdownMatchSelectWidth={false}
             >
               {sortOptions.map(option => (
                 <Option key={option.value} value={option.value}>
@@ -262,35 +356,37 @@ const Home = () => {
         {hasActiveFilters && (
           <div className="active-filters">
             <Text type="secondary">Active filters:</Text>
-            <Space wrap size={[0, 8]} className="filter-tags">
+            <div className="filter-tags">
               {filters.category && (
                 <Tag 
-                  color={getCategoryColor(filters.category)}
+                  color={getCategoryColor(filters.category)} 
                   closable 
-                  onClose={() => handleCategoryChange('')}
+                  onClose={() => setFilters({ ...filters, category: '' })}
                 >
                   Category: {filters.category}
                 </Tag>
               )}
+              
               {filters.tag && (
                 <Tag 
                   color="blue" 
                   closable 
-                  onClose={() => handleTagChange('')}
+                  onClose={() => setFilters({ ...filters, tag: '' })}
                 >
                   Tag: {filters.tag}
                 </Tag>
               )}
+              
               {filters.search && (
                 <Tag 
                   color="purple" 
                   closable 
-                  onClose={() => handleSearchChange('')}
+                  onClose={() => setFilters({ ...filters, search: '' })}
                 >
                   Search: {filters.search}
                 </Tag>
               )}
-            </Space>
+            </div>
           </div>
         )}
       </Card>
@@ -387,7 +483,7 @@ const Home = () => {
         />
       ) : (
         <>
-          {/* Video Grid */}
+          {/* Main Video Grid */}
           <div className={`videos-container ${viewMode === 'list' ? 'list-view' : 'grid-view'}`}>
             {videos.map((video) => (
               <div 

@@ -26,6 +26,7 @@ import {
 import axios from 'axios';
 import VideoComments from '../components/VideoComments';
 import VideoReactions from '../components/VideoReactions';
+import AddToCollection from '../components/AddToCollection';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -211,16 +212,19 @@ const Video = () => {
               {video.description || 'No description available.'}
             </Paragraph>
 
-            <Button
-              type="primary"
-              size="large"
-              icon={<LinkOutlined />}
-              onClick={handleRedirect}
-              style={{ marginTop: 16 }}
-              block
-            >
-              Watch Video
-            </Button>
+            <div style={{ display: 'flex', marginTop: 16 }}>
+              <Button
+                type="primary"
+                size="large"
+                icon={<LinkOutlined />}
+                onClick={handleRedirect}
+                style={{ marginRight: 8, flex: 1 }}
+              >
+                Watch Video
+              </Button>
+              
+              <AddToCollection video={video} />
+            </div>
           </Card>
           
           <Card style={{ marginTop: 24 }}>
@@ -248,6 +252,9 @@ const Video = () => {
               </Descriptions.Item>
               <Descriptions.Item label="Dislikes">
                 {video.dislikesCount || 0}
+              </Descriptions.Item>
+              <Descriptions.Item label="Video Type">
+                {video.videoType === 'terbox' ? 'Terbox Video' : 'Normal Video'}
               </Descriptions.Item>
             </Descriptions>
           </Card>

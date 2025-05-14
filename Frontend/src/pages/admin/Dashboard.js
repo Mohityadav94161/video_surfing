@@ -27,7 +27,8 @@ import {
   SearchOutlined,
   PlusOutlined,
   ReloadOutlined,
-  FilterOutlined
+  FilterOutlined,
+  CloudUploadOutlined
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -319,16 +320,35 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={2}>Admin Dashboard</Title>
-        <Button 
-          type="primary" 
-          icon={<ReloadOutlined />} 
-          onClick={handleRefresh}
-        >
-          Refresh
-        </Button>
-      </div>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Col>
+          <Title level={2}>Admin Dashboard</Title>
+        </Col>
+        <Col>
+          <Space>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => navigate('/admin/add-video')}
+            >
+              Add Video
+            </Button>
+            <Button
+              type="primary"
+              icon={<CloudUploadOutlined />}
+              onClick={() => navigate('/admin/bulk-upload')}
+            >
+              Bulk Upload
+            </Button>
+            <Button 
+              icon={<ReloadOutlined />} 
+              onClick={handleRefresh}
+            >
+              Refresh
+            </Button>
+          </Space>
+        </Col>
+      </Row>
       
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} md={6}>
