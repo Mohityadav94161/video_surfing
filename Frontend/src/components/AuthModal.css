@@ -1,0 +1,27 @@
+.ant-modal-content {
+  background: var(--ph-dark-gray) !important;
+  border-radius: 8px !important;
+}
+
+.ant-modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--ph-orange) !important;
+}
+
+.ant-modal-title {
+  color: white !important;
+  text-align: center !important;
+  font-size: 1.5rem !important;
+}
+
+.ant-tabs-nav-wrap {
+  justify-content: center !important;
+}
+
+.ant-tabs-tab {
+  color: var(--ph-text-secondary) !important;
+}
+
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--ph-orange) !important;
+} 

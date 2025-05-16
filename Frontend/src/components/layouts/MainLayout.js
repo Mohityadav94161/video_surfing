@@ -98,12 +98,6 @@ const MainLayout = () => {
       icon: <HomeOutlined />,
       onClick: () => navigate('/')
     },
-    {
-      key: 'explore',
-      label: 'Explore',
-      icon: <PlayCircleOutlined />,
-      onClick: () => navigate('/search')
-    },
   ];
 
   if (!isAuthenticated) {
@@ -174,7 +168,7 @@ const MainLayout = () => {
           justifyContent: 'space-between',
           boxShadow: scrolled ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
           transition: 'all 0.3s ease',
-          background: 'linear-gradient(135deg, #001529, #003a70)'
+          background: '#000000'
         }}
       >
         <div className="logo-container">
@@ -203,10 +197,6 @@ const MainLayout = () => {
           >
             <Menu.Item key="home" icon={<HomeOutlined />}>
               <Link to="/">Home</Link>
-            </Menu.Item>
-            
-            <Menu.Item key="search" icon={<PlayCircleOutlined />}>
-              <Link to="/search">Explore</Link>
             </Menu.Item>
             
             {isAuthenticated && (
@@ -252,14 +242,14 @@ const MainLayout = () => {
         <div className="mobile-nav">
           <Button 
             type="text" 
-            icon={<SearchOutlined style={{ color: 'white', fontSize: '20px' }} />} 
+            icon={<SearchOutlined style={{ color: '#FF1493', fontSize: '20px' }} />} 
             onClick={() => setSearchVisible(!searchVisible)}
             className="mobile-search-button"
           />
           
           <Button 
             type="text" 
-            icon={<MenuOutlined style={{ color: 'white', fontSize: '20px' }} />} 
+            icon={<MenuOutlined style={{ color: '#FF1493', fontSize: '20px' }} />} 
             onClick={() => setMobileMenuOpen(true)}
             className="mobile-menu-button"
           />
@@ -324,7 +314,7 @@ const MainLayout = () => {
         </Menu>
       </Drawer>
       
-      <Content style={{ padding: '16px', marginTop: 0 }}>
+      {/* <Content style={{ padding: '16px', marginTop: 0 }}>
         <div
           className="content-container"
           style={{
@@ -337,6 +327,15 @@ const MainLayout = () => {
         >
           <Outlet />
         </div>
+      </Content> */}
+      
+      <Content style={{ 
+        padding: 0,
+        margin: 0,
+        minHeight: '100vh',
+        background: 'transparent' 
+      }}>
+        <Outlet />
       </Content>
       
       <Footer style={{ 
@@ -347,7 +346,6 @@ const MainLayout = () => {
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div className="footer-links" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
             <Link to="/" className="footer-link" style={{ margin: '0 15px', color: 'rgba(0, 0, 0, 0.65)' }}>Home</Link>
-            <Link to="/search" className="footer-link" style={{ margin: '0 15px', color: 'rgba(0, 0, 0, 0.65)' }}>Explore</Link>
             <Link to="/login" className="footer-link" style={{ margin: '0 15px', color: 'rgba(0, 0, 0, 0.65)' }}>Login</Link>
           </div>
           <Divider style={{ margin: '10px 0' }} />

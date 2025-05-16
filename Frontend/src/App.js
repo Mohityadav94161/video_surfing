@@ -10,8 +10,6 @@ import { CollectionProvider } from './contexts/CollectionContext';
 import Home from './pages/Home';
 import Video from './pages/Video';
 import Search from './pages/Search';
-import Login from './pages/Login';
-import Register from './pages/Register';
 import UploadVideo from './pages/UploadVideo';
 import AdminDashboard from './pages/admin/Dashboard';
 import AddVideo from './pages/admin/AddVideo';
@@ -53,7 +51,7 @@ function App() {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#1677ff',
+          colorPrimary: '#FF1493', /* Deep pink color */
           borderRadius: 6,
         },
       }}
@@ -67,8 +65,6 @@ function App() {
                 <Route index element={<Home />} />
                 <Route path="video/:id" element={<Video />} />
                 <Route path="search" element={<Search />} />
-                <Route path="login" element={<Login />} />
-                <Route path="register" element={<Register />} />
                 
                 {/* Upload video (protected) */}
                 <Route 

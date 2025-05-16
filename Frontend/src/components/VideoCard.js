@@ -70,7 +70,7 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
         >
           <Row gutter={16} align="middle">
             <Col xs={24} sm={8} md={6} className="list-thumbnail-container">
-              <div className="thumbnail-wrapper">
+              <div className="thumbnail-wrapper" data-duration={video.duration || "10:30"}>
                 <img
                   alt={title}
                   src={thumbnailUrl || defaultThumbnail}
@@ -133,7 +133,7 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
         hoverable
         className="video-card grid-card"
         cover={
-          <div className="thumbnail-container">
+          <div className="thumbnail-container" data-duration={video.duration || "10:30"}>
             <img
               alt={title}
               src={thumbnailUrl || defaultThumbnail}

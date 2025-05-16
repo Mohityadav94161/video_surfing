@@ -19,7 +19,7 @@
 .logo {
   display: flex;
   align-items: center;
-  color: white;
+  color: #FF1493; /* Deep pink color */
   text-decoration: none;
   font-size: 22px;
   font-weight: bold;
@@ -27,13 +27,13 @@
 }
 
 .logo:hover {
-  color: #1890ff;
+  color: #FF69B4; /* Hot pink color for hover */
   transform: scale(1.02);
 }
 
 .logo-icon {
   font-size: 24px;
-  margin-right: 10px;
+  margin-right: 50px;
 }
 
 .logo-text {
@@ -69,24 +69,34 @@
   justify-content: flex-end;
   background: transparent;
   border: none;
+  color: #FF1493; /* Deep pink color */
+}
+
+/* Override ant-design menu item colors */
+.ant-menu-dark .ant-menu-item, 
+.ant-menu-dark .ant-menu-item-group-title, 
+.ant-menu-dark .ant-menu-item > a,
+.ant-menu-dark .ant-menu-item > span {
+  color: #FF1493 !important; /* Deep pink color */
 }
 
 /* User avatar */
 .user-avatar {
-  background-color: #1890ff;
+  background-color: #FF1493; /* Deep pink color */
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .user-avatar:hover {
   transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(24, 144, 255, 0.5);
+  box-shadow: 0 0 10px rgba(255, 20, 147, 0.5); /* Deep pink shadow */
 }
 
 .username {
   margin-left: 8px;
   position: relative;
   overflow: hidden;
+  color: #FF1493; /* Deep pink color */
 }
 
 .username::after {
@@ -96,7 +106,7 @@
   left: 0;
   width: 0;
   height: 1px;
-  background-color: #fff;
+  background-color: #FF1493; /* Deep pink color */
   transition: width 0.3s ease;
 }
 
@@ -121,12 +131,18 @@
 
 .mobile-search-button:hover,
 .mobile-menu-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 20, 147, 0.1); /* Deep pink with transparency */
   transform: scale(1.1);
 }
 
+/* Override icon colors in mobile buttons */
+.mobile-search-button span,
+.mobile-menu-button span {
+  color: #FF1493 !important; /* Deep pink color */
+}
+
 .mobile-avatar {
-  background-color: #1890ff;
+  background-color: #FF1493; /* Deep pink color */
   cursor: pointer;
 }
 
@@ -136,7 +152,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  background: #001529;
+  background: #000000; /* Black background */
   padding: 15px;
   z-index: 100;
   display: flex;
@@ -160,11 +176,11 @@
 }
 
 /* Content container */
-.content-container {
+/* .content-container {
   max-width: 1200px;
   margin: 0 auto;
   transition: all 0.3s ease;
-}
+} */
 
 /* Menu hover effects */
 .ant-menu-item {
@@ -180,7 +196,7 @@
   left: 50%;
   width: 0;
   height: 2px;
-  background-color: #1890ff;
+  background-color: #FF1493; /* Deep pink color */
   transition: all 0.3s ease;
 }
 
@@ -190,13 +206,17 @@
 }
 
 .ant-menu-item:hover {
-  color: #1890ff !important;
-  background: rgba(24, 144, 255, 0.1);
+  color: #FF69B4 !important; /* Hot pink color for hover */
+  background: rgba(255, 20, 147, 0.1); /* Deep pink with transparency */
 }
 
 .ant-menu-item-selected::after {
   width: 100%;
   left: 0;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: rgba(255, 20, 147, 0.2) !important; /* Deep pink with transparency */
 }
 
 /* Animations */

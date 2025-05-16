@@ -25,10 +25,14 @@ import {
   SortAscendingOutlined,
   AppstoreOutlined,
   BarsOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  PlayCircleOutlined,
+  FireOutlined,
+  StarOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import VideoCard from '../components/VideoCard';
+import { Link } from 'react-router-dom';
 import './Home.css'; // Create this file for additional styling
 
 const { Title, Text } = Typography;
@@ -197,199 +201,87 @@ const Home = () => {
   ];
 
   return (
-    <div className="home-container">
-      {/* Hero Banner */}
-      <div className="hero-banner">
-        <div className="hero-content">
-          <Title level={1} className="hero-title">Discover Amazing Videos</Title>
-          <Text className="hero-subtitle">Explore a curated collection of videos from across the web</Text>
-          <Search
-            placeholder="Search for videos..."
-            allowClear
-            enterButton={<Button type="primary" icon={<SearchOutlined />}>Search</Button>}
-            size="large"
-            className="hero-search"
-            value={filters.search}
-            onChange={(e) => setFilters({...filters, search: e.target.value})}
-            onSearch={handleSearchChange}
-          />
+    <div className="ph-homepage" style={{
+      width: '100vw',
+      minHeight: '100vh',
+      overflowX: 'hidden',
+      padding: '20px 0'
+    }}>
+      <div className="main-content">
+
+        {/* Trending Videos
+        <div className="video-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <FireOutlined style={{ marginRight: 8, color: '#ff9000' }} />
+              {homeSections[1]?.title}
+            </h2>
+            <Link to="/trending" className="see-all">
+              See All <PlayCircleOutlined />
+            </Link>
+          </div>
+          <div className="video-grid">
+            {homeSections[1]?.videos.map((video, index) => (
+              <div className="video-item" key={`trend-${index}`}>
+                <div className="video-thumb">
+                  <img src={video.thumbnail} alt="Thumbnail" />
+                  <span className="video-duration">{video.duration}</span>
+                </div>
+                <div className="video-info">
+                  <div className="video-title">{video.title}</div>
+                  <div className="video-stats">
+                    <PlayCircleOutlined style={{ fontSize: 12 }} />
+                    {video.views}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div> */}
+
+        {/* Categories Section
+        <div className="video-section">
+          <div className="section-header">
+            <h2 className="section-title">{homeSections[2]?.title}</h2>
+            <Link to="/categories" className="see-all">
+              All Categories
+            </Link>
+          </div>
+          <div className="categories-grid">
+            {homeSections[2]?.categories.map((category, index) => (
+              <Link 
+                to={`/category/${category.name.toLowerCase()}`} 
+                className="category-item" 
+                key={`cat-${index}`}
+              >
+                <img
+                  className="category-thumb"
+                  src={category.thumbnail}
+                  alt={category.name}
+                />
+                <span className="category-name">{category.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div> */}
+
+        {/* Add this section above the video grids */}
+        <div className="category-strip">
+          <div className="category-items">
+            {['Recommended', 'Trending', 'New', 'VR', '4K', 'HD', 'Live', 'Premium'].map((cat) => (
+              <Link 
+                to={`/category/${cat.toLowerCase()}`} 
+                className="category-link"
+                key={cat}
+              >
+                {cat}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
-      
-      {/* Dynamic Home Sections */}
-      {sectionsLoading ? (
-        <div className="loading-container">
-          <Spin size="large" />
-          <Text className="loading-text">Loading customized content...</Text>
-        </div>
-      ) : sectionsError ? (
-        <Alert message={sectionsError} type="warning" showIcon style={{ marginBottom: 16 }} />
-      ) : homeSections.length > 0 ? (
-        <>
-          {homeSections.map((section) => (
-            <div key={section._id} className="home-section" style={{ 
-              backgroundColor: section.backgroundColor || '',
-              marginBottom: '32px'
-            }}>
-              <div className="section-header">
-                <Title level={3}>{section.title}</Title>
-                {section.description && (
-                  <Text type="secondary">{section.description}</Text>
-                )}
-              </div>
-              
-              {section.videos && section.videos.length > 0 ? (
-                <div className={`videos-container ${section.layout === 'list' ? 'list-view' : 'grid-view'}`}>
-                  {section.videos.map((video) => (
-                    <div 
-                      key={video._id} 
-                      className={`video-item ${section.layout === 'list' ? 'list-item' : 'grid-item'}`}
-                    >
-                      <VideoCard video={video} viewMode={section.layout} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <Empty 
-                  description="No videos in this section" 
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  className="empty-container"
-                />
-              )}
-              
-              {section.sectionType === 'category' && (
-                <div className="see-more-container">
-                  <Button 
-                    type="primary" 
-                    onClick={() => {
-                      setFilters({ ...filters, category: section.category });
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                  >
-                    See More {section.category} Videos
-                  </Button>
-                </div>
-              )}
-            </div>
-          ))}
-        </>
-      ) : null}
 
-      {/* Filters Bar */}
-      <Card className="filters-card">
-        <div className="filters-row">
-          <div className="filters-left">
-            <Button 
-              icon={<FilterOutlined />} 
-              onClick={() => setVisibleFilters(true)}
-              className="filter-button"
-            >
-              Filter Videos
-              {hasActiveFilters && 
-                <Badge status="processing" className="filter-badge" />
-              }
-            </Button>
-            
-            <Select
-              placeholder="Category"
-              style={{ width: 150 }}
-              value={filters.category || undefined}
-              onChange={handleCategoryChange}
-              allowClear
-            >
-              {categories.map(category => (
-                <Option key={category} value={category}>
-                  {category}
-                </Option>
-              ))}
-            </Select>
-            
-            <Select
-              placeholder="Sort By"
-              style={{ width: 150 }}
-              value={filters.sort}
-              onChange={handleSortChange}
-            >
-              {sortOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </div>
-          
-          <div className="filters-right">
-            {/* View Mode Toggle */}
-            <div className="view-mode-toggle">
-              <Tooltip title="Grid View">
-                <Button
-                  type={viewMode === 'grid' ? 'primary' : 'default'}
-                  icon={<AppstoreOutlined />}
-                  onClick={() => setViewMode('grid')}
-                />
-              </Tooltip>
-              <Tooltip title="List View">
-                <Button
-                  type={viewMode === 'list' ? 'primary' : 'default'}
-                  icon={<BarsOutlined />}
-                  onClick={() => setViewMode('list')}
-                />
-              </Tooltip>
-            </div>
-            
-            {/* Reset Filters Button - Only visible when filters are applied */}
-            {hasActiveFilters && (
-              <Tooltip title="Clear all filters">
-                <Button 
-                  icon={<ReloadOutlined />} 
-                  onClick={clearAllFilters}
-                  className="reset-button"
-                >
-                  Reset
-                </Button>
-              </Tooltip>
-            )}
-          </div>
-        </div>
-        
-        {/* Active Filters Display */}
-        {hasActiveFilters && (
-          <div className="active-filters">
-            <Text type="secondary">Active filters:</Text>
-            <div className="filter-tags">
-              {filters.category && (
-                <Tag 
-                  color={getCategoryColor(filters.category)} 
-                  closable 
-                  onClose={() => setFilters({ ...filters, category: '' })}
-                >
-                  Category: {filters.category}
-                </Tag>
-              )}
-              
-              {filters.tag && (
-                <Tag 
-                  color="blue" 
-                  closable 
-                  onClose={() => setFilters({ ...filters, tag: '' })}
-                >
-                  Tag: {filters.tag}
-                </Tag>
-              )}
-              
-              {filters.search && (
-                <Tag 
-                  color="purple" 
-                  closable 
-                  onClose={() => setFilters({ ...filters, search: '' })}
-                >
-                  Search: {filters.search}
-                </Tag>
-              )}
-            </div>
-          </div>
-        )}
-      </Card>
+
       
       {/* Filter Drawer for Mobile */}
       <Drawer
