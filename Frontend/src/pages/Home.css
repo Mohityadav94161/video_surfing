@@ -21,7 +21,7 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  border-bottom: 3px solid var(--ph-orange);
+  border-bottom: 3px solid #FF1493;
 }
 
 .hero-banner::before {
@@ -45,7 +45,7 @@
 }
 
 .hero-title {
-  color: var(--ph-orange) !important;
+  color: #FF1493 !important;
   font-size: 3.5rem !important;
   font-weight: 800 !important;
   margin-bottom: 16px !important;
@@ -83,7 +83,7 @@
 }
 
 .hero-search .ant-input:focus {
-  border-color: var(--ph-orange);
+  border-color: #FF1493;
   box-shadow: 0 0 0 2px rgba(255, 144, 0, 0.2);
 }
 
@@ -97,8 +97,8 @@
 }
 
 .hero-search .ant-btn:hover {
-  background-color: var(--ph-orange);
-  border-color: var(--ph-orange);
+  background-color: #FF1493;
+  border-color: #FF1493;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -139,8 +139,8 @@
 
 .filter-button:hover {
   transform: translateY(-2px);
-  background-color: var(--ph-orange);
-  border-color: var(--ph-orange);
+  background-color: #FF1493;
+  border-color: #FF1493;
   color: var(--ph-black);
 }
 
@@ -163,7 +163,7 @@
 
 .sort-select:hover {
   transform: translateY(-2px);
-  border-color: var(--ph-orange);
+  border-color: #FF1493;
 }
 
 .view-mode-toggle {
@@ -178,8 +178,8 @@
 }
 
 .view-mode-toggle button.active {
-  background-color: var(--ph-orange);
-  border-color: var(--ph-orange);
+  background-color: #FF1493;
+  border-color: #FF1493;
   color: var(--ph-black);
 }
 
@@ -213,11 +213,11 @@
 .filter-tags .ant-tag {
   background-color: var(--ph-light-gray);
   border-color: var(--ph-light-gray);
-  color: var(--ph-text);
+  color: #FF1493;
 }
 
 .filter-tags .ant-tag .anticon {
-  color: var(--ph-orange);
+  color: #FF1493;
 }
 
 /* Drawer filters */
@@ -235,7 +235,7 @@
 }
 
 .ant-drawer-title {
-  color: var(--ph-orange);
+  color: #FF1493;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -255,7 +255,7 @@
 }
 
 .filter-group h4 {
-  color: var(--ph-orange);
+  color: #FF1493;
   font-weight: bold;
   margin-bottom: 12px;
   text-transform: uppercase;
@@ -352,7 +352,7 @@
 .grid-item:hover {
   transform: translateY(-5px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  border-color: var(--ph-orange);
+  border-color: #FF1493;
 }
 
 .list-item {
@@ -388,7 +388,7 @@
 }
 
 .ant-spin-dot-item {
-  background-color: var(--ph-orange) !important;
+  background-color: #FF1493 !important;
 }
 
 .empty-container {
@@ -412,8 +412,8 @@
 }
 
 .empty-container .ant-btn:hover {
-  background-color: var(--ph-orange);
-  border-color: var(--ph-orange);
+  background-color: #FF1493;
+  border-color: #FF1493;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -571,7 +571,7 @@
   margin-bottom: 4px !important;
   position: relative;
   display: inline-block;
-  color: var(--ph-orange);
+  color: #FF1493;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -607,8 +607,8 @@
 }
 
 .see-more-container .ant-btn:hover {
-  background-color: var(--ph-orange);
-  border-color: var(--ph-orange);
+  background-color: #FF1493;
+  border-color: #FF1493;
   color: var(--ph-black);
   transform: translateY(-2px);
 }
@@ -649,7 +649,7 @@
 
 .home-section.featured-layout .ant-card {
   transform: scale(1.02);
-  border: 2px solid var(--ph-orange);
+  border: 2px solid #FF1493;
 }
 
 .home-section.featured-layout .section-header h3 {
@@ -674,8 +674,8 @@
   align-items: center;
   justify-content: center;
   background: var(--ph-black);
-  border: 1px solid var(--ph-orange);
-  color: var(--ph-orange);
+  border: 1px solid #FF1493;
+  color: #FF1493;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   cursor: pointer;
@@ -683,7 +683,7 @@
 }
 
 .home-section .carousel-arrow:hover {
-  background: var(--ph-orange);
+  background: #FF1493;
   color: var(--ph-black);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
@@ -743,7 +743,7 @@ body {
 }
 
 .video-category:hover {
-  background-color: var(--ph-orange);
+  background-color: #FF1493;
   color: var(--ph-black);
 }
 
@@ -755,7 +755,7 @@ body {
 
 .video-rating .ant-rate {
   font-size: 14px;
-  color: var(--ph-orange);
+  color: #FF1493;
 }
 
 .video-rating-text {
@@ -995,7 +995,7 @@ body {
 }
 
 .category-link:hover {
-  color: var(--ph-orange);
+  color: #FF1493;
 }
 
 /* Scrollbar styling */
@@ -1008,5 +1008,5 @@ body {
 }
 
 .category-items::-webkit-scrollbar-thumb {
-  background: var(--ph-orange);
+  background: #FF1493;
 } 

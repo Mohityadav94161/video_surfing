@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Input, Button, Dropdown, Space, Avatar, theme, Badge, Divider, Typography, Drawer } from 'antd';
+import { Layout, Menu, Input, Button, Dropdown, Space, Avatar, theme, Badge, Divider, Typography, Drawer, Modal, Form, message } from 'antd';
 import { 
   HomeOutlined, 
   SearchOutlined, 
@@ -25,11 +25,13 @@ const { Text } = Typography;
 const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout, login, register, loading } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [loginVisible, setLoginVisible] = useState(false);
+  const [registerVisible, setRegisterVisible] = useState(false);
   
   const {
     token: { colorBgContainer, borderRadiusLG, colorPrimary },
@@ -91,14 +93,7 @@ const MainLayout = () => {
   }
 
   // Mobile menu items
-  const mobileMenuItems = [
-    {
-      key: 'home',
-      label: 'Home',
-      icon: <HomeOutlined />,
-      onClick: () => navigate('/')
-    },
-  ];
+  const mobileMenuItems = [];
 
   if (!isAuthenticated) {
     mobileMenuItems.push(
@@ -106,13 +101,19 @@ const MainLayout = () => {
         key: 'login',
         label: 'Login',
         icon: <LoginOutlined />,
-        onClick: () => navigate('/login')
+        onClick: () => {
+          setMobileMenuOpen(false);
+          setLoginVisible(true);
+        }
       },
       {
         key: 'register',
         label: 'Register',
         icon: <UserAddOutlined />,
-        onClick: () => navigate('/register')
+        onClick: () => {
+          setMobileMenuOpen(false);
+          setRegisterVisible(true);
+        }
       }
     );
   } else {
@@ -195,10 +196,7 @@ const MainLayout = () => {
             selectedKeys={[location.pathname === '/' ? 'home' : location.pathname.split('/')[1]]}
             className="desktop-menu"
           >
-            <Menu.Item key="home" icon={<HomeOutlined />}>
-              <Link to="/">Home</Link>
-            </Menu.Item>
-            
+
             {isAuthenticated && (
               <Menu.Item key="collections" icon={<FolderOutlined />}>
                 <Link to="/collections">My Collections</Link>
@@ -214,10 +212,10 @@ const MainLayout = () => {
             {!isAuthenticated ? (
               <>
                 <Menu.Item key="login" icon={<LoginOutlined />}>
-                  <Link to="/login">Login</Link>
+                  <Button type="link" onClick={() => setLoginVisible(true)}>Login</Button>
                 </Menu.Item>
                 <Menu.Item key="register" icon={<UserAddOutlined />}>
-                  <Link to="/register">Register</Link>
+                  <Button type="link" onClick={() => setRegisterVisible(true)}>Register</Button>
                 </Menu.Item>
               </>
             ) : (
@@ -338,19 +336,160 @@ const MainLayout = () => {
         <Outlet />
       </Content>
       
+      {/* Login Modal */}
+      <Modal
+        title="Login"
+        open={loginVisible}
+        onCancel={() => setLoginVisible(false)}
+        footer={null}
+        centered
+      >
+        <Form onFinish={async (values) => {
+          try {
+            const { email, password } = values;
+            const result = await login(email, password);
+            if (result.success) {
+              setLoginVisible(false);
+              message.success('Logged in successfully!');
+            }
+          } catch (error) {
+            console.error('Login error:', error);
+            message.error('Login failed. Please try again.');
+          }
+        }}>
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'Please input your email!' },
+              { type: 'email', message: 'Please enter a valid email!' }
+            ]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="Email" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: 'Please input your password!' }]}
+          >
+            <Input.Password placeholder="Password" />
+          </Form.Item>
+          <Form.Item>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              style={{ backgroundColor: '#FF1493' }} 
+              block
+              loading={loading}
+            >
+              Login
+            </Button>
+          </Form.Item>
+          <div style={{ textAlign: 'center' }}>
+            <Button type="link" onClick={() => {
+              setLoginVisible(false);
+              setRegisterVisible(true);
+            }}>
+              Don't have an account? Register now
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+      
+      {/* Register Modal */}
+      <Modal
+        title="Register"
+        open={registerVisible}
+        onCancel={() => setRegisterVisible(false)}
+        footer={null}
+        centered
+      >
+        <Form onFinish={async (values) => {
+          try {
+            const { username, email, password } = values;
+            const result = await register(username, email, password);
+            if (result.success) {
+              setRegisterVisible(false);
+              message.success('Registered successfully!');
+            }
+          } catch (error) {
+            console.error('Registration error:', error);
+            message.error('Registration failed. Please try again.');
+          }
+        }}>
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: 'Please input your username!' }]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="Username" />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'Please input your email!' },
+              { type: 'email', message: 'Please enter a valid email!' }
+            ]}
+          >
+            <Input placeholder="Email" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: 'Please input your password!' }]}
+          >
+            <Input.Password placeholder="Password" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: 'Please confirm your password!' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('The two passwords do not match!'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Confirm Password" />
+          </Form.Item>
+          <Form.Item>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              style={{ backgroundColor: '#FF1493' }} 
+              block
+              loading={loading}
+            >
+              Register
+            </Button>
+          </Form.Item>
+          <div style={{ textAlign: 'center' }}>
+            <Button type="link" onClick={() => {
+              setRegisterVisible(false);
+              setLoginVisible(true);
+            }}>
+              Already have an account? Login
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+      
       <Footer style={{ 
         textAlign: 'center',
-        background: '#f5f5f5',
+        background: '#292929',
         padding: '24px 50px'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div className="footer-links" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <Link to="/" className="footer-link" style={{ margin: '0 15px', color: 'rgba(0, 0, 0, 0.65)' }}>Home</Link>
-            <Link to="/login" className="footer-link" style={{ margin: '0 15px', color: 'rgba(0, 0, 0, 0.65)' }}>Login</Link>
+            <Link to="/support" className="footer-link" style={{ margin: '0 15px', color: '#FF1493' }}>Support</Link>
+            <Link to="/terms-of-service" className="footer-link" style={{ margin: '0 15px', color: '#FF1493' }}>Terms of Service</Link>
+            <Link to="/privacy-policy" className="footer-link" style={{ margin: '0 15px', color: '#FF1493' }}>Privacy Policy</Link>
+            <Link to="/faq" className="footer-link" style={{ margin: '0 15px', color: '#FF1493' }}>FAQs</Link>
           </div>
-          <Divider style={{ margin: '10px 0' }} />
+          <Divider style={{ margin: '10px 0', color: 'rgba(255, 255, 255, 0.80)'}} />
           <div>
-            <Text style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+            <Text style={{ color: 'rgba(255, 255, 255, 0.80)' }}>
               Video Surfing ©{new Date().getFullYear()} - Your curated video directory
             </Text>
           </div>

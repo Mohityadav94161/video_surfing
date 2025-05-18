@@ -5,7 +5,7 @@
 
 .ant-modal-header {
   background: transparent !important;
-  border-bottom: 1px solid var(--ph-orange) !important;
+  border-bottom: 1px solid #FF1493 !important;
 }
 
 .ant-modal-title {
@@ -23,5 +23,5 @@
 }
 
 .ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: var(--ph-orange) !important;
+  color: #FF1493 !important;
 } 

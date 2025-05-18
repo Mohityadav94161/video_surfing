@@ -33,7 +33,7 @@
 
 .logo-icon {
   font-size: 24px;
-  margin-right: 50px;
+  margin-right: 10px;
 }
 
 .logo-text {
@@ -257,12 +257,12 @@
   left: 0;
   width: 0;
   height: 1px;
-  background-color: #1890ff;
+  background-color: #ffffff;
   transition: width 0.3s ease;
 }
 
 .footer-link:hover {
-  color: #1890ff !important;
+  color: #ffffff !important;
 }
 
 .footer-link:hover::after {
@@ -299,6 +299,7 @@
   
   .ant-layout-footer {
     padding: 15px !important;
+    background-color: #000000;
   }
   
   .footer-links {

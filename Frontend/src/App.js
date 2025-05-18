@@ -22,6 +22,12 @@ import MyCollections from './pages/collections/MyCollections';
 import CollectionDetail from './pages/collections/CollectionDetail';
 import CreateCollection from './pages/collections/CreateCollection';
 
+// Footer Pages
+import Support from './pages/Support';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import FAQ from './pages/FAQ';
+
 // Components
 import MainLayout from './components/layouts/MainLayout';
 import AdminLayout from './components/layouts/AdminLayout';
@@ -51,7 +57,7 @@ function App() {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#FF1493', /* Deep pink color */
+          colorPrimary: '#FF1493',
           borderRadius: 6,
         },
       }}
@@ -65,6 +71,12 @@ function App() {
                 <Route index element={<Home />} />
                 <Route path="video/:id" element={<Video />} />
                 <Route path="search" element={<Search />} />
+                
+                {/* Footer pages */}
+                <Route path="support" element={<Support />} />
+                <Route path="terms-of-service" element={<TermsOfService />} />
+                <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="faq" element={<FAQ />} />
                 
                 {/* Upload video (protected) */}
                 <Route 

@@ -33,7 +33,7 @@
 .grid-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  border-color: var(--ph-orange);
+  border-color: #FF1493;
 }
 
 /* List view styling */
@@ -45,7 +45,7 @@
 .list-card:hover {
   transform: translateX(5px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border-color: var(--ph-orange);
+  border-color: #FF1493;
 }
 
 .list-thumbnail-container {
@@ -117,7 +117,7 @@
 
 .play-icon {
   font-size: 48px;
-  color: var(--ph-orange);
+  color: #FF1493;
   opacity: 0.9;
   transition: all 0.3s ease;
 }
@@ -136,7 +136,7 @@
 }
 
 .video-card:hover .video-title {
-  color: var(--ph-orange) !important;
+  color: #FF1493 !important;
 }
 
 .tag-container {
@@ -150,7 +150,7 @@
   font-weight: 500;
   background-color: var(--ph-light-gray) !important;
   border-color: var(--ph-light-gray) !important;
-  color: var(--ph-orange) !important;
+  color: #FF1493 !important;
 }
 
 .tag {
@@ -177,7 +177,7 @@
 }
 
 .meta-item .anticon {
-  color: var(--ph-orange);
+  color: #FF1493;
 }
 
 .source {
