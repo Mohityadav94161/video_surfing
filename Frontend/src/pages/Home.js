@@ -1,408 +1,322 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Row, 
-  Col, 
-  Typography, 
-  Divider, 
-  Select, 
-  Pagination, 
-  Spin, 
-  Empty, 
-  Alert,
-  Space,
-  Tag,
-  Card,
-  Button,
-  Tooltip,
-  Input,
-  Drawer,
-  Badge
-} from 'antd';
-import {
-  FilterOutlined,
-  SearchOutlined,
-  CloseCircleOutlined,
-  SortAscendingOutlined,
-  AppstoreOutlined,
-  BarsOutlined,
-  ReloadOutlined,
-  PlayCircleOutlined,
-  FireOutlined,
-  StarOutlined
-} from '@ant-design/icons';
-import axios from 'axios';
-import VideoCard from '../components/VideoCard';
-import { Link } from 'react-router-dom';
-import './Home.css'; // Create this file for additional styling
+"use client"
 
-const { Title, Text } = Typography;
-const { Option } = Select;
-const { Search } = Input;
+import { useState, useEffect } from "react"
+import { Pagination, Spin, Button, Select, Tag, message } from "antd"
+import {
+  FireOutlined,
+  EyeOutlined,
+  TagOutlined,
+  ClockCircleOutlined
+} from "@ant-design/icons"
+import { useNavigate } from "react-router-dom"
+import axios from "axios"
+import "./Home.css"
+
+const { Option } = Select
 
 const Home = () => {
-  const [videos, setVideos] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [tags, setTags] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [videos, setVideos] = useState([])
+  const [filteredVideos, setFilteredVideos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [selectedTag, setSelectedTag] = useState(null)
+  const [error, setError] = useState(null)
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 12,
-    total: 0,
-  });
-  const [filters, setFilters] = useState({
-    category: '',
-    tag: '',
-    sort: '-createdAt',
-    search: ''
-  });
-  const [visibleFilters, setVisibleFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  const [homeSections, setHomeSections] = useState([]);
-  const [sectionsLoading, setSectionsLoading] = useState(true);
-  const [sectionsError, setSectionsError] = useState(null);
+    pageSize: 8,
+    total: 0
+  })
+  
+  const navigate = useNavigate()
+  
+  // Get all unique tags from videos
+  const getAllTags = (videos) => {
+    const tagsSet = new Set()
+    videos.forEach(video => {
+      video.tags.forEach(tag => tagsSet.add(tag))
+    })
+    return Array.from(tagsSet)
+  }
 
-  // Compute if any filters are applied
-  const hasActiveFilters = filters.category || filters.tag || filters.search;
-
-  // Fetch home sections on mount
-  useEffect(() => {
-    const fetchHomeSections = async () => {
-      setSectionsLoading(true);
-      setSectionsError(null);
-      
-      try {
-        const response = await axios.get('/api/home-sections/active');
-        setHomeSections(response.data.data.sections || []);
-      } catch (err) {
-        console.error('Error fetching home sections:', err);
-        setSectionsError('Failed to load personalized sections. Showing default content instead.');
-      } finally {
-        setSectionsLoading(false);
-      }
-    };
+  // Format view count
+  const formatViewCount = (count) => {
+    if (count >= 1000000) {
+      return (count / 1000000).toFixed(1) + 'M';
+    } else if (count >= 1000) {
+      return (count / 1000).toFixed(1) + 'K';
+    }
+    return count.toString();
+  }
+  
+  // Format date to relative time
+  const formatRelativeTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
     
-    fetchHomeSections();
-  }, []);
+    if (diffInSeconds < 60) {
+      return 'just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `${months} month${months > 1 ? 's' : ''} ago`;
+    } else {
+      const years = Math.floor(diffInSeconds / 31536000);
+      return `${years} year${years > 1 ? 's' : ''} ago`;
+    }
+  }
 
-  // Fetch categories and tags on mount
-  useEffect(() => {
-    const fetchCategoriesAndTags = async () => {
-      try {
-        const [categoriesRes, tagsRes] = await Promise.all([
-          axios.get('/api/videos/categories'),
-          axios.get('/api/videos/tags'),
-        ]);
-        setCategories(categoriesRes.data.data.categories || []);
-        setTags(tagsRes.data.data.tags || []);
-      } catch (err) {
-        console.error('Error fetching filters:', err);
-      }
-    };
-
-    fetchCategoriesAndTags();
-  }, []);
-
-  // Fetch videos when filters or pagination changes
+  // Fetch videos from API
   useEffect(() => {
     const fetchVideos = async () => {
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
       
       try {
-        const { category, tag, sort, search } = filters;
-        const { current, pageSize } = pagination;
+        const response = await axios.get('/api/videos', {
+          params: {
+            page: pagination.current,
+            limit: pagination.pageSize
+          }
+        })
         
-        let url = `/api/videos?page=${current}&limit=${pageSize}&sort=${sort}`;
+        const { videos: fetchedVideos, total } = response.data.data
         
-        if (category) {
-          url += `&category=${category}`;
-        }
+        // Ensure videos have tags array
+        const processedVideos = fetchedVideos.map(video => ({
+          ...video,
+          tags: video.tags || []
+        }))
         
-        if (tag) {
-          url += `&tag=${tag}`;
-        }
-        
-        if (search) {
-          url += `&search=${search}`;
-        }
-        
-        const res = await axios.get(url);
-        
-        setVideos(res.data.data.videos || []);
-        setPagination({
-          ...pagination,
-          total: res.data.total || 0,
-        });
+        setVideos(processedVideos)
+        setFilteredVideos(processedVideos)
+        setPagination(prev => ({
+          ...prev,
+          total
+        }))
       } catch (err) {
-        console.error('Error fetching videos:', err);
-        setError('Failed to load videos. Please try again later.');
+        console.error('Error fetching videos:', err)
+        setError('Failed to load videos. Please try again later.')
+        
+        // Fallback to empty array if API fails
+        setVideos([])
+        setFilteredVideos([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
+    
+    fetchVideos()
+  }, [pagination.current, pagination.pageSize])
+  
+  // Filter videos when a tag is selected
+  useEffect(() => {
+    if (selectedTag) {
+      const filtered = videos.filter(video => 
+        video.tags.includes(selectedTag)
+      )
+      setFilteredVideos(filtered)
+    } else {
+      setFilteredVideos(videos)
+    }
+  }, [selectedTag, videos])
 
-    fetchVideos();
-  }, [filters, pagination.current, pagination.pageSize]);
-
-  const handleCategoryChange = (value) => {
-    setFilters({ ...filters, category: value });
-    setPagination({ ...pagination, current: 1 });
-  };
-
-  const handleTagChange = (value) => {
-    setFilters({ ...filters, tag: value });
-    setPagination({ ...pagination, current: 1 });
-  };
-
-  const handleSortChange = (value) => {
-    setFilters({ ...filters, sort: value });
-  };
-
-  const handleSearchChange = (value) => {
-    setFilters({ ...filters, search: value });
-    setPagination({ ...pagination, current: 1 });
-  };
-
-  const handlePaginationChange = (page, pageSize) => {
-    setPagination({ ...pagination, current: page, pageSize });
-  };
-
-  const clearAllFilters = () => {
-    setFilters({
-      category: '',
-      tag: '',
-      sort: '-createdAt',
-      search: ''
-    });
-    setPagination({ ...pagination, current: 1 });
-  };
-
-  const getCategoryColor = (category) => {
-    const categoryColors = {
-      'Education': 'blue',
-      'Entertainment': 'purple',
-      'Gaming': 'geekblue',
-      'Music': 'magenta',
-      'News': 'orange',
-      'Sports': 'green',
-      'Technology': 'cyan',
-      'Travel': 'gold',
-      'Other': 'default',
-    };
-    return categoryColors[category] || 'default';
-  };
-
-  const sortOptions = [
-    { value: '-createdAt', label: 'Newest First' },
-    { value: 'createdAt', label: 'Oldest First' },
-    { value: '-views', label: 'Most Views' },
-    { value: 'title', label: 'Title (A-Z)' }
-  ];
+  // Handle tag selection
+  const handleTagClick = (tag) => {
+    if (selectedTag === tag) {
+      setSelectedTag(null) // Deselect if already selected
+    } else {
+      setSelectedTag(tag)
+    }
+  }
 
   return (
-    <div className="ph-homepage" style={{
-      width: '100vw',
-      minHeight: '100vh',
-      overflowX: 'hidden',
-      padding: '20px 0'
-    }}>
-      <div className="main-content">
+    <div className="home-container">
 
-        {/* Trending Videos
-        <div className="video-section">
-          <div className="section-header">
-            <h2 className="section-title">
-              <FireOutlined style={{ marginRight: 8, color: '#ff9000' }} />
-              {homeSections[1]?.title}
-            </h2>
-            <Link to="/trending" className="see-all">
-              See All <PlayCircleOutlined />
-            </Link>
-          </div>
-          <div className="video-grid">
-            {homeSections[1]?.videos.map((video, index) => (
-              <div className="video-item" key={`trend-${index}`}>
-                <div className="video-thumb">
-                  <img src={video.thumbnail} alt="Thumbnail" />
-                  <span className="video-duration">{video.duration}</span>
-                </div>
-                <div className="video-info">
-                  <div className="video-title">{video.title}</div>
-                  <div className="video-stats">
-                    <PlayCircleOutlined style={{ fontSize: 12 }} />
-                    {video.views}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div> */}
-
-        {/* Categories Section
-        <div className="video-section">
-          <div className="section-header">
-            <h2 className="section-title">{homeSections[2]?.title}</h2>
-            <Link to="/categories" className="see-all">
-              All Categories
-            </Link>
-          </div>
-          <div className="categories-grid">
-            {homeSections[2]?.categories.map((category, index) => (
-              <Link 
-                to={`/category/${category.name.toLowerCase()}`} 
-                className="category-item" 
-                key={`cat-${index}`}
-              >
-                <img
-                  className="category-thumb"
-                  src={category.thumbnail}
-                  alt={category.name}
-                />
-                <span className="category-name">{category.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div> */}
-
-        {/* Add this section above the video grids */}
-        <div className="category-strip">
-          <div className="category-items">
-            {['Recommended', 'Trending', 'New', 'VR', '4K', 'HD', 'Live', 'Premium'].map((cat) => (
-              <Link 
-                to={`/category/${cat.toLowerCase()}`} 
-                className="category-link"
-                key={cat}
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
+      {/* Banner ad */}
+      <div className="banner-ad">
+        <div className="banner-content">
+          <h2>PREMIUM CONTENT</h2>
+          <h3>$0.00 FOR 7 DAYS</h3>
+          <Button type="primary" className="join-button">
+            JOIN NOW
+          </Button>
         </div>
       </div>
 
+      {/* Video Tags */}
+      <div className="category-filters">
+        <div className="tag-header">
+          <TagOutlined /> <span>Filter by Tags:</span>
+        </div>
+        {!loading && getAllTags(videos).map((tag, index) => (
+          <Tag 
+            key={index}
+            color={selectedTag === tag ? "#FF1493" : "default"}
+            className="video-tag"
+            onClick={() => handleTagClick(tag)}
+          >
+            {tag}
+          </Tag>
+        ))}
+        {selectedTag && (
+          <Button 
+            type="link" 
+            size="small" 
+            onClick={() => setSelectedTag(null)}
+            className="clear-tag-btn"
+          >
+            Clear filter
+          </Button>
+        )}
+      </div>
 
-      
-      {/* Filter Drawer for Mobile */}
-      <Drawer
-        title="Filter Videos"
-        placement="right"
-        onClose={() => setVisibleFilters(false)}
-        open={visibleFilters}
-        footer={
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button onClick={clearAllFilters} icon={<CloseCircleOutlined />}>
-              Clear All
-            </Button>
-            <Button type="primary" onClick={() => setVisibleFilters(false)}>
-              Apply
-            </Button>
-          </div>
-        }
-      >
-        <div className="drawer-filters">
-          <div className="filter-group">
-            <Text strong>Category</Text>
-            <Select
-              placeholder="Select Category"
-              style={{ width: '100%', marginTop: 8 }}
-              onChange={handleCategoryChange}
-              value={filters.category || undefined}
-              allowClear
-            >
-              {categories.map((category) => (
-                <Option key={category} value={category}>
-                  <Tag color={getCategoryColor(category)} style={{ marginRight: 8 }}>
-                    {category}
-                  </Tag>
-                </Option>
-              ))}
-            </Select>
-          </div>
-          
-          <div className="filter-group">
-            <Text strong>Tags</Text>
-            <Select
-              placeholder="Select Tag"
-              style={{ width: '100%', marginTop: 8 }}
-              onChange={handleTagChange}
-              value={filters.tag || undefined}
-              allowClear
-              showSearch
-              optionFilterProp="children"
-            >
-              {tags.map((tag) => (
-                <Option key={tag.name} value={tag.name}>
-                  {tag.name} ({tag.count})
-                </Option>
-              ))}
-            </Select>
-          </div>
-          
-          <div className="filter-group">
-            <Text strong>Sort By</Text>
-            <Select
-              style={{ width: '100%', marginTop: 8 }}
-              onChange={handleSortChange}
-              value={filters.sort}
-            >
-              {sortOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </div>
+      {/* Video filters and sorting */}
+      <div className="video-filters">
+        <div className="filter-left">
+          <Button type="primary" className="recommended-button">
+            <FireOutlined /> Recommended Videos
+          </Button>
         </div>
-      </Drawer>
-      
-      {/* Error Message */}
-      {error && (
-        <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />
-      )}
-      
-      {/* Loading Spinner */}
-      {loading ? (
-        <div className="loading-container">
-          <Spin size="large" />
-          <Text className="loading-text">Loading videos...</Text>
+
+        <div className="filter-right">
+          <Select defaultValue="quality" className="filter-select">
+            <Option value="quality">Quality</Option>
+            <Option value="hd">HD Only</Option>
+            <Option value="4k">4K Only</Option>
+          </Select>
+
+          <Select defaultValue="duration" className="filter-select">
+            <Option value="duration">Duration</Option>
+            <Option value="short">Short (&lt; 10m)</Option>
+            <Option value="medium">Medium (10-20m)</Option>
+            <Option value="long">Long (&gt; 20m)</Option>
+          </Select>
         </div>
-      ) : videos.length === 0 ? (
-        <Empty 
-          description="No videos found" 
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          className="empty-container"
-        />
-      ) : (
-        <>
-          {/* Main Video Grid */}
-          <div className={`videos-container ${viewMode === 'list' ? 'list-view' : 'grid-view'}`}>
-            {videos.map((video) => (
-              <div 
-                key={video._id} 
-                className={`video-item ${viewMode === 'list' ? 'list-item' : 'grid-item'}`}
-              >
-                <VideoCard video={video} viewMode={viewMode} />
+      </div>
+
+      {/* Main content - Video grid */}
+      <div className="content-container">
+        <h2 className="section-title">Recommended Videos</h2>
+
+        {loading ? (
+          <div className="loading-container">
+            <Spin size="large" />
+            <p>Loading videos...</p>
+          </div>
+        ) : error ? (
+          <div className="error-container">
+            <p>{error}</p>
+            <Button 
+              type="primary" 
+              onClick={() => {
+                setPagination(prev => ({ ...prev, current: 1 }));
+                setSelectedTag(null);
+              }}
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : (
+          <>
+            {selectedTag && (
+              <div className="filter-info">
+                <span>Showing videos tagged with: <Tag color="#FF1493">{selectedTag}</Tag></span>
+                <span className="results-count">({filteredVideos.length} results)</span>
               </div>
-            ))}
-          </div>
-          
-          {/* Pagination */}
+            )}
+            
+            {filteredVideos.length === 0 ? (
+              <div className="no-results">
+                <p>No videos found with the selected tag.</p>
+                <Button type="primary" onClick={() => setSelectedTag(null)}>Show all videos</Button>
+              </div>
+            ) : (
+              <div className="video-grid">
+                {filteredVideos.map((video) => (
+                  <div 
+                    key={video._id || video.id} 
+                    className="video-card"
+                    onClick={() => navigate(`/video/${video._id || video.id}`)}
+                  >
+                    <div className="video-thumbnail">
+                      <img 
+                        src={video.thumbnailUrl || '/home.jpg'} 
+                        alt={video.title} 
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/home.jpg';
+                        }}
+                      />
+                      <div className="video-overlay">
+                        <div className="play-button"></div>
+                      </div>
+                      <div className="video-source">{video.sourceWebsite}</div>
+                    </div>
+                    <div className="video-info">
+                      <h3 className="video-title">{video.title}</h3>
+                      <div className="video-tags">
+                        {video.tags && video.tags.map((tag, tagIndex) => (
+                          <Tag 
+                            key={tagIndex} 
+                            className="video-card-tag"
+                            color={tag === selectedTag ? "#FF1493" : "default"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTagClick(tag);
+                            }}
+                          >
+                            {tag}
+                          </Tag>
+                        ))}
+                      </div>
+                      <div className="video-stats">
+                        <span className="video-views">
+                          <EyeOutlined /> {formatViewCount(video.views || 0)}
+                        </span>
+                        <span className="video-date">
+                          <ClockCircleOutlined /> {formatRelativeTime(video.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Pagination */}
+        {!loading && !error && filteredVideos.length > 0 && (
           <div className="pagination-container">
-            <Pagination
+            <Pagination 
               current={pagination.current}
               pageSize={pagination.pageSize}
               total={pagination.total}
-              onChange={handlePaginationChange}
+              onChange={(page, pageSize) => {
+                setPagination(prev => ({
+                  ...prev,
+                  current: page,
+                  pageSize
+                }))
+                // Scroll to top when changing page
+                window.scrollTo(0, 0)
+              }}
               showSizeChanger
-              showQuickJumper
-              pageSizeOptions={['12', '24', '36', '48']}
+              pageSizeOptions={["8", "16", "24", "32"]}
             />
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home; 
+export default Home
