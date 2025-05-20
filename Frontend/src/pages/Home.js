@@ -31,14 +31,14 @@ const Home = () => {
   
   // Predefined static tags for filtering
   const predefinedTags = [
-    "Action", 
-    "Comedy", 
-    "Drama", 
-    "Tutorial", 
-    "music", 
-    "Gaming", 
-    "Sports", 
-    "Technology",
+    "Brunette", 
+    "Blonde", 
+    "Lesbian", 
+    "Hot", 
+    "Balochistan", 
+    "Ebony", 
+    "Asian", 
+    "Busty",
     "china"
   ]
 
@@ -150,19 +150,24 @@ const Home = () => {
 
       {/* Banner ad */}
       <div className="banner-ad">
-        <div className="banner-content">
-          <h2>PREMIUM CONTENT</h2>
-          <h3>$0.00 FOR 7 DAYS</h3>
-          <Button type="primary" className="join-button">
-            JOIN NOW
-          </Button>
-        </div>
-      </div>
+  <div className="banner-content">
+    <h2>ADVERTISEMENT</h2>
+    <h3>Enjoy Premium Access – Free for 7 Days!</h3>
+    <Button
+      type="primary"
+      className="join-button"
+      onClick={() => window.open('https://your-advertiser-link.com', '_blank')}
+    >
+      Learn More
+    </Button>
+  </div>
+</div>
+
 
       {/* Video Tags */}
       <div className="category-filters">
         <div className="tag-header">
-          <TagOutlined /> <span>Filter by Tags:</span>
+          {/* <TagOutlined /> <span>Filter by Tags:</span> */}
         </div>
         {predefinedTags.map((tag, index) => (
           <Tag 
@@ -187,7 +192,7 @@ const Home = () => {
       </div>
 
       {/* Video filters and sorting */}
-      <div className="video-filters">
+      {/* <div className="video-filters">
         <div className="filter-left">
           <Button type="primary" className="recommended-button">
             <FireOutlined /> Recommended Videos
@@ -208,7 +213,7 @@ const Home = () => {
             <Option value="long">Long (&gt; 20m)</Option>
           </Select>
         </div>
-      </div>
+      </div> */}
 
       {/* Main content - Video grid */}
       <div className="content-container">

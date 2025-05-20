@@ -288,7 +288,7 @@ const MainLayout = () => {
       {/* Mobile menu drawer */}
       <Drawer
         title={
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', color: 'white' }}>
             <VideoCameraOutlined style={{ marginRight: 8 }} />
             <span>Video Surfing</span>
           </div>
@@ -297,14 +297,27 @@ const MainLayout = () => {
         onClose={() => setMobileMenuOpen(false)}
         open={mobileMenuOpen}
         width={250}
+        styles={{
+          header: { backgroundColor: 'black', color: 'white' },
+          body: { backgroundColor: 'black', padding: 0 },
+          footer: { backgroundColor: 'black' }
+        }}
       >
-        <Menu mode="vertical" style={{ border: 'none' }}>
+        <Menu 
+          mode="vertical" 
+          style={{ 
+            border: 'none', 
+            backgroundColor: 'black', 
+            color: 'white' 
+          }}
+          theme="dark"
+        >
           {mobileMenuItems.map(item => (
             <Menu.Item 
               key={item.key} 
               icon={item.icon} 
               onClick={item.onClick}
-              style={{ margin: '8px 0' }}
+              style={{ margin: '8px 0', color: 'white' }}
             >
               {item.label}
             </Menu.Item>
