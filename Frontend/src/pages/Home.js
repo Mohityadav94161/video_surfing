@@ -6,7 +6,8 @@ import {
   FireOutlined,
   EyeOutlined,
   TagOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  LinkOutlined
 } from "@ant-design/icons"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
@@ -28,14 +29,18 @@ const Home = () => {
   
   const navigate = useNavigate()
   
-  // Get all unique tags from videos
-  const getAllTags = (videos) => {
-    const tagsSet = new Set()
-    videos.forEach(video => {
-      video.tags.forEach(tag => tagsSet.add(tag))
-    })
-    return Array.from(tagsSet)
-  }
+  // Predefined static tags for filtering
+  const predefinedTags = [
+    "Action", 
+    "Comedy", 
+    "Drama", 
+    "Tutorial", 
+    "music", 
+    "Gaming", 
+    "Sports", 
+    "Technology",
+    "china"
+  ]
 
   // Format view count
   const formatViewCount = (count) => {
@@ -118,22 +123,25 @@ const Home = () => {
   
   // Filter videos when a tag is selected
   useEffect(() => {
-    if (selectedTag) {
+    if (selectedTag && predefinedTags.includes(selectedTag)) {
       const filtered = videos.filter(video => 
-        video.tags.includes(selectedTag)
+        video.tags && video.tags.includes(selectedTag)
       )
       setFilteredVideos(filtered)
     } else {
       setFilteredVideos(videos)
     }
-  }, [selectedTag, videos])
+  }, [selectedTag, videos, predefinedTags])
 
   // Handle tag selection
   const handleTagClick = (tag) => {
-    if (selectedTag === tag) {
-      setSelectedTag(null) // Deselect if already selected
-    } else {
-      setSelectedTag(tag)
+    // Only handle clicks for predefined tags
+    if (predefinedTags.includes(tag)) {
+      if (selectedTag === tag) {
+        setSelectedTag(null) // Deselect if already selected
+      } else {
+        setSelectedTag(tag)
+      }
     }
   }
 
@@ -156,7 +164,7 @@ const Home = () => {
         <div className="tag-header">
           <TagOutlined /> <span>Filter by Tags:</span>
         </div>
-        {!loading && getAllTags(videos).map((tag, index) => (
+        {predefinedTags.map((tag, index) => (
           <Tag 
             key={index}
             color={selectedTag === tag ? "#FF1493" : "default"}
@@ -226,7 +234,7 @@ const Home = () => {
           </div>
         ) : (
           <>
-            {selectedTag && (
+            {selectedTag && predefinedTags.includes(selectedTag) && (
               <div className="filter-info">
                 <span>Showing videos tagged with: <Tag color="#FF1493">{selectedTag}</Tag></span>
                 <span className="results-count">({filteredVideos.length} results)</span>
@@ -244,7 +252,14 @@ const Home = () => {
                   <div 
                     key={video._id || video.id} 
                     className="video-card"
-                    onClick={() => navigate(`/video/${video._id || video.id}`)}
+                    onClick={() => {
+                      if (video.originalUrl) {
+                        window.open(video.originalUrl, '_blank');
+                      } else {
+                        // Fallback to internal page if originalUrl is not available
+                        navigate(`/video/${video._id || video.id}`);
+                      }
+                    }}
                   >
                     <div className="video-thumbnail">
                       <img 
@@ -257,26 +272,44 @@ const Home = () => {
                       />
                       <div className="video-overlay">
                         <div className="play-button"></div>
+                        {/* <div className="external-link-indicator" style={{ 
+                          position: 'absolute', 
+                          top: '10px', 
+                          right: '10px', 
+                          background: 'rgba(0,0,0,0.6)', 
+                          color: 'white', 
+                          padding: '2px 6px', 
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          <LinkOutlined /> External
+                        </div> */}
                       </div>
-                      <div className="video-source">{video.sourceWebsite}</div>
+                      {/* <div className="video-source">{video.sourceWebsite}</div> */}
                     </div>
                     <div className="video-info">
                       <h3 className="video-title">{video.title}</h3>
-                      <div className="video-tags">
+                      {/* <div className="video-tags">
                         {video.tags && video.tags.map((tag, tagIndex) => (
                           <Tag 
                             key={tagIndex} 
                             className="video-card-tag"
-                            color={tag === selectedTag ? "#FF1493" : "default"}
+                            color={predefinedTags.includes(tag) && tag === selectedTag ? "#FF1493" : "default"}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleTagClick(tag);
+                              // Only allow filtering by predefined tags
+                              if (predefinedTags.includes(tag)) {
+                                handleTagClick(tag);
+                              }
                             }}
                           >
                             {tag}
                           </Tag>
                         ))}
-                      </div>
+                      </div> */}
                       <div className="video-stats">
                         <span className="video-views">
                           <EyeOutlined /> {formatViewCount(video.views || 0)}
