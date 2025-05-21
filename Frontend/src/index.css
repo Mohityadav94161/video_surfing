@@ -89,4 +89,29 @@ code {
 /* Ensure modal is above other content */
 .ant-modal-wrap {
   z-index: 1000 !important;
+}
+
+/* Look for any global style resets that might interfere */
+
+/* Add this at the end of the file */
+.ant-modal {
+  background-color: #1a1a1a !important;
+}
+
+.ant-modal-content {
+  background-color: #1a1a1a !important;
+  color: white !important;
+}
+
+.ant-modal-header {
+  background-color: transparent !important;
+  border-bottom: none !important;
+}
+
+.ant-modal-title {
+  color: white !important;
+}
+
+.ant-modal-close-x {
+  color: white !important;
 } 

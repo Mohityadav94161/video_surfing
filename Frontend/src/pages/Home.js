@@ -21,11 +21,8 @@ const Home = () => {
   const [loading, setLoading] = useState(true)
   const [selectedTag, setSelectedTag] = useState(null)
   const [error, setError] = useState(null)
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 8,
-    total: 0
-  })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalVideos, setTotalVideos] = useState(0)
   
   const navigate = useNavigate()
   
@@ -87,8 +84,8 @@ const Home = () => {
       try {
         const response = await axios.get('/api/videos', {
           params: {
-            page: pagination.current,
-            limit: pagination.pageSize
+            page: currentPage,
+            limit: 100
           }
         })
         
@@ -102,10 +99,7 @@ const Home = () => {
         
         setVideos(processedVideos)
         setFilteredVideos(processedVideos)
-        setPagination(prev => ({
-          ...prev,
-          total
-        }))
+        setTotalVideos(total)
       } catch (err) {
         console.error('Error fetching videos:', err)
         setError('Failed to load videos. Please try again later.')
@@ -119,7 +113,7 @@ const Home = () => {
     }
     
     fetchVideos()
-  }, [pagination.current, pagination.pageSize])
+  }, [currentPage])
   
   // Filter videos when a tag is selected
   useEffect(() => {
@@ -144,6 +138,10 @@ const Home = () => {
       }
     }
   }
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="home-container">
@@ -217,7 +215,7 @@ const Home = () => {
 
       {/* Main content - Video grid */}
       <div className="content-container">
-        <h2 className="section-title">Recommended Videos</h2>
+        <h2 className="section-title">Latest Videos</h2>
 
         {loading ? (
           <div className="loading-container">
@@ -230,7 +228,7 @@ const Home = () => {
             <Button 
               type="primary" 
               onClick={() => {
-                setPagination(prev => ({ ...prev, current: 1 }));
+                setCurrentPage(1);
                 setSelectedTag(null);
               }}
             >
@@ -335,20 +333,12 @@ const Home = () => {
         {!loading && !error && filteredVideos.length > 0 && (
           <div className="pagination-container">
             <Pagination 
-              current={pagination.current}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              onChange={(page, pageSize) => {
-                setPagination(prev => ({
-                  ...prev,
-                  current: page,
-                  pageSize
-                }))
-                // Scroll to top when changing page
-                window.scrollTo(0, 0)
-              }}
-              showSizeChanger
-              pageSizeOptions={["8", "16", "24", "32"]}
+              current={currentPage}
+              total={totalVideos}
+              pageSize={100}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+              showQuickJumper={false}
             />
           </div>
         )}

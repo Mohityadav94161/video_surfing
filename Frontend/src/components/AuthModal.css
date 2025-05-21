@@ -1,27 +1,72 @@
-.ant-modal-content {
-  background: var(--ph-dark-gray) !important;
+* {
+  all: unset !important;
+}
+
+.auth-modal * {
+  background-color: #1a1a1a !important;
+  color: white !important;
+  border-color: #333333 !important;
+}
+
+.auth-modal.ant-modal {
+  background-color: #1a1a1a !important;
+}
+
+.auth-modal .ant-modal-content {
+  background-color: #1a1a1a !important;
   border-radius: 8px !important;
 }
 
-.ant-modal-header {
-  background: transparent !important;
-  border-bottom: 1px solid #FF1493 !important;
+.auth-modal .ant-modal-header {
+  background-color: transparent !important;
+  border-bottom: none !important;
 }
 
-.ant-modal-title {
+.auth-modal .ant-modal-title {
   color: white !important;
   text-align: center !important;
-  font-size: 1.5rem !important;
 }
 
-.ant-tabs-nav-wrap {
+.auth-modal .ant-modal-close-x {
+  color: white !important;
+}
+
+.auth-modal .ant-form-item-label > label {
+  color: #cccccc !important;
+}
+
+.auth-modal .ant-input {
+  background-color: #2a2a2a !important;
+  color: white !important;
+}
+
+.auth-modal .ant-input:focus {
+  border-color: #FF1493 !important;
+  box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.2) !important;
+}
+
+.auth-modal .ant-btn-primary {
+  background-color: #FF1493 !important;
+  border-color: #FF1493 !important;
+}
+
+.auth-modal .ant-btn-primary:hover {
+  background-color: #ff1493d9 !important;
+  border-color: #ff1493d9 !important;
+}
+
+.auth-modal .ant-form-item-explain-error {
+  color: #ff4d4f !important;
+}
+
+.auth-modal .ant-tabs-nav-wrap {
   justify-content: center !important;
 }
 
-.ant-tabs-tab {
-  color: var(--ph-text-secondary) !important;
+.auth-modal .ant-tabs-tab {
+  color: #cccccc !important;
 }
 
-.ant-tabs-tab-active .ant-tabs-tab-btn {
+.auth-modal .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #FF1493 !important;
 } 

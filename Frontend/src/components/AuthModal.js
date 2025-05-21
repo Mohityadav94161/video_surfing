@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, Tabs } from 'antd';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import './AuthModal.css'; // Ensure this import is correct
 
 const AuthModal = ({ visible, onClose, initialTab = 'login' }) => {
   console.log('Modal props:', { visible, initialTab }); // Debugging
@@ -14,8 +15,14 @@ const AuthModal = ({ visible, onClose, initialTab = 'login' }) => {
       footer={null}
       centered
       destroyOnClose
-      style={{ top: 20 }}
+      style={{
+        backgroundColor: '#1a1a1a !important',
+      }}
+      bodyStyle={{
+        backgroundColor: '#1a1a1a !important',
+      }}
       zIndex={1000}
+      className="auth-modal"
     >
       <Tabs
         defaultActiveKey={initialTab}

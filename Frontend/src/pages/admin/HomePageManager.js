@@ -25,7 +25,8 @@ import {
   Drawer,
   ColorPicker,
   Empty,
-  Checkbox
+  Checkbox,
+  Pagination
 } from 'antd';
 import {
   PlusOutlined,
@@ -126,6 +127,7 @@ const HomePageManager = () => {
   const [selectedVideos, setSelectedVideos] = useState([]);
   const [availableVideos, setAvailableVideos] = useState([]);
   const [customBgColor, setCustomBgColor] = useState('#ffffff');
+  const [totalVideos, setTotalVideos] = useState(0);
 
   // Initialize DnD sensors
   const sensors = useSensors(
@@ -174,6 +176,8 @@ const HomePageManager = () => {
       params.append('limit', '50');
       
       const response = await axios.get(`/api/videos?${params.toString()}`);
+      setVideos(response.data.data.videos || []);
+      setTotalVideos(response.data.data.total);
       return response.data.data.videos || [];
     } catch (err) {
       console.error('Error fetching videos:', err);
@@ -990,7 +994,7 @@ const HomePageManager = () => {
                   </List.Item>
                 )}
                 pagination={{
-                  pageSize: 10,
+                  pageSize: 100,
                   size: 'small'
                 }}
               />
@@ -998,6 +1002,14 @@ const HomePageManager = () => {
           </>
         )}
       </Drawer>
+      
+      {/* Modify pagination component */}
+      <Pagination 
+        total={totalVideos} 
+        pageSize={100}  // Set page size to 100
+        showSizeChanger={false}  // Remove page size selector
+        showQuickJumper={false}  // Optional: remove quick jumper
+      />
     </div>
   );
 };

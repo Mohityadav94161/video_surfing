@@ -12,7 +12,7 @@ const Support = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px'}}>
       <Title level={1} style={{ textAlign: 'center', marginBottom: '40px' }}>Support Center</Title>
       
       <Row gutter={[32, 32]}>

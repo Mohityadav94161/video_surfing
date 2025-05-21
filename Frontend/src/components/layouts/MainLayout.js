@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Input, Button, Dropdown, Space, Avatar, theme, Badge, Divider, Typography, Drawer, Modal, Form, message } from 'antd';
 import { 
-  HomeOutlined, 
   SearchOutlined, 
   UserOutlined, 
   LogoutOutlined,
   LoginOutlined,
   UserAddOutlined,
   DashboardOutlined,
-  PlayCircleOutlined,
   VideoCameraOutlined,
   MenuOutlined,
   FolderOutlined,
@@ -169,7 +167,8 @@ const MainLayout = () => {
           justifyContent: 'space-between',
           boxShadow: scrolled ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
           transition: 'all 0.3s ease',
-          background: '#000000'
+          background: '#000000',
+          paddingLeft: '5%',
         }}
       >
         <div className="logo-container">
@@ -192,32 +191,89 @@ const MainLayout = () => {
           
           <Menu
             theme="dark"
-            mode="horizontal"
+            mode="vertical"
             selectedKeys={[location.pathname === '/' ? 'home' : location.pathname.split('/')[1]]}
             className="desktop-menu"
           >
 
             {isAuthenticated && (
-              <Menu.Item key="collections" icon={<FolderOutlined />}>
-                <Link to="/collections">My Collections</Link>
-              </Menu.Item>
-            )}
-            
-            {isAuthenticated && (
-              <Menu.Item key="upload-video" icon={<UploadOutlined />}>
-                <Link to="/upload-video">Upload Video</Link>
-              </Menu.Item>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <Button 
+                  icon={<FolderOutlined />} 
+                  onClick={() => navigate('/collections')}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backgroundColor: '#1f1f1f',
+                    color: 'white',
+                    border: '1px solid #FF1493'
+                  }}
+                >
+                  My Collections
+                </Button>
+                <Button 
+                  icon={<UploadOutlined />} 
+                  onClick={() => navigate('/upload-video')}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backgroundColor: '#1f1f1f',
+                    color: 'white',
+                    border: '1px solid #FF1493'
+                  }}
+                >
+                  Upload
+                </Button>
+              </div>
             )}
             
             {!isAuthenticated ? (
-              <>
-                <Menu.Item key="login" icon={<LoginOutlined />}>
-                  <Button type="link" onClick={() => setLoginVisible(true)}>Login</Button>
-                </Menu.Item>
-                <Menu.Item key="register" icon={<UserAddOutlined />}>
-                  <Button type="link" onClick={() => setRegisterVisible(true)}>Register</Button>
-                </Menu.Item>
-              </>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <Button 
+                  type="primary"
+                  onClick={() => setLoginVisible(true)}
+                  style={{ 
+                    backgroundColor: '#FF1493', 
+                    color: 'white',
+                    border: 'none',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}
+                  className="login-btn"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(255, 20, 147, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  Login
+                </Button>
+                <Button 
+                  type="primary"
+                  onClick={() => setRegisterVisible(true)}
+                  style={{ 
+                    backgroundColor: '#FF1493', 
+                    color: 'white',
+                    border: 'none',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}
+                  className="register-btn"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(255, 20, 147, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  Register
+                </Button>
+              </div>
             ) : (
               <Menu.Item key="user">
                 <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
@@ -274,6 +330,24 @@ const MainLayout = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="mobile-search-input"
+            style={{ 
+              backgroundColor: 'transparent',
+              borderRadius: '20px',
+            }}
+            inputStyle={{
+              backgroundColor: '#3c3c3c',
+              color: 'white',
+              borderRadius: '20px',
+              border: '1px solid #FF1493',
+            }}
+            styles={{
+              input: {
+                backgroundColor: '#3c3c3c !important',
+                color: 'white !important',
+                borderRadius: '20px !important',
+                border: '1px solid #FF1493 !important',
+              }
+            }}
           />
           <Button 
             type="text" 
@@ -303,42 +377,102 @@ const MainLayout = () => {
           footer: { backgroundColor: 'black' }
         }}
       >
-        <Menu 
-          mode="vertical" 
-          style={{ 
-            border: 'none', 
-            backgroundColor: 'black', 
-            color: 'white' 
-          }}
-          theme="dark"
-        >
-          {mobileMenuItems.map(item => (
-            <Menu.Item 
-              key={item.key} 
-              icon={item.icon} 
-              onClick={item.onClick}
-              style={{ margin: '8px 0', color: 'white' }}
-            >
-              {item.label}
-            </Menu.Item>
-          ))}
-        </Menu>
-      </Drawer>
-      
-      {/* <Content style={{ padding: '16px', marginTop: 0 }}>
-        <div
-          className="content-container"
-          style={{
-            padding: 24,
-            minHeight: 380,
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-            boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-          }}
-        >
-          <Outlet />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '20px' }}>
+          {isAuthenticated && (
+            <>
+              <Button 
+                icon={<UserOutlined />} 
+                block 
+                onClick={() => {
+                  navigate('/profile');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Profile
+              </Button>
+              <Button 
+                icon={<DashboardOutlined />} 
+                block 
+                onClick={() => {
+                  navigate('/profile');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Admin Dashboard
+              </Button>
+              <Button 
+                icon={<FolderOutlined />} 
+                block
+                onClick={() => {
+                  navigate('/admin');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                My Collections
+              </Button>
+              <Button 
+                icon={<UploadOutlined />} 
+                block 
+                onClick={() => {
+                  navigate('/collections');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Upload Video
+              </Button>
+              <Button 
+                icon={<LogoutOutlined />} 
+                block 
+                danger 
+                onClick={() => {
+                  navigate('/upload-vi');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Logout
+              </Button>
+            </>
+          )}
+
+          {!isAuthenticated && (
+            <>
+              <Button 
+                icon={<LoginOutlined />} 
+                block 
+                type="primary"
+                style={{ 
+                  backgroundColor: '#FF1493', 
+                  color: 'white',
+                  border: 'none',
+                  marginBottom: '10px'
+                }}
+                onClick={() => {
+                  setLoginVisible(true);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Login
+              </Button>
+              <Button 
+                icon={<UserAddOutlined />} 
+                block 
+                type="primary"
+                style={{ 
+                  backgroundColor: '#FF1493', 
+                  color: 'white',
+                  border: 'none'
+                }}
+                onClick={() => {
+                  setRegisterVisible(true);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Register
+              </Button>
+            </>
+          )}
         </div>
-      </Content> */}
+      </Drawer>
       
       <Content style={{ 
         padding: 0,
@@ -356,6 +490,15 @@ const MainLayout = () => {
         onCancel={() => setLoginVisible(false)}
         footer={null}
         centered
+        className="auth-modal custom-login-modal"
+        style={{ 
+          backgroundColor: '#1a1a1a !important',
+          color: 'white !important'
+        }}
+        bodyStyle={{
+          backgroundColor: '#1a1a1a !important',
+          color: 'white !important'
+        }}
       >
         <Form onFinish={async (values) => {
           try {
@@ -389,9 +532,22 @@ const MainLayout = () => {
             <Button 
               type="primary" 
               htmlType="submit" 
-              style={{ backgroundColor: '#FF1493' }} 
+              style={{ 
+                backgroundColor: '#FF1493',
+                color: 'white',
+                border: 'none',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+              }}
               block
               loading={loading}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 4px 10px rgba(255, 20, 147, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             >
               Login
             </Button>
@@ -470,9 +626,22 @@ const MainLayout = () => {
             <Button 
               type="primary" 
               htmlType="submit" 
-              style={{ backgroundColor: '#FF1493' }} 
+              style={{ 
+                backgroundColor: '#FF1493',
+                color: 'white',
+                border: 'none',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+              }}
               block
               loading={loading}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 4px 10px rgba(255, 20, 147, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             >
               Register
             </Button>

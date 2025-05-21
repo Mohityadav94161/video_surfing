@@ -9,7 +9,8 @@ import {
   Divider, 
   Alert, 
   Space,
-  Spin
+  Spin,
+  Modal
 } from 'antd';
 import { 
   UserOutlined, 
