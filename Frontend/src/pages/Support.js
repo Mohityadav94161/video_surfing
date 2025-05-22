@@ -1,113 +1,57 @@
 import React from 'react';
-import { Typography, Card, Row, Col, Form, Input, Button, Divider, Space } from 'antd';
-import { MailOutlined, PhoneOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Typography, Input, List, Form, Button, Row, Col, Card } from 'antd';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
 
 const Support = () => {
+  const faqs = [
+    {
+      question: "How do I reset my password?",
+      answer: "To reset your password, go to the login page and click on 'Forgot Password'. Follow the instructions to reset your password."
+    },
+    {
+      question: "How can I contact support?",
+      answer: "You can contact support by emailing us at support@example.com or calling us at (123) 456-7890."
+    },
+    // Add more FAQs as needed
+  ];
+
   const onFinish = (values) => {
-    console.log('Support form submitted:', values);
-    // Here you would typically send the form data to your backend
+    console.log('Form submitted:', values);
+    // Handle form submission logic here
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px'}}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', color: 'white' }}>
       <Title level={1} style={{ textAlign: 'center', marginBottom: '40px' }}>Support Center</Title>
       
-      <Row gutter={[32, 32]}>
-        <Col xs={24} md={8}>
-          <Card 
-            hoverable
-            style={{ height: '100%' }}
-            cover={<div style={{ 
-              background: 'linear-gradient(135deg, #FF1493 0%, #FF69B4 100%)', 
-              height: '120px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-              <MailOutlined style={{ fontSize: '48px', color: 'white' }} />
-            </div>}
-          >
-            <Title level={4} style={{ textAlign: 'center' }}>Email Support</Title>
-            <Paragraph style={{ textAlign: 'center' }}>
-              For general inquiries and non-urgent issues
-            </Paragraph>
-            <Paragraph style={{ textAlign: 'center', fontWeight: 'bold' }}>
-              support@videosurfing.com
-            </Paragraph>
-            <Paragraph style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(0, 0, 0, 0.45)' }}>
-              Response time: 24-48 hours
-            </Paragraph>
-          </Card>
-        </Col>
-        
-        <Col xs={24} md={8}>
-          <Card 
-            hoverable
-            style={{ height: '100%' }}
-            cover={<div style={{ 
-              background: 'linear-gradient(135deg, #FF1493 0%, #FF69B4 100%)', 
-              height: '120px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-              <PhoneOutlined style={{ fontSize: '48px', color: 'white' }} />
-            </div>}
-          >
-            <Title level={4} style={{ textAlign: 'center' }}>Phone Support</Title>
-            <Paragraph style={{ textAlign: 'center' }}>
-              For urgent issues requiring immediate assistance
-            </Paragraph>
-            <Paragraph style={{ textAlign: 'center', fontWeight: 'bold' }}>
-              +1 (800) 123-4567
-            </Paragraph>
-            <Paragraph style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(0, 0, 0, 0.45)' }}>
-              Available Mon-Fri, 9am-5pm EST
-            </Paragraph>
-          </Card>
-        </Col>
-        
-        <Col xs={24} md={8}>
-          <Card 
-            hoverable
-            style={{ height: '100%' }}
-            cover={<div style={{ 
-              background: 'linear-gradient(135deg, #FF1493 0%, #FF69B4 100%)', 
-              height: '120px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-              <QuestionCircleOutlined style={{ fontSize: '48px', color: 'white' }} />
-            </div>}
-          >
-            <Title level={4} style={{ textAlign: 'center' }}>FAQ</Title>
-            <Paragraph style={{ textAlign: 'center' }}>
-              Find answers to commonly asked questions
-            </Paragraph>
-            <Paragraph style={{ textAlign: 'center' }}>
-              <Button type="primary" href="/faq" style={{ backgroundColor: '#FF1493' }}>
-                Visit FAQ
-              </Button>
-            </Paragraph>
-            <Paragraph style={{ textAlign: 'center', fontSize: '12px', color: 'rgba(0, 0, 0, 0.45)' }}>
-              Updated regularly with new information
-            </Paragraph>
-          </Card>
-        </Col>
-      </Row>
-      
-      <Divider style={{ margin: '60px 0 40px' }}>
-        <Text strong>Contact Us</Text>
-      </Divider>
-      
-      <Card style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <Title level={3} style={{ marginBottom: '30px' }}>Send Us a Message</Title>
+      <Input.Search
+        placeholder="Search for help..."
+        enterButton
+        size="large"
+        style={{ marginBottom: '40px' }}
+      />
+
+      <Title level={2}>Frequently Asked Questions</Title>
+      <List
+        itemLayout="horizontal"
+        dataSource={faqs}
+        renderItem={item => (
+          <List.Item>
+            <List.Item.Meta
+              title={<strong>{item.question}</strong>}
+              description={item.answer}
+            />
+          </List.Item>
+        )}
+        style={{ marginBottom: '40px' }}
+      />
+
+      <Title level={2}>Contact Us</Title>
+      <Card>
         <Form
-          name="support_form"
+          name="contact_form"
           layout="vertical"
           onFinish={onFinish}
         >
@@ -148,11 +92,11 @@ const Support = () => {
             label="Message"
             rules={[{ required: true, message: 'Please enter your message' }]}
           >
-            <TextArea rows={6} placeholder="How can we help you?" />
+            <TextArea rows={4} placeholder="How can we help you?" />
           </Form.Item>
           
           <Form.Item>
-            <Button type="primary" htmlType="submit" style={{ backgroundColor: '#FF1493' }}>
+            <Button type="primary" htmlType="submit">
               Submit
             </Button>
           </Form.Item>

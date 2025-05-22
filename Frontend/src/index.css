@@ -93,25 +93,77 @@ code {
 
 /* Look for any global style resets that might interfere */
 
-/* Add this at the end of the file */
+/* Modal styles */
 .ant-modal {
-  background-color: #1a1a1a !important;
+  background-color: transparent !important;
 }
 
 .ant-modal-content {
-  background-color: #1a1a1a !important;
+  background-color: #252525 !important;
   color: white !important;
+  border: 1px solid #444444 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
 }
 
 .ant-modal-header {
-  background-color: transparent !important;
+  background-color: #252525 !important;
   border-bottom: none !important;
 }
 
 .ant-modal-title {
   color: white !important;
+  text-align: center !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
 }
 
 .ant-modal-close-x {
   color: white !important;
+}
+
+.ant-modal-body {
+  background-color: #252525 !important;
+}
+
+/* Form elements in modals */
+.auth-modal .ant-form-item-label > label {
+  color: #cccccc !important;
+}
+
+.auth-modal .ant-input,
+.ant-modal .ant-input,
+.ant-modal .ant-input-password,
+
+.auth-modal .ant-input:focus,
+.ant-modal .ant-input:focus,
+.ant-modal .ant-input-affix-wrapper-focused {
+  border-color: #FF1493 !important;
+  box-shadow: 0 0 0 2px rgba(255, 144, 0, 0.0) !important;
+}
+
+.auth-modal .ant-btn-primary,
+.ant-modal .ant-btn-primary {
+  background-color: #FF1493 !important;
+  border-color: #FF1493 !important;
+  color: #000000 !important;
+  font-weight: bold !important;
+}
+
+.auth-modal .ant-btn-primary:hover,
+.ant-modal .ant-btn-primary:hover {
+  background-color: #ffa533 !important;
+  border-color: #ffa533 !important;
+}
+
+.auth-modal .ant-form-item-explain-error {
+  color: #ff4d4f !important;
+}
+
+.auth-modal .ant-btn-link {
+  color: #FF1493 !important;
+}
+
+.auth-modal .ant-btn-link:hover {
+  color: #ffa533 !important;
 } 

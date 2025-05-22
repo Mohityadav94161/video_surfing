@@ -1,0 +1,60 @@
+/* Modal Styles */
+.auth-modal .ant-modal-content {
+  background-color: #252525 !important;
+  border: 1px solid #444444 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+.auth-modal .ant-modal-header {
+  background-color: #252525 !important;
+  border-bottom: none !important;
+}
+
+.auth-modal .ant-modal-body {
+  background-color: #252525 !important;
+}
+
+.auth-modal .ant-modal-title {
+  color: white !important;
+  text-align: center !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+}
+
+.auth-modal .ant-modal-close-x {
+  color: white !important;
+}
+
+.auth-modal .ant-form-item-label > label {
+  color: #cccccc !important;
+}
+
+.auth-modal .ant-input:focus {
+  border-color: #FF1493 !important;
+  box-shadow: 0 0 0 2px rgba(255, 144, 0, 0.2) !important;
+}
+
+.auth-modal .ant-btn-primary {
+  background-color: #FF1493 !important;
+  border-color: #FF1493 !important;
+  color: #000000 !important;
+  font-weight: bold !important;
+}
+
+.auth-modal .ant-btn-primary:hover {
+  background-color: #ff4d4f !important;
+  border-color: #ff4d4f !important;
+}
+
+.auth-modal .ant-form-item-explain-error {
+  color: #ff4d4f !important;
+}
+
+.auth-modal .ant-btn-link {
+  color: #FF1493 !important;
+}
+
+.auth-modal .ant-btn-link:hover {
+  color: #FF1493 !important;
+}

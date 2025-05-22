@@ -15,6 +15,7 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import './MainLayout.css';
+import '../../components/ModalStyles.css';
 
 const { Header, Content, Footer } = Layout;
 const { Search } = Input;
@@ -491,14 +492,6 @@ const MainLayout = () => {
         footer={null}
         centered
         className="auth-modal custom-login-modal"
-        style={{ 
-          backgroundColor: '#1a1a1a !important',
-          color: 'white !important'
-        }}
-        bodyStyle={{
-          backgroundColor: '#1a1a1a !important',
-          color: 'white !important'
-        }}
       >
         <Form onFinish={async (values) => {
           try {
@@ -570,6 +563,7 @@ const MainLayout = () => {
         onCancel={() => setRegisterVisible(false)}
         footer={null}
         centered
+        className="auth-modal custom-register-modal"
       >
         <Form onFinish={async (values) => {
           try {
