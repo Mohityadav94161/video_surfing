@@ -20,8 +20,7 @@
 .video-card {
   overflow: hidden;
   transition: all 0.3s ease;
-  background-color: var(--ph-dark-gray);
-  border: 1px solid var(--ph-light-gray);
+  background-color: #101827;
 }
 
 /* Grid view styling */

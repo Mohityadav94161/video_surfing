@@ -168,7 +168,7 @@ const MainLayout = () => {
           justifyContent: 'space-between',
           boxShadow: scrolled ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
           transition: 'all 0.3s ease',
-          background: '#000000',
+          background: '#101827',
           paddingLeft: '5%',
         }}
       >
@@ -198,7 +198,7 @@ const MainLayout = () => {
           >
 
             {isAuthenticated && (
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <Button 
                   icon={<FolderOutlined />} 
                   onClick={() => navigate('/collections')}

@@ -1,108 +1,154 @@
-import React from 'react';
-import { Typography, Input, List, Form, Button, Row, Col, Card } from 'antd';
+import React, { useState } from 'react';
+import { Layout, Menu, Form, Input, Button, Typography, Row, Col, Card } from 'antd';
+import {
+  MailOutlined,
+  UserOutlined,
+  MenuOutlined,
+  CloseOutlined,
+} from '@ant-design/icons';
+import './Support.css';
 
-const { Title, Paragraph } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
+const { Sider, Content } = Layout;
+
+const sidebarItems = [
+  'Contact us',
+  'Partnership program',
+  'Content removal/DMCA',
+  'Content protection',
+  'Terms of Service',
+  'Privacy Policy',
+  'EU DSA',
+  '2257 statement',
+  'CSAM policy',
+  'Questionable content policy'
+];
 
 const Support = () => {
-  const faqs = [
-    {
-      question: "How do I reset my password?",
-      answer: "To reset your password, go to the login page and click on 'Forgot Password'. Follow the instructions to reset your password."
-    },
-    {
-      question: "How can I contact support?",
-      answer: "You can contact support by emailing us at support@example.com or calling us at (123) 456-7890."
-    },
-    // Add more FAQs as needed
-  ];
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+  
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
 
   const onFinish = (values) => {
     console.log('Form submitted:', values);
-    // Handle form submission logic here
+    // Implement actual form submission logic here
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', color: 'white' }}>
-      <Title level={1} style={{ textAlign: 'center', marginBottom: '40px' }}>Support Center</Title>
+    <Layout className="support-layout">
+      {/* Sidebar Toggle Button */}
+      <Button 
+        className="sidebar-toggle" 
+        onClick={toggleSidebar}
+        aria-label="Toggle sidebar"
+      >
+        {sidebarOpen ? <CloseOutlined /> : <MenuOutlined />}
+      </Button>
       
-      <Input.Search
-        placeholder="Search for help..."
-        enterButton
-        size="large"
-        style={{ marginBottom: '40px' }}
+      {/* Overlay for mobile */}
+      <div 
+        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`} 
+        onClick={closeSidebar}
       />
-
-      <Title level={2}>Frequently Asked Questions</Title>
-      <List
-        itemLayout="horizontal"
-        dataSource={faqs}
-        renderItem={item => (
-          <List.Item>
-            <List.Item.Meta
-              title={<strong>{item.question}</strong>}
-              description={item.answer}
-            />
-          </List.Item>
-        )}
-        style={{ marginBottom: '40px' }}
-      />
-
-      <Title level={2}>Contact Us</Title>
-      <Card>
-        <Form
-          name="contact_form"
-          layout="vertical"
-          onFinish={onFinish}
+      
+      {/* Sidebar */}
+      <Sider
+        width={280}
+        className={`support-sidebar ${sidebarOpen ? 'open' : ''}`}
+        collapsible={false}
+        trigger={null}
+      >
+        <Menu
+          mode="inline"
+          defaultSelectedKeys={['Contact us']}
+          className="sidebar-menu"
         >
-          <Row gutter={16}>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="name"
-                label="Name"
-                rules={[{ required: true, message: 'Please enter your name' }]}
-              >
-                <Input placeholder="Your name" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: 'Please enter your email' },
-                  { type: 'email', message: 'Please enter a valid email' }
-                ]}
-              >
-                <Input placeholder="Your email" />
-              </Form.Item>
-            </Col>
-          </Row>
-          
-          <Form.Item
-            name="subject"
-            label="Subject"
-            rules={[{ required: true, message: 'Please enter a subject' }]}
-          >
-            <Input placeholder="What is your inquiry about?" />
-          </Form.Item>
-          
-          <Form.Item
-            name="message"
-            label="Message"
-            rules={[{ required: true, message: 'Please enter your message' }]}
-          >
-            <TextArea rows={4} placeholder="How can we help you?" />
-          </Form.Item>
-          
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
-    </div>
+          {sidebarItems.map((item, index) => (
+            <Menu.Item key={item} className="sidebar-menu-item" onClick={closeSidebar}>
+              {item}
+            </Menu.Item>
+          ))}
+        </Menu>
+      </Sider>
+
+      {/* Main Content */}
+      <Content className="support-content">
+        <Row justify="center">
+          <Col xs={24} lg={20}>
+            <Card className="support-card">
+              <Title level={3} className="support-title">Contact us</Title>
+              <Paragraph className="support-paragraph">
+                Please review our <a href="#" className="support-link">DMCA page</a> if you want us to remove your content.
+                Anything else, please use this form:
+              </Paragraph>
+
+              <Form layout="vertical" onFinish={onFinish}>
+                <Row gutter={16}>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      name="username"
+                      label="Username"
+                      initialValue="guest"
+                    >
+                      <Input prefix={<UserOutlined />} disabled />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Form.Item
+                      name="email"
+                      label="Email"
+                      rules={[
+                        { required: true, message: 'Please enter your email' },
+                        { type: 'email', message: 'Please enter a valid email' },
+                      ]}
+                    >
+                      <Input prefix={<MailOutlined />} placeholder="Your email" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Form.Item
+                  name="subject"
+                  label="Subject"
+                  rules={[{ required: true, message: 'Please enter a subject' }]}
+                  initialValue="Enquiry"
+                >
+                  <Input placeholder="Subject" />
+                </Form.Item>
+
+                <Form.Item
+                  name="message"
+                  label="Message"
+                  rules={[{ required: true, message: 'Please enter your message' }]}
+                >
+                  <TextArea rows={4} placeholder="Your message" />
+                </Form.Item>
+
+                <Form.Item>
+                  <Button
+                    htmlType="submit"
+                    className="submit-button"
+                  >
+                    Send message
+                  </Button>
+                </Form.Item>
+              </Form>
+
+              <Text className="support-paragraph">
+                You can also contact us via <a href="mailto:admin@spankbang.com" className="support-link">admin@spankbang.com</a>
+              </Text>
+            </Card>
+          </Col>
+        </Row>
+      </Content>
+    </Layout>
   );
 };
 

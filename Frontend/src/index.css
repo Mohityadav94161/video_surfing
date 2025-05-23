@@ -1,5 +1,3 @@
-/* Global Styles */
-
 body {
   margin: 0;
   padding: 0;
@@ -152,8 +150,8 @@ code {
 
 .auth-modal .ant-btn-primary:hover,
 .ant-modal .ant-btn-primary:hover {
-  background-color: #ffa533 !important;
-  border-color: #ffa533 !important;
+  background-color: #FF1493 !important;
+  border-color: #FF1493 !important;
 }
 
 .auth-modal .ant-form-item-explain-error {
@@ -165,5 +163,9 @@ code {
 }
 
 .auth-modal .ant-btn-link:hover {
-  color: #ffa533 !important;
+  color: #FF1493 !important;
+}
+
+.ant-card-body {
+  background-color: #101827 !important;
 } 

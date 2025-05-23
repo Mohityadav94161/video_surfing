@@ -63,6 +63,72 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Style search input */
+.desktop-search .ant-input-affix-wrapper,
+.mobile-search-input .ant-input-affix-wrapper {
+  background-color: rgba(60, 60, 60, 0.8) !important;
+  border-color: #444 !important;
+}
+
+.desktop-search .ant-input-affix-wrapper:hover,
+.mobile-search-input .ant-input-affix-wrapper:hover {
+  border-color: #FF1493 !important;
+}
+
+.desktop-search .ant-input-affix-wrapper-focused,
+.mobile-search-input .ant-input-affix-wrapper-focused {
+  border-color: #FF1493 !important;
+  box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.2) !important;
+}
+
+/* Make input text and placeholder text white */
+.desktop-search input,
+.mobile-search-input input {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+.desktop-search input::placeholder,
+.mobile-search-input input::placeholder {
+  color: white !important;
+  opacity: 0.8;
+}
+
+/* Style search button to be pink */
+.desktop-search .ant-btn,
+.mobile-search-input .ant-btn {
+  background-color: #FF1493 !important;
+  border-color: #FF1493 !important;
+}
+
+.desktop-search .ant-btn:hover,
+.mobile-search-input .ant-btn:hover {
+  background-color: #ff47a3 !important;
+  border-color: #ff47a3 !important;
+}
+
+/* Style clear button and search icon */
+.desktop-search .ant-input-clear-icon,
+.mobile-search-input .ant-input-clear-icon {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.desktop-search .ant-input-clear-icon:hover,
+.mobile-search-input .ant-input-clear-icon:hover {
+  color: white !important;
+}
+
+.desktop-search .ant-input-prefix,
+.mobile-search-input .ant-input-prefix {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Style search icon in the button */
+.desktop-search .ant-btn .anticon,
+.mobile-search-input .ant-btn .anticon {
+  color: white !important;
+}
+
 .desktop-menu {
   min-width: 120px;
   display: flex;
