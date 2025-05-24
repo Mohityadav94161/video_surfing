@@ -126,6 +126,12 @@ const MainLayout = () => {
     }
     mobileMenuItems.push(
       {
+        key: 'profile',
+        label: 'Profile',
+        icon: <UserOutlined />,
+        onClick: () => navigate('/profile')
+      },
+      {
         key: 'upload-video',
         label: 'Upload Video',
         icon: <UploadOutlined />,
@@ -136,12 +142,6 @@ const MainLayout = () => {
         label: 'My Collections',
         icon: <FolderOutlined />,
         onClick: () => navigate('/collections')
-      },
-      {
-        key: 'profile',
-        label: 'Profile',
-        icon: <UserOutlined />,
-        onClick: () => navigate('/profile')
       },
       {
         key: 'logout',

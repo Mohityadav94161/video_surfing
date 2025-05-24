@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import Video from './pages/Video';
 import Search from './pages/Search';
 import UploadVideo from './pages/UploadVideo';
+import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/Dashboard';
 import AddVideo from './pages/admin/AddVideo';
 import BulkVideoUpload from './pages/admin/BulkVideoUpload';
@@ -84,6 +85,16 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <UploadVideo />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* User profile (protected) */}
+                <Route 
+                  path="profile" 
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
                     </ProtectedRoute>
                   } 
                 />
