@@ -7,6 +7,7 @@ import {
   CloseOutlined,
 } from '@ant-design/icons';
 import './Support.css';
+import { Color } from 'antd/es/color-picker';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -128,7 +129,7 @@ const Support = () => {
                   label="Message"
                   rules={[{ required: true, message: 'Please enter your message' }]}
                 >
-                  <TextArea rows={4} placeholder="Your message" />
+                  <TextArea rows={4} placeholder="Your message"/>
                 </Form.Item>
 
                 <Form.Item>

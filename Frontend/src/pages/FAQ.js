@@ -128,8 +128,8 @@ const FAQ = () => {
   
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
-      <Title level={1} style={{ textAlign: 'center', marginBottom: '20px' }}>Frequently Asked Questions</Title>
-      <Paragraph style={{ textAlign: 'center', marginBottom: '40px' }}>
+      <Title level={1} style={{ textAlign: 'center', marginBottom: '20px', color:'white' }}>Frequently Asked Questions</Title>
+      <Paragraph style={{ textAlign: 'center', marginBottom: '40px', color:'white' }}>
         Find answers to the most common questions about Video Surfing
       </Paragraph>
       
@@ -144,7 +144,7 @@ const FAQ = () => {
         />
         
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
-          <Text strong style={{ marginRight: '10px' }}>Popular topics:</Text>
+          <Text strong style={{ marginRight: '10px', color:'white' }}>Popular topics:</Text>
           {faqCategories.map(category => (
             <Tag 
               key={category.category} 
@@ -156,7 +156,7 @@ const FAQ = () => {
             </Tag>
           ))}
           {searchText && (
-            <Button type="link" onClick={() => setSearchText('')} style={{ padding: '0 10px' }}>
+            <Button type="link" onClick={() => setSearchText('')} style={{ padding: '0 10px', color:'white' }}>
               Clear search
             </Button>
           )}
@@ -166,11 +166,11 @@ const FAQ = () => {
       {filteredFAQs.length === 0 ? (
         <Card>
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <Title level={4}>No results found</Title>
-            <Paragraph>
+            <Title level={4} style={{color: 'white'}}>No results found</Title>
+            <Paragraph style={{color: 'white'}}>
               We couldn't find any FAQs matching your search. Try different keywords or browse the categories.
             </Paragraph>
-            <Button type="primary" onClick={() => setSearchText('')} style={{ backgroundColor: '#FF1493' }}>
+            <Button type="primary" onClick={() => setSearchText('')} style={{ backgroundColor: '#FF1493', color:'white' }}>
               View all FAQs
             </Button>
           </div>
@@ -181,18 +181,18 @@ const FAQ = () => {
             <div key={category.category} style={{ marginBottom: '30px' }}>
               <Divider orientation="left">
                 <Space>
-                  <Text strong style={{ fontSize: '18px' }}>{category.category}</Text>
+                  <Text strong style={{ fontSize: '18px', color:'white' }}>{category.category}</Text>
                   <Tag color="#FF1493">{category.questions.length}</Tag>
                 </Space>
               </Divider>
               
-              <Collapse 
+              <Collapse style={{backgroundColor:'#101827'}}
                 defaultActiveKey={searchText ? category.questions.map((_, i) => i.toString()) : []}
                 expandIconPosition="end"
               >
                 {category.questions.map((faq, i) => (
                   <Panel 
-                    header={<Text strong>{faq.question}</Text>} 
+                    header={<Text strong style={{color: 'white'}}>{faq.question}</Text>} 
                     key={i}
                   >
                     <Paragraph>{faq.answer}</Paragraph>
@@ -205,11 +205,11 @@ const FAQ = () => {
       )}
       
       <Card style={{ marginTop: '40px', textAlign: 'center' }}>
-        <Title level={4}>Still have questions?</Title>
-        <Paragraph>
+        <Title level={4} style={{color: 'white'}}>Still have questions?</Title>
+        <Paragraph style={{color: 'white'}}>
           If you couldn't find the answer you were looking for, please contact our support team.
         </Paragraph>
-        <Button type="primary" href="/support" style={{ backgroundColor: '#FF1493' }}>
+        <Button type="primary" href="/support" style={{ backgroundColor: '#FF1493', color:'white' }}>
           Contact Support
         </Button>
       </Card>
