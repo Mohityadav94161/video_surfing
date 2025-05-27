@@ -1,5 +1,6 @@
 const Video = require('../models/Video');
 const { extractMetadata } = require('../utils/metadataExtractor');
+const Fuse = require('fuse.js');
 
 // Get all videos with filtering, sorting, and pagination
 exports.getAllVideos = async (req, res, next) => {
@@ -11,20 +12,35 @@ exports.getAllVideos = async (req, res, next) => {
     const queryObj = { ...req.query };
     const excludedFields = ['page', 'sort', 'limit', 'fields', 'search'];
     excludedFields.forEach((el) => delete queryObj[el]);
-    
+
     // Category filter
     if (queryObj.category) {
       query = query.find({ category: queryObj.category });
     }
-    
+
     // Tag filter
     if (queryObj.tag) {
       query = query.find({ tags: queryObj.tag });
     }
 
+    // video id 
+    if (queryObj.videoId) {
+      query = query.find({ videoId: queryObj.videoId });
+    }
+
+
+
     // 2) Text search
+    // if (req.query.search) {
+    //   query = query.find({ $text: { $search: req.query.search } });
+    // }
     if (req.query.search) {
-      query = query.find({ $text: { $search: req.query.search } });
+      const searchTerm = req.query.search;
+      const searchQuery = buildSearchQuery(searchTerm);
+
+      query = query.find(searchQuery)
+        .sort({ score: { $meta: 'textScore' } }) // sort by relevance
+        .select({ score: { $meta: 'textScore' } }); // include score
     }
 
     // 3) Sorting
@@ -53,16 +69,40 @@ exports.getAllVideos = async (req, res, next) => {
     const totalVideos = await Video.countDocuments({ active: true });
 
     // Execute query with populate
-    const videos = await query.populate({
+    let videos = await query.populate({
       path: 'addedBy',
       select: 'username'
     });
 
+    // Fuzzy fallback search using Fuse.js
+    if (videos.length === 0 &&( req.query.search ||queryObj.category||queryObj.tag||queryObj.videoId)) {
+      const allVideos = await Video.find({ active: true }); // Fetch all active videos to run Fuse.js in-memory
+
+      const fuse = new Fuse(allVideos, {
+        keys: ['title', 'description', 'tags','videoId','addedBy','category'],
+        threshold: 0.3,
+      });
+
+      const fuzzyResults = fuse.search(req.query.search);
+
+      // Extract original documents and apply pagination manually
+      const paginatedResults = fuzzyResults
+        .map(result => result.item)
+        .slice(skip, skip + limit);
+
+      // Manually populate 'addedBy' field (since it's in-memory now)
+      videos = await Video.populate(paginatedResults, {
+        path: 'addedBy',
+        select: 'username',
+      });
+    }
+
+    const totalResults = videos.length === 0 && fuzzyResults ? fuzzyResults.length : totalVideos;
     // Send response
     res.status(200).json({
       status: 'success',
       results: videos.length,
-      total: totalVideos,
+      total: totalResults,
       totalPages: Math.ceil(totalVideos / limit),
       currentPage: page,
       data: {
@@ -77,6 +117,17 @@ exports.getAllVideos = async (req, res, next) => {
     });
   }
 };
+const buildSearchQuery = (searchTerm) => {
+  return {
+    $or: [
+      { $text: { $search: searchTerm } }, // Full-text search
+      { title: { $regex: searchTerm, $options: 'i' } }, // Fuzzy regex
+      { description: { $regex: searchTerm, $options: 'i' } },
+      { tags: { $regex: searchTerm, $options: 'i' } }
+    ]
+  };
+};
+
 
 // Get a single video
 exports.getVideo = async (req, res, next) => {
@@ -115,21 +166,27 @@ exports.getVideo = async (req, res, next) => {
 // Add a new video (for both regular users and admins)
 exports.addVideo = async (req, res, next) => {
   try {
-    const { 
-      originalUrl, 
-      videoType, 
-      title, 
-      thumbnailUrl, 
-      description, 
-      tags, 
+    const {
+      originalUrl,
+      videoType,
+      title,
+      thumbnailUrl,
+      description,
+      tags,
       category,
-      sourceWebsite
+      sourceWebsite, videoId
     } = req.body;
-    
+
     if (!originalUrl) {
       return res.status(400).json({
         status: 'fail',
         message: 'Video URL is required',
+      });
+    }
+    if (!videoId) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'videoId is required',
       });
     }
 
@@ -146,13 +203,14 @@ exports.addVideo = async (req, res, next) => {
         category,
         sourceWebsite: sourceWebsite || new URL(originalUrl).hostname,
         videoType: videoType || 'normal',
+        videoId: videoId,
         addedBy: req.user.id,
       };
     } else {
       // Otherwise extract metadata from URL
       try {
         const metadata = await extractMetadata(originalUrl);
-        
+
         videoData = {
           originalUrl,
           title: title || metadata.title,
@@ -172,7 +230,7 @@ exports.addVideo = async (req, res, next) => {
             message: 'Could not extract metadata. Please provide title and category manually.',
           });
         }
-        
+
         // Use provided data with defaults for missing fields
         videoData = {
           originalUrl,
@@ -210,7 +268,7 @@ exports.addVideo = async (req, res, next) => {
 exports.updateVideo = async (req, res, next) => {
   try {
     const updatableFields = ['title', 'description', 'tags', 'category', 'active', 'videoType'];
-    
+
     // Filter out unwanted fields
     const updateData = {};
     Object.keys(req.body).forEach(key => {
@@ -218,7 +276,7 @@ exports.updateVideo = async (req, res, next) => {
         updateData[key] = req.body[key];
       }
     });
-    
+
     const video = await Video.findByIdAndUpdate(
       req.params.id,
       updateData,
@@ -279,7 +337,7 @@ exports.deleteVideo = async (req, res, next) => {
 exports.getCategories = async (req, res, next) => {
   try {
     const categories = await Video.distinct('category');
-    
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -305,7 +363,7 @@ exports.getPopularTags = async (req, res, next) => {
       { $sort: { count: -1 } },
       { $limit: 20 }
     ]);
-    
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -325,7 +383,7 @@ exports.getPopularTags = async (req, res, next) => {
 exports.extractMetadata = async (req, res, next) => {
   try {
     const { url } = req.body;
-    
+
     if (!url) {
       return res.status(400).json({
         status: 'fail',
@@ -334,7 +392,7 @@ exports.extractMetadata = async (req, res, next) => {
     }
 
     const metadata = await extractMetadata(url);
-    
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -354,7 +412,7 @@ exports.extractMetadata = async (req, res, next) => {
 exports.extractVideosFromPage = async (req, res, next) => {
   try {
     const { url, customSelectors, fileExtensions, options } = req.body;
-    
+
     if (!url) {
       return res.status(400).json({
         status: 'fail',
@@ -364,10 +422,10 @@ exports.extractVideosFromPage = async (req, res, next) => {
 
     // Import the page scraper utility
     const { scrapePageForVideos } = require('../utils/metadataExtractor');
-    
+
     // Extract all videos from the page with optional custom selectors
     const videos = await scrapePageForVideos(url, customSelectors, fileExtensions, options);
-    
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -391,19 +449,20 @@ exports.getVideoStats = async (req, res, next) => {
     const viewsResult = await Video.aggregate([
       { $group: { _id: null, totalViews: { $sum: '$views' } } }
     ]);
-    
+
     const totalViews = viewsResult.length > 0 ? viewsResult[0].totalViews : 0;
 
     // Get likes and dislikes stats
     const reactionsStats = await Video.aggregate([
-      { $group: { 
-          _id: null, 
+      {
+        $group: {
+          _id: null,
           totalLikes: { $sum: '$likesCount' },
           totalDislikes: { $sum: '$dislikesCount' }
-        } 
+        }
       }
     ]);
-    
+
     const totalLikes = reactionsStats.length > 0 ? reactionsStats[0].totalLikes : 0;
     const totalDislikes = reactionsStats.length > 0 ? reactionsStats[0].totalDislikes : 0;
 

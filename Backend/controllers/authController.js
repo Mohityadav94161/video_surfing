@@ -44,18 +44,18 @@ exports.signup = async (req, res, next) => {
     const { username, email, password } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({
         status: 'fail',
-        message: 'Email already in use',
+        message: 'Username already in use',
       });
     }
 
     // Create user with role 'user' by default
     const newUser = await User.create({
       username,
-      email,
+      // email,   not using email for default role 
       password,
       role: 'user', // Default role
     });
@@ -73,23 +73,23 @@ exports.signup = async (req, res, next) => {
 // Login user
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     // Check if email and password exist
-    if (!email || !password) {
+    if (!username || !password) {
       return res.status(400).json({
         status: 'fail',
-        message: 'Please provide email and password',
+        message: 'Please provide username and password',
       });
     }
 
     // Check if user exists && password is correct
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ username }).select('+password');
 
     if (!user || !(await user.correctPassword(password, user.password))) {
       return res.status(401).json({
         status: 'fail',
-        message: 'Incorrect email or password',
+        message: 'Incorrect username or password',
       });
     }
 
@@ -139,7 +139,6 @@ exports.createAdmin = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
-    
     res.status(200).json({
       status: 'success',
       data: {

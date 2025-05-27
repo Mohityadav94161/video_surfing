@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const videoSchema = new mongoose.Schema(
   {
     title: {
@@ -7,6 +8,14 @@ const videoSchema = new mongoose.Schema(
       required: [true, 'Video title is required'],
       trim: true,
       maxlength: [100, 'Title cannot be more than 100 characters'],
+    },
+    videoId: {
+      type: String,
+      required: [true, "Video id is required"],
+      trim: true,
+      unique: true,
+      maxlength: [10, "videoId can't be more than 10 chars"],
+
     },
     originalUrl: {
       type: String,
@@ -32,21 +41,11 @@ const videoSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Category is required'],
-      enum: [
-        'Education',
-        'Entertainment',
-        'Gaming',
-        'Music',
-        'News',
-        'Sports',
-        'Technology',
-        'Travel',
-        'Other',
-      ],
+     
     },
     videoType: {
       type: String,
-      enum: ['normal', 'terbox'],
+      enum: ['normal', 'terabox'],
       default: 'normal',
       required: [true, 'Video type is required']
     },
@@ -86,19 +85,19 @@ const videoSchema = new mongoose.Schema(
 );
 
 // Index for search optimization
-videoSchema.index({ title: 'text', tags: 'text', description: 'text' });
+videoSchema.index({ title: 'text', tags: 'text', description: 'text',videoId:'text',addedBy:'text', category:'text' });
 
 // Pre-save middleware to extract source website from URL
 videoSchema.pre('save', function (next) {
   if (!this.isModified('originalUrl')) return next();
-  
+
   try {
     const url = new URL(this.originalUrl);
     this.sourceWebsite = url.hostname;
   } catch (err) {
     this.sourceWebsite = 'unknown';
   }
-  
+
   next();
 });
 
@@ -110,15 +109,15 @@ videoSchema.virtual('comments', {
 });
 
 // Method to update reaction counts
-videoSchema.methods.updateReactionCounts = async function() {
+videoSchema.methods.updateReactionCounts = async function () {
   const Reaction = mongoose.model('Reaction');
   const stats = await Reaction.getReactionStats(this._id);
-  
+
   this.likesCount = stats.likes;
   this.dislikesCount = stats.dislikes;
-  
+
   await this.save({ validateBeforeSave: false });
-  
+
   return this;
 };
 
