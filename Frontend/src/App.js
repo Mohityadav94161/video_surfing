@@ -28,6 +28,7 @@ import Support from './pages/Support';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import FAQ from './pages/FAQ';
+import Feedback from './pages/Feedback';
 
 // Components
 import MainLayout from './components/layouts/MainLayout';
@@ -78,6 +79,11 @@ function App() {
                 <Route path="terms-of-service" element={<TermsOfService />} />
                 <Route path="privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="faq" element={<FAQ />} />
+                <Route path="feedback" element={
+                  <ProtectedRoute>
+                    <Feedback />
+                  </ProtectedRoute>
+                } />
                 
                 {/* Upload video (protected) */}
                 <Route 

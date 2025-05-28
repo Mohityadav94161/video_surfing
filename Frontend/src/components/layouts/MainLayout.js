@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Input, Button, Dropdown, Space, Avatar, theme, Badge, Divider, Typography, Drawer, Modal, Form, message } from 'antd';
+import { Layout, Menu, Input, Button, Dropdown, Space, Avatar, theme, Badge, Divider, Typography, Drawer, Modal, Form, message, Row, Col } from 'antd';
 import { 
   SearchOutlined, 
   UserOutlined, 
@@ -19,7 +19,7 @@ import '../../components/ModalStyles.css';
 
 const { Header, Content, Footer } = Layout;
 const { Search } = Input;
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 const MainLayout = () => {
   const navigate = useNavigate();
@@ -32,9 +32,8 @@ const MainLayout = () => {
   const [loginVisible, setLoginVisible] = useState(false);
   const [registerVisible, setRegisterVisible] = useState(false);
   
-  const {
-    token: { colorBgContainer, borderRadiusLG, colorPrimary },
-  } = theme.useToken();
+  // Theme token for styling
+  const { token } = theme.useToken();
 
   // Track scroll position for header effects
   useEffect(() => {
@@ -657,13 +656,50 @@ const MainLayout = () => {
         padding: '24px 50px'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="footer-links" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <Link to="/support" className="footer-link" style={{ margin: '0 15px', color: '#FF1493' }}>Support</Link>
-            <Link to="/terms-of-service" className="footer-link" style={{ margin: '0 15px', color: '#FF1493' }}>Terms of Service</Link>
-            <Link to="/privacy-policy" className="footer-link" style={{ margin: '0 15px', color: '#FF1493' }}>Privacy Policy</Link>
-            <Link to="/faq" className="footer-link" style={{ margin: '0 15px', color: '#FF1493' }}>FAQs</Link>
-          </div>
-          <Divider style={{ margin: '10px 0', color: 'rgba(255, 255, 255, 0.80)'}} />
+          <Row gutter={[24, 24]} justify="center">
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Title level={5} style={{ color: 'white', marginBottom: '16px' }}>Help & Support</Title>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Link to="/support" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Support Center</Link>
+                <Link to="/support?page=contact-us" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Contact Us</Link>
+                <Link to="/faq" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>FAQs</Link>
+                {isAuthenticated && (
+                  <Link to="/feedback" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Feedback</Link>
+                )}
+              </div>
+            </Col>
+            
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Title level={5} style={{ color: 'white', marginBottom: '16px' }}>Legal</Title>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Link to="/terms-of-service" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Terms of Service</Link>
+                <Link to="/privacy-policy" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Privacy Policy</Link>
+                <Link to="/support?page=eu-dsa" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>EU DSA</Link>
+                <Link to="/support?page=2257-statement" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>2257 Statement</Link>
+              </div>
+            </Col>
+            
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Title level={5} style={{ color: 'white', marginBottom: '16px' }}>Content Policies</Title>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Link to="/support?page=content-removal" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Content Removal/DMCA</Link>
+                <Link to="/support?page=content-protection" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Content Protection</Link>
+                <Link to="/support?page=csam-policy" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>CSAM Policy</Link>
+                <Link to="/support?page=questionable-content" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Content Guidelines</Link>
+              </div>
+            </Col>
+            
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Title level={5} style={{ color: 'white', marginBottom: '16px' }}>Creators</Title>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Link to="/support?page=partnership-program" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Partnership Program</Link>
+                <Link to="/upload-video" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Upload Videos</Link>
+                <Link to="/profile" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Manage Content</Link>
+              </div>
+            </Col>
+          </Row>
+          
+          <Divider style={{ margin: '20px 0', color: 'rgba(255, 255, 255, 0.80)'}} />
           <div>
             <Text style={{ color: 'rgba(255, 255, 255, 0.80)' }}>
               Video Surfing ©{new Date().getFullYear()} - Your curated video directory

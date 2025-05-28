@@ -1,33 +1,71 @@
-import React, { useState } from 'react';
-import { Layout, Menu, Form, Input, Button, Typography, Row, Col, Card } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu, Button, Typography, Row, Col } from 'antd';
 import {
   MailOutlined,
-  UserOutlined,
   MenuOutlined,
   CloseOutlined,
+  TeamOutlined,
+  DeleteOutlined,
+  SafetyOutlined,
+  FileTextOutlined,
+  LockOutlined,
+  GlobalOutlined,
+  FileOutlined,
+  WarningOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import './Support.css';
-import { Color } from 'antd/es/color-picker';
+import { useAuth } from '../contexts/AuthContext';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
+// Support page components
+import ContactUs from './support/ContactUs';
+import PartnershipProgram from './support/PartnershipProgram';
+import ContentRemoval from './support/ContentRemoval';
+import ContentProtection from './support/ContentProtection';
+import EuDsa from './support/EuDsa';
+import Statement2257 from './support/Statement2257';
+import CsamPolicy from './support/CsamPolicy';
+import QuestionableContent from './support/QuestionableContent';
+
+// We'll use the existing Terms and Privacy pages
+import TermsOfService from './TermsOfService';
+import PrivacyPolicy from './PrivacyPolicy';
+
 const { Sider, Content } = Layout;
 
 const sidebarItems = [
-  'Contact us',
-  'Partnership program',
-  'Content removal/DMCA',
-  'Content protection',
-  'Terms of Service',
-  'Privacy Policy',
-  'EU DSA',
-  '2257 statement',
-  'CSAM policy',
-  'Questionable content policy'
+  { key: 'contact-us', label: 'Contact us', icon: <MailOutlined /> },
+  { key: 'partnership-program', label: 'Partnership program', icon: <TeamOutlined /> },
+  { key: 'content-removal', label: 'Content removal/DMCA', icon: <DeleteOutlined /> },
+  { key: 'content-protection', label: 'Content protection', icon: <SafetyOutlined /> },
+  { key: 'terms-of-service', label: 'Terms of Service', icon: <FileTextOutlined /> },
+  { key: 'privacy-policy', label: 'Privacy Policy', icon: <LockOutlined /> },
+  { key: 'eu-dsa', label: 'EU DSA', icon: <GlobalOutlined /> },
+  { key: '2257-statement', label: '2257 statement', icon: <FileOutlined /> },
+  { key: 'csam-policy', label: 'CSAM policy', icon: <WarningOutlined /> },
+  { key: 'questionable-content', label: 'Questionable content policy', icon: <ExclamationCircleOutlined /> }
 ];
 
 const Support = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedPage, setSelectedPage] = useState('contact-us');
+  const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Parse the page from URL query parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const page = searchParams.get('page');
+    
+    if (page && sidebarItems.some(item => item.key === page)) {
+      setSelectedPage(page);
+    } else if (!page) {
+      // If no page parameter, default to contact-us but don't change URL
+      setSelectedPage('contact-us');
+    }
+  }, [location.search]);
   
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -37,9 +75,40 @@ const Support = () => {
     setSidebarOpen(false);
   };
 
-  const onFinish = (values) => {
-    console.log('Form submitted:', values);
-    // Implement actual form submission logic here
+  const handleMenuSelect = (key) => {
+    setSelectedPage(key);
+    closeSidebar();
+    
+    // Update URL with the selected page
+    navigate(`/support?page=${key}`, { replace: true });
+  };
+
+  // Render the selected page content
+  const renderContent = () => {
+    switch (selectedPage) {
+      case 'contact-us':
+        return <ContactUs username={user?.username || 'guest'} />;
+      case 'partnership-program':
+        return <PartnershipProgram />;
+      case 'content-removal':
+        return <ContentRemoval />;
+      case 'content-protection':
+        return <ContentProtection />;
+      case 'terms-of-service':
+        return <TermsOfService inSupportPage={true} />;
+      case 'privacy-policy':
+        return <PrivacyPolicy inSupportPage={true} />;
+      case 'eu-dsa':
+        return <EuDsa />;
+      case '2257-statement':
+        return <Statement2257 />;
+      case 'csam-policy':
+        return <CsamPolicy />;
+      case 'questionable-content':
+        return <QuestionableContent />;
+      default:
+        return <ContactUs username={user?.username || 'guest'} />;
+    }
   };
 
   return (
@@ -68,12 +137,17 @@ const Support = () => {
       >
         <Menu
           mode="inline"
-          defaultSelectedKeys={['Contact us']}
+          selectedKeys={[selectedPage]}
           className="sidebar-menu"
         >
-          {sidebarItems.map((item, index) => (
-            <Menu.Item key={item} className="sidebar-menu-item" onClick={closeSidebar}>
-              {item}
+          {sidebarItems.map((item) => (
+            <Menu.Item 
+              key={item.key} 
+              className="sidebar-menu-item" 
+              onClick={() => handleMenuSelect(item.key)}
+              icon={item.icon}
+            >
+              {item.label}
             </Menu.Item>
           ))}
         </Menu>
@@ -83,69 +157,7 @@ const Support = () => {
       <Content className="support-content">
         <Row justify="center">
           <Col xs={24} lg={20}>
-            <Card className="support-card">
-              <Title level={3} className="support-title">Contact us</Title>
-              <Paragraph className="support-paragraph">
-                Please review our <a href="#" className="support-link">DMCA page</a> if you want us to remove your content.
-                Anything else, please use this form:
-              </Paragraph>
-
-              <Form layout="vertical" onFinish={onFinish}>
-                <Row gutter={16}>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      name="username"
-                      label="Username"
-                      initialValue="guest"
-                    >
-                      <Input prefix={<UserOutlined />} disabled />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} md={12}>
-                    <Form.Item
-                      name="email"
-                      label="Email"
-                      rules={[
-                        { required: true, message: 'Please enter your email' },
-                        { type: 'email', message: 'Please enter a valid email' },
-                      ]}
-                    >
-                      <Input prefix={<MailOutlined />} placeholder="Your email" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name="subject"
-                  label="Subject"
-                  rules={[{ required: true, message: 'Please enter a subject' }]}
-                  initialValue="Enquiry"
-                >
-                  <Input placeholder="Subject" />
-                </Form.Item>
-
-                <Form.Item
-                  name="message"
-                  label="Message"
-                  rules={[{ required: true, message: 'Please enter your message' }]}
-                >
-                  <TextArea rows={4} placeholder="Your message"/>
-                </Form.Item>
-
-                <Form.Item>
-                  <Button
-                    htmlType="submit"
-                    className="submit-button"
-                  >
-                    Send message
-                  </Button>
-                </Form.Item>
-              </Form>
-
-              <Text className="support-paragraph">
-                You can also contact us via <a href="mailto:admin@spankbang.com" className="support-link">admin@spankbang.com</a>
-              </Text>
-            </Card>
+            {renderContent()}
           </Col>
         </Row>
       </Content>

@@ -1,11 +1,11 @@
 import React from 'react';
-import { Typography, Card, Divider, Space } from 'antd';
+import { Typography, Card } from 'antd';
 
 const { Title, Paragraph, Text } = Typography;
 
-const TermsOfService = () => {
+const TermsOfService = ({ inSupportPage = false }) => {
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
+    <div style={{ maxWidth: inSupportPage ? '100%' : '1000px', margin: inSupportPage ? '0' : '0 auto', padding: inSupportPage ? '0' : '40px 20px' }}>
       <Title level={1} style={{ textAlign: 'center', marginBottom: '20px', color:'white' }}>Terms of Service</Title>
       <Paragraph type="secondary" style={{ textAlign: 'center', marginBottom: '40px', color:'white' }}>
         Last Updated: June 1, 2024
