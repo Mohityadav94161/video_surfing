@@ -13,8 +13,8 @@ const Statement2257 = () => {
       </Title>
       
       <Alert
-        message="Important Legal Notice"
-        description="This page contains important information regarding compliance with 18 U.S.C. § 2257 and related regulations. Please read carefully."
+        message={<Text style={{color:'white'}}>Important Legal Notice</Text>}
+        description={<Text style={{color:'white'}}>This page contains important information regarding compliance with 18 U.S.C. § 2257 and related regulations. Please read carefully.</Text>}
         type="info"
         showIcon
         icon={<InfoCircleOutlined style={{ color: '#FF1493' }} />}

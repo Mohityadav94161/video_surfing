@@ -22,8 +22,8 @@ const EuDsa = () => {
       </Title>
       
       <Alert
-        message="EU Digital Services Act Compliance"
-        description="Video Surfing is committed to complying with the EU Digital Services Act (DSA) which aims to create a safer digital space where the fundamental rights of users are protected and to establish a level playing field for businesses."
+        message={<Text style={{color:'white'}}>EU Digital Services Act Compliance</Text>}
+        description={<Text style={{color:'white'}}>"Video Surfing is committed to complying with the EU Digital Services Act (DSA) which aims to create a safer digital space where the fundamental rights of users are protected and to establish a level playing field for businesses.</Text>}
         type="info"
         showIcon
         icon={<InfoCircleOutlined style={{ color: '#FF1493' }} />}

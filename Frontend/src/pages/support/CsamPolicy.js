@@ -21,8 +21,8 @@ const CsamPolicy = () => {
       </Title>
       
       <Alert
-        message="Zero Tolerance Policy"
-        description="Video Surfing has a zero-tolerance policy for child sexual abuse material (CSAM). We are committed to preventing, detecting, and removing any such content from our platform and reporting it to the appropriate authorities."
+        message={<Text style={{color:'white'}}>Zero Tolerance Policy</Text>}
+        description={<Text style={{color:'white'}}>Video Surfing has a zero-tolerance policy for child sexual abuse material (CSAM). We are committed to preventing, detecting, and removing any such content from our platform and reporting it to the appropriate authorities.</Text>}
         type="error"
         showIcon
         icon={<ExclamationCircleOutlined style={{ color: '#FF1493' }} />}

@@ -66,7 +66,7 @@ const ContactUs = ({ username = 'guest' }) => {
             htmlType="submit"
             className="submit-button"
           >
-            Send message
+            <Text style={{color:'white'}}>Send Message</Text>
           </Button>
         </Form.Item>
       </Form>

@@ -21,8 +21,8 @@ const QuestionableContent = () => {
       </Title>
       
       <Alert
-        message="Content Standards"
-        description="Video Surfing is committed to maintaining a platform that balances creative freedom with responsibility. This policy outlines our approach to content that may be questionable but does not necessarily violate our terms of service or applicable laws."
+        message={<Text style={{color:'white'}}>Content Standards</Text>}
+        description={<Text style={{color:'white'}}>Video Surfing is committed to maintaining a platform that balances creative freedom with responsibility. This policy outlines our approach to content that may be questionable but does not necessarily violate our terms of service or applicable laws.</Text>}
         type="info"
         showIcon
         icon={<QuestionCircleOutlined style={{ color: '#FF1493' }} />}

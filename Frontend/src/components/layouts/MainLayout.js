@@ -494,8 +494,8 @@ const MainLayout = () => {
       >
         <Form onFinish={async (values) => {
           try {
-            const { email, password } = values;
-            const result = await login(email, password);
+            const { username, password } = values;
+            const result = await login(username, password);
             if (result.success) {
               setLoginVisible(false);
               message.success('Logged in successfully!');
@@ -506,13 +506,13 @@ const MainLayout = () => {
           }
         }}>
           <Form.Item
-            name="email"
+            name="username"
             rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
+              { required: true, message: 'Please input your username!' },
+              { type: 'username', message: 'Please enter a valid username!' }
             ]}
           >
-            <Input prefix={<UserOutlined />} placeholder="Email" />
+            <Input prefix={<UserOutlined />} placeholder="username" />
           </Form.Item>
           <Form.Item
             name="password"
@@ -566,8 +566,8 @@ const MainLayout = () => {
       >
         <Form onFinish={async (values) => {
           try {
-            const { username, email, password } = values;
-            const result = await register(username, email, password);
+            const { username, password } = values;
+            const result = await register(username, password);
             if (result.success) {
               setRegisterVisible(false);
               message.success('Registered successfully!');
@@ -582,15 +582,6 @@ const MainLayout = () => {
             rules={[{ required: true, message: 'Please input your username!' }]}
           >
             <Input prefix={<UserOutlined />} placeholder="Username" />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
-            ]}
-          >
-            <Input placeholder="Email" />
           </Form.Item>
           <Form.Item
             name="password"
@@ -652,7 +643,7 @@ const MainLayout = () => {
       
       <Footer style={{ 
         textAlign: 'center',
-        background: '#292929',
+        background: '#101827',
         padding: '24px 50px'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>

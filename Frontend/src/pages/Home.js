@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Pagination, Spin, Button, Select, Tag, message } from "antd"
+import { Pagination, Spin, Button, Select, Tag, message, Modal } from "antd"
 import {
   FireOutlined,
   EyeOutlined,
@@ -31,6 +31,18 @@ const Home = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false) // Track authentication status
   
   const navigate = useNavigate()
+
+  // const [showPopup, setShowPopup] = useState(true);
+
+  // useEffect(() => {
+  //   if (showPopup) {
+  //     Modal.info({
+  //       title: 'Welcome to Video Surfing',
+  //       content: 'This is a popup that will be displayed when the component mounts.',
+  //       onOk: () => setShowPopup(false),
+  //     });
+  //   }
+  // }, [showPopup]);
   
   // Predefined static tags for filtering
   const predefinedTags = [

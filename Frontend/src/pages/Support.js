@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Typography, Row, Col } from 'antd';
+import { Layout, Menu, Button, Typography, Row, Col, Select } from 'antd';
 import {
   MailOutlined,
   MenuOutlined,
@@ -12,7 +12,8 @@ import {
   GlobalOutlined,
   FileOutlined,
   WarningOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import './Support.css';
 import { useAuth } from '../contexts/AuthContext';
@@ -113,25 +114,10 @@ const Support = () => {
 
   return (
     <Layout className="support-layout">
-      {/* Sidebar Toggle Button */}
-      <Button 
-        className="sidebar-toggle" 
-        onClick={toggleSidebar}
-        aria-label="Toggle sidebar"
-      >
-        {sidebarOpen ? <CloseOutlined /> : <MenuOutlined />}
-      </Button>
-      
-      {/* Overlay for mobile */}
-      <div 
-        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`} 
-        onClick={closeSidebar}
-      />
-      
-      {/* Sidebar */}
+      {/* Sidebar for desktop */}
       <Sider
         width={280}
-        className={`support-sidebar ${sidebarOpen ? 'open' : ''}`}
+        className="support-sidebar desktop-only"
         collapsible={false}
         trigger={null}
       >
@@ -155,6 +141,27 @@ const Support = () => {
 
       {/* Main Content */}
       <Content className="support-content">
+        {/* Mobile dropdown selector */}
+        <div className="mobile-support-selector">
+          <Select
+            value={selectedPage}
+            onChange={handleMenuSelect}
+            style={{ width: '100%' }}
+            dropdownStyle={{ backgroundColor: '#1a1a1a' }}
+            suffixIcon={<DownOutlined style={{ color: '#FF1493' }} />}
+            placeholder="Select a support topic"
+          >
+            {sidebarItems.map((item) => (
+              <Select.Option key={item.key} value={item.key}>
+                <span style={{ display: 'flex', alignItems: 'center', color: 'white' }}>
+                  {React.cloneElement(item.icon, { style: { marginRight: '8px', color: '#FF1493' } })}
+                  {item.label}
+                </span>
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+        
         <Row justify="center">
           <Col xs={24} lg={20}>
             {renderContent()}

@@ -20,8 +20,8 @@ const ContentRemoval = () => {
       </Title>
       
       <Alert
-        message="Important Notice"
-        description="Video Surfing respects the intellectual property rights of others and expects its users to do the same. If you believe that your copyrighted work has been copied in a way that constitutes copyright infringement, please follow the instructions below to file a DMCA notice."
+        message={<Text style={{ color: 'white' }}>Important Notice</Text>}
+        description={<Text style={{ color: 'white' }}>Video Surfing respects the intellectual property rights of others and expects its users to do the same. If you believe that your copyrighted work has been copied in a way that constitutes copyright infringement, please follow the instructions below to file a DMCA notice.</Text>}
         type="info"
         showIcon
         icon={<InfoCircleOutlined style={{ color: '#FF1493' }} />}
@@ -173,7 +173,7 @@ const ContentRemoval = () => {
             className="submit-button"
             style={{ marginTop: '10px' }}
           >
-            Submit DMCA Notice
+            <Text style={{color:'white'}}>Submit DMCA Notice</Text>
           </Button>
         </Form.Item>
       </Form>
