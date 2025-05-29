@@ -47,8 +47,8 @@ const Login = () => {
     try {
       const { username, password } = values;
       // Convert username to email format for backend consistency
-      const email = username.includes('@') ? username : username + '@example.com';
-      const result = await login(email, password);
+      // const email = username.includes('@') ? username : username + '@example.com';
+      const result = await login(username, password);
       
       if (result.success) {
         navigate(from, { replace: true });

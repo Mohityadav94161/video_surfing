@@ -100,10 +100,10 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   // Login function
-  const login = async (email, password) => {
+  const login = async (username, password) => {
     try {
       setLoading(true);
-      const res = await axios.post('/api/auth/login', { email, password });
+      const res = await axios.post('/api/auth/login', { username, password });
       
       // Set token with expiration
       setToken(res.data.token);

@@ -4,6 +4,7 @@ const Fuse = require('fuse.js');
 
 // Get all videos with filtering, sorting, and pagination
 exports.getAllVideos = async (req, res, next) => {
+  console.log('getall videos hit ')
   try {
     // Build query
     let query = Video.find({ active: true });

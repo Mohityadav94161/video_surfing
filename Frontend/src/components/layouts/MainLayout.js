@@ -499,6 +499,7 @@ const MainLayout = () => {
             if (result.success) {
               setLoginVisible(false);
               message.success('Logged in successfully!');
+              
             }
           } catch (error) {
             console.error('Login error:', error);
@@ -509,10 +510,9 @@ const MainLayout = () => {
             name="username"
             rules={[
               { required: true, message: 'Please input your username!' },
-              { type: 'username', message: 'Please enter a valid username!' }
             ]}
           >
-            <Input prefix={<UserOutlined />} placeholder="username" />
+            <Input prefix={<UserOutlined />} placeholder="Username" />
           </Form.Item>
           <Form.Item
             name="password"

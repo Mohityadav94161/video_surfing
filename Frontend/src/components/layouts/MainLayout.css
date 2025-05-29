@@ -81,13 +81,13 @@
 /* Make input text and placeholder text white */
 .desktop-search input,
 .mobile-search-input input {
-  color: white !important;
+  /* color: white !important; */
   background-color: transparent !important;
 }
 
 .desktop-search input::placeholder,
 .mobile-search-input input::placeholder {
-  color: white !important;
+  /* color: white !important; */
   opacity: 0.8;
 }
 
@@ -107,23 +107,23 @@
 /* Style clear button and search icon */
 .desktop-search .ant-input-clear-icon,
 .mobile-search-input .ant-input-clear-icon {
-  color: rgba(255, 255, 255, 0.5) !important;
+  /* color: rgba(255, 255, 255, 0.5) !important; */
 }
 
 .desktop-search .ant-input-clear-icon:hover,
 .mobile-search-input .ant-input-clear-icon:hover {
-  color: white !important;
+  /* color: white !important; */
 }
 
 .desktop-search .ant-input-prefix,
 .mobile-search-input .ant-input-prefix {
-  color: rgba(255, 255, 255, 0.7) !important;
+  /* color: rgba(255, 255, 255, 0.7) !important; */
 }
 
 /* Style search icon in the button */
 .desktop-search .ant-btn .anticon,
 .mobile-search-input .ant-btn .anticon {
-  color: white !important;
+  /* color: white !important; */
 }
 
 .desktop-menu {
@@ -235,7 +235,7 @@
 }
 
 .mobile-search-close {
-  color: white;
+  /* color: white; */
 }
 
 /* Content container */
