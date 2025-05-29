@@ -7,7 +7,6 @@ import {
   EyeOutlined,
   TagOutlined,
   ClockCircleOutlined,
-  LinkOutlined,
   LikeOutlined,
   DislikeOutlined,
   LikeFilled,

@@ -685,7 +685,8 @@ const MainLayout = () => {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <Link to="/support?page=partnership-program" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Partnership Program</Link>
                 <Link to="/upload-video" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Upload Videos</Link>
-                <Link to="/profile" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Manage Content</Link>
+                <Link to="/profile" className="footer-link" style={{ margin: '5px 0', color: '#FF1493' }}>Manage 
+                </Link>
               </div>
             </Col>
           </Row>
