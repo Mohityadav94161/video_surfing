@@ -16,7 +16,7 @@
 .logo {
   display: flex;
   align-items: center;
-  color: #FF1493; /* Deep pink color */
+  color: #ff1493; /* Deep pink color */
   text-decoration: none;
   font-size: 22px;
   font-weight: bold;
@@ -24,7 +24,7 @@
 }
 
 .logo:hover {
-  color: #FF69B4; /* Hot pink color for hover */
+  color: #ff69b4; /* Hot pink color for hover */
   transform: scale(1.02);
 }
 
@@ -69,33 +69,33 @@
 
 .desktop-search .ant-input-affix-wrapper:hover,
 .mobile-search-input .ant-input-affix-wrapper:hover {
-  border-color: #FF1493 !important;
+  border-color: #ff1493 !important;
 }
 
 .desktop-search .ant-input-affix-wrapper-focused,
 .mobile-search-input .ant-input-affix-wrapper-focused {
-  border-color: #FF1493 !important;
+  border-color: #ff1493 !important;
   box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.2) !important;
 }
 
 /* Make input text and placeholder text white */
 .desktop-search input,
 .mobile-search-input input {
-  /* color: white !important; */
+  color: white !important;
   background-color: transparent !important;
 }
 
 .desktop-search input::placeholder,
 .mobile-search-input input::placeholder {
-  /* color: white !important; */
+  color: white !important;
   opacity: 0.8;
 }
 
 /* Style search button to be pink */
 .desktop-search .ant-btn,
 .mobile-search-input .ant-btn {
-  background-color: #FF1493 !important;
-  border-color: #FF1493 !important;
+  background-color: #ff1493 !important;
+  border-color: #ff1493 !important;
 }
 
 .desktop-search .ant-btn:hover,
@@ -107,23 +107,23 @@
 /* Style clear button and search icon */
 .desktop-search .ant-input-clear-icon,
 .mobile-search-input .ant-input-clear-icon {
-  /* color: rgba(255, 255, 255, 0.5) !important; */
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .desktop-search .ant-input-clear-icon:hover,
 .mobile-search-input .ant-input-clear-icon:hover {
-  /* color: white !important; */
+  color: white !important;
 }
 
 .desktop-search .ant-input-prefix,
 .mobile-search-input .ant-input-prefix {
-  /* color: rgba(255, 255, 255, 0.7) !important; */
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 /* Style search icon in the button */
 .desktop-search .ant-btn .anticon,
 .mobile-search-input .ant-btn .anticon {
-  /* color: white !important; */
+  color: white !important;
 }
 
 .desktop-menu {
@@ -132,20 +132,20 @@
   justify-content: flex-end;
   background: transparent;
   border: none;
-  color: #FF1493; /* Deep pink color */
+  color: #ff1493; /* Deep pink color */
 }
 
 /* Override ant-design menu item colors */
-.ant-menu-dark .ant-menu-item, 
-.ant-menu-dark .ant-menu-item-group-title, 
+.ant-menu-dark .ant-menu-item,
+.ant-menu-dark .ant-menu-item-group-title,
 .ant-menu-dark .ant-menu-item > a,
 .ant-menu-dark .ant-menu-item > span {
-  color: #FF1493 !important; /* Deep pink color */
+  color: #ff1493 !important; /* Deep pink color */
 }
 
 /* User avatar */
 .user-avatar {
-  background-color: #FF1493; /* Deep pink color */
+  background-color: #ff1493; /* Deep pink color */
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -159,17 +159,17 @@
   margin-left: 8px;
   position: relative;
   overflow: hidden;
-  color: #FF1493; /* Deep pink color */
+  color: #ff1493; /* Deep pink color */
 }
 
 .username::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
   width: 0;
   height: 1px;
-  background-color: #FF1493; /* Deep pink color */
+  background-color: #ff1493; /* Deep pink color */
   transition: width 0.3s ease;
 }
 
@@ -177,65 +177,220 @@
   width: 100%;
 }
 
-/* Mobile navigation */
+/* Mobile navigation layout */
 .mobile-nav {
   display: none;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 5px;
 }
 
-.mobile-search-button,
-.mobile-menu-button {
+.mobile-logo-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.mobile-logo-container .logo {
+  font-size: 18px;
+}
+
+.mobile-logo-container .logo-icon {
+  font-size: 20px;
+  margin-right: 0;
+}
+
+.mobile-menu-button,
+.mobile-search-button {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   transition: all 0.3s ease;
 }
 
-.mobile-search-button:hover,
-.mobile-menu-button:hover {
-  background: rgba(255, 20, 147, 0.1); /* Deep pink with transparency */
+.mobile-menu-button:hover,
+.mobile-search-button:hover {
+  background: rgba(255, 20, 147, 0.1);
   transform: scale(1.1);
 }
 
-/* Override icon colors in mobile buttons */
-.mobile-search-button span,
-.mobile-menu-button span {
-  color: #FF1493 !important; /* Deep pink color */
-}
-
 .mobile-avatar {
-  background-color: #FF1493; /* Deep pink color */
+  background-color: #ff1493;
   cursor: pointer;
+  width: 32px;
+  height: 32px;
 }
 
-/* Mobile search overlay */
-.mobile-search-overlay {
+.mobile-avatar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.mobile-avatar-button:hover {
+  background: rgba(255, 20, 147, 0.1);
+  transform: scale(1.1);
+}
+
+/* Mobile search overlay covering navbar */
+.mobile-search-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  background: #000000; /* Black background */
-  padding: 15px;
-  z-index: 100;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 98;
+}
+
+.mobile-search-navbar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: #101827;
+  padding: 12px 15px;
+  z-index: 99;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transform: translateY(-100%);
-  transition: transform 0.3s ease;
-}
-
-.mobile-search-overlay.visible {
-  transform: translateY(0);
+  border-bottom: 2px solid #ff1493;
 }
 
 .mobile-search-input {
   flex: 1;
 }
 
-.mobile-search-close {
-  /* color: white; */
+.mobile-search-input .ant-input-affix-wrapper {
+  background-color: rgba(60, 60, 60, 0.9) !important;
+  border-color: #ff1493 !important;
+  border-radius: 20px !important;
+  height: 40px;
+}
+
+.mobile-search-input .ant-input-affix-wrapper:hover,
+.mobile-search-input .ant-input-affix-wrapper-focused {
+  border-color: #ff1493 !important;
+  box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.2) !important;
+}
+
+.mobile-search-input input {
+  color: white !important;
+  background-color: transparent !important;
+  font-size: 14px !important;
+}
+
+.mobile-search-input input::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.mobile-search-input .ant-input-search-button {
+  background-color: #ff1493 !important;
+  border-color: #ff1493 !important;
+  height: 40px !important;
+}
+
+.mobile-search-input .ant-input-search-button:hover {
+  background-color: #ff47a3 !important;
+  border-color: #ff47a3 !important;
+}
+
+.mobile-search-input .ant-input-search-button .anticon {
+  color: white !important;
+}
+
+.mobile-search-cancel {
+  color: white;
+  font-size: 14px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.mobile-search-cancel:hover {
+  color: #ff1493;
+}
+
+/* Search recommendations */
+.mobile-search-recommendations {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 64px);
+  background: rgba(16, 24, 39, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 99;
+  overflow-y: auto;
+}
+
+.recommendations-container {
+  padding: 20px 15px;
+}
+
+.recommendations-title {
+  color: #ff1493;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+.recommendation-item:hover {
+  background: rgba(255, 20, 147, 0.1);
+  transform: translateX(5px);
+}
+
+.recommendation-item:last-child {
+  border-bottom: none;
+}
+
+.recommendation-icon {
+  color: #ff1493;
+  font-size: 16px;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.recommendation-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.recommendation-item:hover .recommendation-text {
+  color: #ff1493;
+}
+
+.recommendation-item:hover .recommendation-icon {
+  color: white;
 }
 
 /* Content container */
@@ -253,13 +408,13 @@
 }
 
 .ant-menu-item::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
   width: 0;
   height: 2px;
-  background-color: #FF1493; /* Deep pink color */
+  background-color: #ff1493; /* Deep pink color */
   transition: all 0.3s ease;
 }
 
@@ -269,7 +424,7 @@
 }
 
 .ant-menu-item:hover {
-  color: #FF69B4 !important; /* Hot pink color for hover */
+  color: #ff69b4 !important; /* Hot pink color for hover */
   background: rgba(255, 20, 147, 0.1); /* Deep pink with transparency */
 }
 
@@ -284,14 +439,26 @@
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .logo:hover .logo-icon {
@@ -314,7 +481,7 @@
 }
 
 .footer-link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
@@ -343,32 +510,32 @@
   .logo-text {
     display: none !important;
   }
-  
+
   .desktop-nav {
     display: none;
   }
-  
+
   .mobile-nav {
     display: flex;
   }
-  
+
   .content-container {
     padding: 15px !important;
   }
-  
+
   .ant-layout-content {
     padding: 10px !important;
   }
-  
+
   .ant-layout-footer {
     padding: 15px !important;
     background-color: #000000;
   }
-  
+
   .footer-links {
     gap: 15px;
   }
-  
+
   .footer-link {
     margin: 0 10px;
   }
@@ -378,17 +545,17 @@
   .ant-layout-header {
     padding: 0 15px !important;
   }
-  
+
   .content-container {
     padding: 10px !important;
   }
-  
+
   .footer-links {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .footer-link {
     margin: 5px 0;
   }
-} 
+}
