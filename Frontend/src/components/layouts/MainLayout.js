@@ -4,11 +4,8 @@ import { useState, useEffect } from "react"
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom"
 import {
   Layout,
-  Menu,
   Input,
   Button,
-  Dropdown,
-  Space,
   Avatar,
   theme,
   Badge,
@@ -20,6 +17,8 @@ import {
   message,
   Row,
   Col,
+  Dropdown,
+  AutoComplete,
 } from "antd"
 import {
   UserOutlined,
@@ -32,6 +31,11 @@ import {
   FolderOutlined,
   UploadOutlined,
   SearchOutlined,
+  CustomerServiceOutlined,
+  QuestionCircleOutlined,
+  FileProtectOutlined,
+  FileTextOutlined,
+  PhoneOutlined,
 } from "@ant-design/icons"
 import { useAuth } from "../../contexts/AuthContext"
 import "./MainLayout.css"
@@ -52,6 +56,8 @@ const MainLayout = () => {
   const [registerVisible, setRegisterVisible] = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState(null)
 
   // Search recommendations
   const searchRecommendations = ["Hot", "Blonde", "Short", "Blondie", "Brunette", "Busty", "Asian", "Ebony", "Lesbian"]
@@ -78,6 +84,8 @@ const MainLayout = () => {
   useEffect(() => {
     setMobileMenuOpen(false)
     setSearchVisible(false)
+    setDesktopMenuOpen(false)
+    setActiveDropdown(null)
   }, [location.pathname])
 
   const handleSearch = (value) => {
@@ -92,116 +100,135 @@ const MainLayout = () => {
     handleSearch(recommendation)
   }
 
-  const userMenuItems = [
-    {
-      key: "profile",
-      label: <Link to="/profile">Profile</Link>,
-      icon: <UserOutlined />,
-    },
-    {
-      key: "divider",
-      type: "divider",
-    },
-    {
-      key: "logout",
-      label: <span onClick={logout}>Logout</span>,
-      icon: <LogoutOutlined />,
-      danger: true,
-    },
-  ]
-
-  // Add admin dashboard link if user is admin
-  if (isAdmin) {
-    userMenuItems.unshift({
-      key: "admin",
-      label: <Link to="/admin">Admin Dashboard</Link>,
-      icon: <DashboardOutlined />,
-    })
+  const handleLogoClick = () => {
+    navigate("/")
+    window.location.href = "/"
   }
 
-  // Avatar menu items
-  const avatarMenuItems = !isAuthenticated
+  // Desktop avatar dropdown items
+  const desktopAvatarMenuItems = !isAuthenticated
     ? [
         {
           key: "login",
-          label: "Login",
-          icon: <LoginOutlined />,
-          onClick: () => setLoginVisible(true),
+          label: (
+            <div onClick={() => setLoginVisible(true)} style={{ padding: "8px 0" }}>
+              <LoginOutlined style={{ marginRight: 8 }} />
+              Login
+            </div>
+          ),
         },
         {
           key: "register",
-          label: "Register",
-          icon: <UserAddOutlined />,
-          onClick: () => setRegisterVisible(true),
+          label: (
+            <div onClick={() => setRegisterVisible(true)} style={{ padding: "8px 0" }}>
+              <UserAddOutlined style={{ marginRight: 8 }} />
+              Register
+            </div>
+          ),
         },
         {
-          key: "divider1",
           type: "divider",
         },
         {
           key: "collections",
-          label: "My Collections",
-          icon: <FolderOutlined />,
-          onClick: () => navigate("/collections"),
+          label: (
+            <div onClick={() => handleProtectedAction(() => navigate("/collections"))} style={{ padding: "8px 0" }}>
+              <FolderOutlined style={{ marginRight: 8 }} />
+              My Collections
+            </div>
+          ),
         },
         {
           key: "upload",
-          label: "Upload Videos",
-          icon: <UploadOutlined />,
-          onClick: () => navigate("/upload-video"),
+          label: (
+            <div onClick={() => handleProtectedAction(() => navigate("/upload-video"))} style={{ padding: "8px 0" }}>
+              <UploadOutlined style={{ marginRight: 8 }} />
+              Upload Videos
+            </div>
+          ),
         },
         {
           key: "support",
-          label: "Contact Support",
-          onClick: () => navigate("/support?page=contact-us"),
+          label: (
+            <div onClick={() => navigate("/support?page=contact-us")} style={{ padding: "8px 0" }}>
+              Contact Support
+            </div>
+          ),
         },
       ]
     : [
         {
           key: "collections",
-          label: "My Collections",
-          icon: <FolderOutlined />,
-          onClick: () => navigate("/collections"),
+          label: (
+            <div onClick={() => navigate("/collections")} style={{ padding: "8px 0" }}>
+              <FolderOutlined style={{ marginRight: 8 }} />
+              My Collections
+            </div>
+          ),
         },
         {
           key: "upload",
-          label: "Upload Videos",
-          icon: <UploadOutlined />,
-          onClick: () => navigate("/upload-video"),
+          label: (
+            <div onClick={() => navigate("/upload-video")} style={{ padding: "8px 0" }}>
+              <UploadOutlined style={{ marginRight: 8 }} />
+              Upload Videos
+            </div>
+          ),
         },
         {
           key: "support",
-          label: "Contact Support",
-          onClick: () => navigate("/support?page=contact-us"),
+          label: (
+            <div onClick={() => navigate("/support?page=contact-us")} style={{ padding: "8px 0" }}>
+              Contact Support
+            </div>
+          ),
         },
         {
-          key: "divider1",
           type: "divider",
         },
         {
           key: "profile",
-          label: "Profile",
-          icon: <UserOutlined />,
-          onClick: () => navigate("/profile"),
+          label: (
+            <div onClick={() => navigate("/profile")} style={{ padding: "8px 0" }}>
+              <UserOutlined style={{ marginRight: 8 }} />
+              Profile
+            </div>
+          ),
         },
         ...(isAdmin
           ? [
               {
                 key: "admin",
-                label: "Admin Dashboard",
-                icon: <DashboardOutlined />,
-                onClick: () => navigate("/admin"),
+                label: (
+                  <div onClick={() => navigate("/admin")} style={{ padding: "8px 0" }}>
+                    <DashboardOutlined style={{ marginRight: 8 }} />
+                    Admin Dashboard
+                  </div>
+                ),
               },
             ]
           : []),
         {
           key: "logout",
-          label: "Logout",
-          icon: <LogoutOutlined />,
-          onClick: logout,
-          danger: true,
+          label: (
+            <div onClick={logout} style={{ padding: "8px 0", color: "#ff4d4f" }}>
+              <LogoutOutlined style={{ marginRight: 8 }} />
+              Logout
+            </div>
+          ),
         },
       ]
+
+  // Search suggestions for AutoComplete
+  const searchOptions = searchRecommendations.map((item) => ({
+    value: item,
+    label: (
+      <div style={{ display: "flex", alignItems: "center", padding: "8px 0" }}>
+        <SearchOutlined style={{ marginRight: 8, color: "#ff1493" }} />
+        {item}
+      </div>
+    ),
+  }))
 
   const handleProtectedAction = (action) => {
     if (!isAuthenticated) {
@@ -213,6 +240,15 @@ const MainLayout = () => {
     }
   }
 
+  // Handle header dropdown hover
+  const handleHeaderMenuHover = (menuType) => {
+    setActiveDropdown(menuType)
+  }
+
+  const handleHeaderMenuLeave = () => {
+    setActiveDropdown(null)
+  }
+
   return (
     <Layout className="layout" style={{ minHeight: "100vh" }}>
       <Header
@@ -222,7 +258,7 @@ const MainLayout = () => {
           top: 0,
           zIndex: 10,
           width: "100%",
-          padding: "0 20px",
+          padding: "0 40px",
           height: "64px",
           display: "flex",
           alignItems: "center",
@@ -230,124 +266,60 @@ const MainLayout = () => {
           boxShadow: scrolled ? "0 4px 12px rgba(0,0,0,0.1)" : "none",
           transition: "all 0.3s ease",
           background: "#101827",
-          paddingLeft: "5%",
         }}
       >
         {/* Desktop navigation */}
-        <div className="desktop-nav">
-          <div className="logo-container">
-            <Link to="/" className="logo" aria-label="Video Surfing Home">
-              <VideoCameraOutlined className="logo-icon" />
-              <span className="logo-text">Video Surfing</span>
-            </Link>
+        <div className="desktop-nav-new">
+          {/* Left side - Menu icon and Logo */}
+          <div className="desktop-left">
+            <Button
+              type="text"
+              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "20px" }} />}
+              onClick={() => setDesktopMenuOpen(!desktopMenuOpen)}
+              className="desktop-menu-button"
+            />
+
+            <div className="desktop-logo-container">
+              <Link to="/" className="logo" aria-label="Video Surfing Home" onClick={handleLogoClick}>
+                <VideoCameraOutlined className="logo-icon" />
+                <span className="logo-text">Video Surfing</span>
+              </Link>
+            </div>
           </div>
 
-          <Search
-            placeholder="Search videos..."
-            allowClear
-            onSearch={handleSearch}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="desktop-search"
-          />
+          {/* Center - Search Bar */}
+          <div className="desktop-center">
+            <AutoComplete
+              options={searchOptions}
+              onSelect={handleRecommendationClick}
+              onSearch={setSearchTerm}
+              value={searchTerm}
+              className="desktop-search"
+              dropdownClassName="desktop-search-dropdown"
+            >
+              <Search placeholder="Search videos..." allowClear onSearch={handleSearch} />
+            </AutoComplete>
+          </div>
 
-          <Menu
-            theme="dark"
-            mode="vertical"
-            selectedKeys={[location.pathname === "/" ? "home" : location.pathname.split("/")[1]]}
-            className="desktop-menu"
-          >
-            {isAuthenticated && (
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <Button
-                  icon={<FolderOutlined />}
-                  onClick={() => navigate("/collections")}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "#1f1f1f",
-                    color: "white",
-                    border: "1px solid #FF1493",
-                  }}
-                >
-                  My Collections
-                </Button>
-                <Button
-                  icon={<UploadOutlined />}
-                  onClick={() => navigate("/upload-video")}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "#1f1f1f",
-                    color: "white",
-                    border: "1px solid #FF1493",
-                  }}
-                >
-                  Upload
-                </Button>
-              </div>
-            )}
-
-            {!isAuthenticated ? (
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <Button
-                  type="primary"
-                  onClick={() => setLoginVisible(true)}
-                  style={{
-                    backgroundColor: "#FF1493",
-                    color: "white",
-                    border: "none",
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                  }}
-                  className="login-btn"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "scale(1.05)"
-                    e.currentTarget.style.boxShadow = "0 4px 10px rgba(255, 20, 147, 0.3)"
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "scale(1)"
-                    e.currentTarget.style.boxShadow = "none"
-                  }}
-                >
-                  Login
-                </Button>
-                <Button
-                  type="primary"
-                  onClick={() => setRegisterVisible(true)}
-                  style={{
-                    backgroundColor: "#FF1493",
-                    color: "white",
-                    border: "none",
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                  }}
-                  className="register-btn"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "scale(1.05)"
-                    e.currentTarget.style.boxShadow = "0 4px 10px rgba(255, 20, 147, 0.3)"
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "scale(1)"
-                    e.currentTarget.style.boxShadow = "none"
-                  }}
-                >
-                  Register
-                </Button>
-              </div>
-            ) : (
-              <Menu.Item key="user">
-                <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-                  <Space>
-                    <Badge dot={isAdmin} color="green">
-                      <Avatar className="user-avatar" icon={<UserOutlined />} />
-                    </Badge>
-                    <span className="username">{user?.username || "User"}</span>
-                  </Space>
-                </Dropdown>
-              </Menu.Item>
-            )}
-          </Menu>
+          {/* Right side - Avatar */}
+          <div className="desktop-right">
+            <Dropdown
+              menu={{ items: desktopAvatarMenuItems }}
+              placement="bottomRight"
+              trigger={["click"]}
+              overlayClassName="desktop-avatar-dropdown"
+            >
+              <Button type="text" className="desktop-avatar-button">
+                {!isAuthenticated ? (
+                  <Avatar className="desktop-avatar" icon={<UserOutlined />} />
+                ) : (
+                  <Badge dot={isAdmin} color="green">
+                    <Avatar className="desktop-avatar" icon={<UserOutlined />} />
+                  </Badge>
+                )}
+              </Button>
+            </Dropdown>
+          </div>
         </div>
 
         {/* Mobile navigation */}
@@ -360,7 +332,7 @@ const MainLayout = () => {
           />
 
           <div className="mobile-logo-container">
-            <Link to="/" className="logo" aria-label="Video Surfing Home" onClick={() => navigate("/")}>
+            <Link to="/" className="logo" aria-label="Video Surfing Home" onClick={handleLogoClick}>
               <VideoCameraOutlined className="logo-icon" />
             </Link>
           </div>
@@ -424,12 +396,199 @@ const MainLayout = () => {
         )}
       </Header>
 
+      {/* Header Main Menu */}
+      <div className="header-main-menu">
+        <div className="header-main-menu-inner">
+          <div
+            className="header-menu-item"
+            onMouseEnter={() => handleHeaderMenuHover("home")}
+            onMouseLeave={handleHeaderMenuLeave}
+          >
+            Home
+          </div>
+          <div
+            className="header-menu-item"
+            onMouseEnter={() => handleHeaderMenuHover("trending")}
+            onMouseLeave={handleHeaderMenuLeave}
+          >
+            Trending
+          </div>
+          <div
+            className="header-menu-item"
+            onMouseEnter={() => handleHeaderMenuHover("categories")}
+            onMouseLeave={handleHeaderMenuLeave}
+          >
+            Categories
+          </div>
+          <div
+            className="header-menu-item"
+            onMouseEnter={() => handleHeaderMenuHover("pornstars")}
+            onMouseLeave={handleHeaderMenuLeave}
+          >
+            Pornstars
+          </div>
+          <div
+            className="header-menu-item"
+            onMouseEnter={() => handleHeaderMenuHover("recommended")}
+            onMouseLeave={handleHeaderMenuLeave}
+          >
+            Recommended
+          </div>
+        </div>
+      </div>
+
+      {/* Header Dropdown Overlay */}
+      {activeDropdown && (
+        <>
+          <div className="header-dropdown-overlay" onClick={() => setActiveDropdown(null)} />
+          <div
+            className="header-dropdown-content"
+            onMouseEnter={() => setActiveDropdown(activeDropdown)}
+            onMouseLeave={handleHeaderMenuLeave}
+          >
+            <div className="header-dropdown-grid">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="header-dropdown-card"
+                  onClick={() => {
+                    // Handle tag filtering
+                    const tagName = `${activeDropdown}_${index + 1}`
+                    navigate(`/?tag=${tagName}`)
+                    setActiveDropdown(null)
+                  }}
+                >
+                  <img src="/placeholder.svg?height=120&width=200" alt={`${activeDropdown} ${index + 1}`} />
+                  <div className="header-dropdown-card-content">
+                    <h4 className="header-dropdown-card-title">
+                      {activeDropdown.charAt(0).toUpperCase() + activeDropdown.slice(1)} Item {index + 1}
+                    </h4>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Desktop menu drawer */}
+      <Drawer
+        title={
+          <div style={{ display: "flex", alignItems: "center", color: "white" }}>
+            <Button
+              type="text"
+              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "20px", marginRight: 8 }} />}
+              onClick={() => setDesktopMenuOpen(false)}
+              style={{ padding: 0, marginRight: 8 }}
+            />
+            <Link
+              to="/"
+              className="logo"
+              aria-label="Video Surfing Home"
+              style={{ fontSize: "18px" }}
+              onClick={handleLogoClick}
+            >
+              <VideoCameraOutlined style={{ fontSize: "20px", marginRight: 8 }} />
+              <span>Video Surfing</span>
+            </Link>
+          </div>
+        }
+        placement="left"
+        onClose={() => setDesktopMenuOpen(false)}
+        open={desktopMenuOpen}
+        width={280}
+        styles={{
+          header: { backgroundColor: "black", color: "white" },
+          body: { backgroundColor: "black", padding: 0 },
+          footer: { backgroundColor: "black" },
+        }}
+        closeIcon={false}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "0", padding: "0" }}>
+          {/* Footer Links Section */}
+          <div style={{ padding: "20px" }}>
+            <div style={{ marginBottom: "15px", color: "#FF1493", fontWeight: "bold", fontSize: "14px" }}>About</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <Button
+                icon={<CustomerServiceOutlined />}
+                type="text"
+                style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
+                onClick={() => {
+                  navigate("/support")
+                  setDesktopMenuOpen(false)
+                }}
+              >
+                Support Center
+              </Button>
+              <Button
+                icon={<QuestionCircleOutlined />}
+                type="text"
+                style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
+                onClick={() => {
+                  navigate("/faq")
+                  setDesktopMenuOpen(false)
+                }}
+              >
+                FAQs
+              </Button>
+              <Button
+                icon={<FileProtectOutlined />}
+                type="text"
+                style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
+                onClick={() => {
+                  navigate("/privacy-policy")
+                  setDesktopMenuOpen(false)
+                }}
+              >
+                Privacy Policy
+              </Button>
+              <Button
+                icon={<FileTextOutlined />}
+                type="text"
+                style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
+                onClick={() => {
+                  navigate("/terms-of-service")
+                  setDesktopMenuOpen(false)
+                }}
+              >
+                Terms of Service
+              </Button>
+              <Button
+                icon={<PhoneOutlined />}
+                type="text"
+                style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
+                onClick={() => {
+                  navigate("/support?page=contact-us")
+                  setDesktopMenuOpen(false)
+                }}
+              >
+                Contact Support
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Drawer>
+
       {/* Mobile menu drawer - Footer links only */}
       <Drawer
         title={
           <div style={{ display: "flex", alignItems: "center", color: "white" }}>
-            <MenuOutlined style={{ marginRight: 8 }} />
-            <span>Menu</span>
+            <Button
+              type="text"
+              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "20px", marginRight: 8 }} />}
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ padding: 0, marginRight: 8 }}
+            />
+            <Link
+              to="/"
+              className="logo"
+              aria-label="Video Surfing Home"
+              style={{ fontSize: "18px" }}
+              onClick={handleLogoClick}
+            >
+              <VideoCameraOutlined style={{ fontSize: "20px", marginRight: 8 }} />
+              <span>Video Surfing</span>
+            </Link>
           </div>
         }
         placement="left"
@@ -441,6 +600,7 @@ const MainLayout = () => {
           body: { backgroundColor: "black", padding: 0 },
           footer: { backgroundColor: "black" },
         }}
+        closeIcon={false}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "0", padding: "0" }}>
           {/* Footer Links Section */}
@@ -448,6 +608,7 @@ const MainLayout = () => {
             <div style={{ marginBottom: "15px", color: "#FF1493", fontWeight: "bold", fontSize: "14px" }}>About</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <Button
+                icon={<CustomerServiceOutlined />}
                 type="text"
                 style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
                 onClick={() => {
@@ -458,6 +619,7 @@ const MainLayout = () => {
                 Support Center
               </Button>
               <Button
+                icon={<QuestionCircleOutlined />}
                 type="text"
                 style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
                 onClick={() => {
@@ -468,6 +630,7 @@ const MainLayout = () => {
                 FAQs
               </Button>
               <Button
+                icon={<FileProtectOutlined />}
                 type="text"
                 style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
                 onClick={() => {
@@ -478,6 +641,7 @@ const MainLayout = () => {
                 Privacy Policy
               </Button>
               <Button
+                icon={<FileTextOutlined />}
                 type="text"
                 style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
                 onClick={() => {
@@ -488,6 +652,7 @@ const MainLayout = () => {
                 Terms of Service
               </Button>
               <Button
+                icon={<PhoneOutlined />}
                 type="text"
                 style={{ justifyContent: "flex-start", color: "white", padding: "4px 0" }}
                 onClick={() => {
@@ -591,6 +756,7 @@ const MainLayout = () => {
                 Upload Videos
               </Button>
               <Button
+                icon={<PhoneOutlined />}
                 type="text"
                 style={{ justifyContent: "flex-start", color: "white", padding: "8px 0" }}
                 onClick={() => {

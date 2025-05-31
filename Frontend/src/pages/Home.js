@@ -1,9 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Pagination, Spin, Button, Select, Tag } from "antd"
-import { EyeOutlined, ClockCircleOutlined, LikeOutlined } from "@ant-design/icons"
-import { useNavigate } from "react-router-dom"
+import { Pagination, Spin, Button, Select, Tag, Modal } from "antd"
+import {
+  EyeOutlined,
+  ClockCircleOutlined,
+  LikeOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
+  VideoCameraOutlined,
+} from "@ant-design/icons"
+import { useNavigate, useLocation } from "react-router-dom"
 import axios from "axios"
 import "./Home.css"
 
@@ -18,6 +25,8 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalVideos, setTotalVideos] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false) // Track authentication status
+  const [viewMode, setViewMode] = useState("grid") // "grid" or "list"
+  const [ageVerificationVisible, setAgeVerificationVisible] = useState(false)
 
   const navigate = useNavigate()
 
@@ -186,8 +195,87 @@ const Home = () => {
     }
   }
 
+  // Toggle view mode
+  const toggleViewMode = () => {
+    setViewMode(viewMode === "grid" ? "list" : "grid")
+  }
+
+  // Check for age verification on component mount
+  useEffect(() => {
+    const hasVerifiedAge = localStorage.getItem("ageVerified")
+    if (!hasVerifiedAge) {
+      setAgeVerificationVisible(true)
+    }
+  }, [])
+
+  const handleAgeVerification = (isAdult) => {
+    if (isAdult) {
+      localStorage.setItem("ageVerified", "true")
+      setAgeVerificationVisible(false)
+    } else {
+      navigate("/age-restricted")
+    }
+  }
+
+  const location = useLocation()
+
+  // Add URL parameter handling
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search)
+    const tagFromUrl = urlParams.get("tag")
+    if (tagFromUrl) {
+      setSelectedTag(tagFromUrl)
+    }
+  }, [location.search])
+
   return (
     <div className="home-container">
+      {/* Age Verification Modal */}
+      <Modal
+        open={ageVerificationVisible}
+        footer={null}
+        centered
+        closable={false}
+        maskClosable={false}
+        className="age-verification-modal"
+        width={400}
+      >
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <VideoCameraOutlined style={{ fontSize: "48px", color: "#ff1493", marginBottom: "20px" }} />
+          <h2 style={{ color: "#ff1493", marginBottom: "20px" }}>Video Surfing</h2>
+          <p style={{ color: "white", marginBottom: "30px", lineHeight: "1.6" }}>
+            This website contains adult content and is intended for users who are 18 years of age or older. By entering
+            this site, you confirm that you are of legal age to view adult content in your jurisdiction.
+          </p>
+          <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+            <Button
+              type="primary"
+              onClick={() => handleAgeVerification(true)}
+              style={{
+                backgroundColor: "#ff1493",
+                borderColor: "#ff1493",
+                padding: "8px 20px",
+                height: "auto",
+              }}
+            >
+              I'm 18 or older - Enter
+            </Button>
+            <Button
+              onClick={() => handleAgeVerification(false)}
+              style={{
+                backgroundColor: "rgba(60, 60, 60, 0.8)",
+                borderColor: "#444",
+                color: "white",
+                padding: "8px 20px",
+                height: "auto",
+              }}
+            >
+              I'm under 18 - Exit
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Banner ad */}
       <div className="banner-ad">
         <div className="banner-content">
@@ -249,7 +337,22 @@ const Home = () => {
 
       {/* Main content - Video grid */}
       <div className="content-container">
-        <h2 className="section-title">Latest Videos</h2>
+        <div className="section-header">
+          <h2 className="section-title">Latest Videos</h2>
+          <div className="view-toggle-mobile">
+            <Button
+              type={viewMode === "grid" ? "primary" : "default"}
+              icon={viewMode === "grid" ? <AppstoreOutlined /> : <UnorderedListOutlined />}
+              onClick={toggleViewMode}
+              className="view-toggle-btn"
+              style={{
+                backgroundColor: viewMode === "grid" ? "#ff1493" : "transparent",
+                borderColor: "#ff1493",
+                color: viewMode === "grid" ? "white" : "#ff1493",
+              }}
+            />
+          </div>
+        </div>
 
         {loading ? (
           <div className="loading-container">
@@ -288,45 +391,81 @@ const Home = () => {
                 </Button>
               </div>
             ) : (
-              <div className="video-grid">
-                {filteredVideos.map((video) => (
-                  <div key={video._id || video.id} className="video-card" onClick={() => handleVideoClick(video)}>
-                    <div className="video-thumbnail">
-                      <img
-                        src={video.thumbnailUrl || "/home.jpg"}
-                        alt={video.title}
-                        onError={(e) => {
-                          e.target.onerror = null
-                          e.target.src = "/home.jpg"
-                        }}
-                      />
-                      <div className="video-overlay">
-                        <div className="play-button"></div>
-                      </div>
-                      <div className="video-duration">{video.duration || "5:30"}</div>
-                    </div>
-                    <div className="video-info">
-                      <h3 className="video-title">{video.title}</h3>
-
-                      <div className="video-stats-row">
-                        <div className="video-views">
-                          <EyeOutlined />
-                          <span>{formatViewCount(video.views || 0)}</span>
+              <>
+                {viewMode === "list" ? (
+                  <div className={`video-grid list-view`}>
+                    {filteredVideos.map((video) => (
+                      <div key={video._id || video.id} className="video-card" onClick={() => handleVideoClick(video)}>
+                        <div className="video-thumbnail">
+                          <img
+                            src={video.thumbnailUrl || "/home.jpg"}
+                            alt={video.title}
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = "/home.jpg"
+                            }}
+                          />
+                          <div className="video-overlay">
+                            <div className="play-button"></div>
+                          </div>
+                          <div className="video-duration">{video.duration || "5:30"}</div>
                         </div>
-                        <div className="video-likes">
-                          <LikeOutlined />
-                          <span>{formatViewCount(video.likesCount || 0)}</span>
+                        <div className="video-info">
+                          <h3 className="video-title">{video.title}</h3>
+                          <div className="video-stats-row">
+                            <div className="video-views">
+                              <EyeOutlined />
+                              <span>{formatViewCount(video.views || 0)}</span>
+                            </div>
+                            <div className="video-likes">
+                              <LikeOutlined />
+                              <span>{formatViewCount(video.likesCount || 0)}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-
-                      <div className="video-upload-date">
-                        <ClockCircleOutlined />
-                        <span>{formatRelativeTime(video.createdAt)}</span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                ) : (
+                  <div className="video-grid">
+                    {filteredVideos.map((video) => (
+                      <div key={video._id || video.id} className="video-card" onClick={() => handleVideoClick(video)}>
+                        <div className="video-thumbnail">
+                          <img
+                            src={video.thumbnailUrl || "/home.jpg"}
+                            alt={video.title}
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = "/home.jpg"
+                            }}
+                          />
+                          <div className="video-overlay">
+                            <div className="play-button"></div>
+                          </div>
+                          <div className="video-duration">{video.duration || "5:30"}</div>
+                        </div>
+                        <div className="video-info">
+                          <h3 className="video-title">{video.title}</h3>
+                          <div className="video-stats-row">
+                            <div className="video-views">
+                              <EyeOutlined />
+                              <span>{formatViewCount(video.views || 0)}</span>
+                            </div>
+                            <div className="video-likes">
+                              <LikeOutlined />
+                              <span>{formatViewCount(video.likesCount || 0)}</span>
+                            </div>
+                          </div>
+                          <div className="video-upload-date">
+                            <ClockCircleOutlined />
+                            <span>{formatRelativeTime(video.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
