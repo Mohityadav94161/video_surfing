@@ -3,113 +3,101 @@ const { extractMetadata } = require('../utils/metadataExtractor');
 const Fuse = require('fuse.js');
 
 // Get all videos with filtering, sorting, and pagination
-exports.getAllVideos = async (req, res, next) => {
-  console.log('getall videos hit ')
+
+
+exports.getAllVideos = async (req, res) => {
+  console.log('GET /videos hit');
+
   try {
-    // Build query
-    let query = Video.find({ active: true });
+    const {
+      category,
+      tag,
+      videoId,
+      search,
+      sort,
+      fields,
+      page = 1,
+      limit = 12,
+    } = req.query;
 
-    // 1) Filtering
-    const queryObj = { ...req.query };
-    const excludedFields = ['page', 'sort', 'limit', 'fields', 'search'];
-    excludedFields.forEach((el) => delete queryObj[el]);
+    // 1. Build filter object
+    const filter = { active: true };
+    if (category) filter.category = category;
+    if (tag) filter.tags = tag;
+    if (videoId) filter.videoId = videoId;
 
-    // Category filter
-    if (queryObj.category) {
-      query = query.find({ category: queryObj.category });
+    let query = Video.find(filter);
+
+    // 2. Text Search
+    if (search) {
+      const searchQuery = buildSearchQuery(search);
+      query = Video.find({ ...filter, ...searchQuery })
+        .sort({ score: { $meta: 'textScore' } })
+        .select({ score: { $meta: 'textScore' } });
     }
 
-    // Tag filter
-    if (queryObj.tag) {
-      query = query.find({ tags: queryObj.tag });
-    }
-
-    // video id 
-    if (queryObj.videoId) {
-      query = query.find({ videoId: queryObj.videoId });
-    }
-
-
-
-    // 2) Text search
-    // if (req.query.search) {
-    //   query = query.find({ $text: { $search: req.query.search } });
-    // }
-    if (req.query.search) {
-      const searchTerm = req.query.search;
-      const searchQuery = buildSearchQuery(searchTerm);
-
-      query = query.find(searchQuery)
-        .sort({ score: { $meta: 'textScore' } }) // sort by relevance
-        .select({ score: { $meta: 'textScore' } }); // include score
-    }
-
-    // 3) Sorting
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
+    // 3. Sorting (only apply if not using textScore sort)
+    if (sort && !search) {
+      const sortBy = sort.split(',').join(' ');
       query = query.sort(sortBy);
-    } else {
-      query = query.sort('-createdAt'); // Default sort by newest
+    } else if (!search) {
+      query = query.sort('-createdAt'); // Default sort
     }
 
-    // 4) Field limiting
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields);
+    // 4. Field limiting
+    if (fields) {
+      const selectFields = fields.split(',').join(' ');
+      query = query.select(selectFields);
     } else {
       query = query.select('-__v');
     }
 
-    // 5) Pagination
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 12;
-    const skip = (page - 1) * limit;
-    query = query.skip(skip).limit(limit);
+    // 5. Pagination
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
 
-    // Count total documents for pagination info
-    const totalVideos = await Video.countDocuments({ active: true });
+    query = query.skip(skip).limit(limitNum);
 
-    // Execute query with populate
+    // 6. Execute with population
     let videos = await query.populate({
       path: 'addedBy',
-      select: 'username'
+      select: 'username',
     });
 
-    // Fuzzy fallback search using Fuse.js
-    if (videos.length === 0 &&( req.query.search ||queryObj.category||queryObj.tag||queryObj.videoId)) {
-      const allVideos = await Video.find({ active: true }); // Fetch all active videos to run Fuse.js in-memory
+    // 7. Fallback: Fuzzy search using Fuse.js
+    let totalResults = await Video.countDocuments(filter);
+    let fuzzyResults = null;
 
-      const fuse = new Fuse(allVideos, {
-        keys: ['title', 'description', 'tags','videoId','addedBy','category'],
-        threshold: 0.3,
-      });
-
-      const fuzzyResults = fuse.search(req.query.search);
-
-      // Extract original documents and apply pagination manually
-      const paginatedResults = fuzzyResults
-        .map(result => result.item)
-        .slice(skip, skip + limit);
-
-      // Manually populate 'addedBy' field (since it's in-memory now)
-      videos = await Video.populate(paginatedResults, {
+    if (videos.length === 0 && (search || category || tag || videoId)) {
+      const allVideos = await Video.find(filter).populate({
         path: 'addedBy',
         select: 'username',
       });
+
+      const fuse = new Fuse(allVideos, {
+        keys: ['title', 'description', 'tags', 'videoId', 'addedBy.username', 'category'],
+        threshold: 0.3,
+      });
+
+      fuzzyResults = fuse.search(search || '');
+      const paginatedResults = fuzzyResults.map(r => r.item).slice(skip, skip + limitNum);
+      videos = paginatedResults;
+      totalResults = fuzzyResults.length;
     }
 
-    const totalResults = videos.length === 0 && fuzzyResults ? fuzzyResults.length : totalVideos;
-    // Send response
+    // 8. Respond
     res.status(200).json({
       status: 'success',
       results: videos.length,
       total: totalResults,
-      totalPages: Math.ceil(totalVideos / limit),
-      currentPage: page,
+      totalPages: Math.ceil(totalResults / limitNum),
+      currentPage: pageNum,
       data: {
         videos,
       },
     });
+
   } catch (err) {
     console.error('Error getting videos:', err);
     res.status(500).json({
@@ -118,16 +106,16 @@ exports.getAllVideos = async (req, res, next) => {
     });
   }
 };
-const buildSearchQuery = (searchTerm) => {
-  return {
-    $or: [
-      { $text: { $search: searchTerm } }, // Full-text search
-      { title: { $regex: searchTerm, $options: 'i' } }, // Fuzzy regex
-      { description: { $regex: searchTerm, $options: 'i' } },
-      { tags: { $regex: searchTerm, $options: 'i' } }
-    ]
-  };
-};
+
+// 🔍 Text search helper
+const buildSearchQuery = (searchTerm) => ({
+  $or: [
+    { $text: { $search: searchTerm } },
+    { title: { $regex: searchTerm, $options: 'i' } },
+    { description: { $regex: searchTerm, $options: 'i' } },
+    { tags: { $regex: searchTerm, $options: 'i' } }
+  ]
+});
 
 
 // Get a single video

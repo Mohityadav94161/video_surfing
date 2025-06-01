@@ -1,0 +1,219 @@
+Sure! Here's your API documentation written in **simple, plain text format** that's easy for frontend developers to read and implement.
+
+---
+
+# 📘 API Documentation – Video Platform
+
+---
+
+## 🔐 AUTHENTICATION ROUTES
+
+### POST `/signup`
+
+**Description**: Register a new user
+**Access**: Public
+**Body**:
+
+* `username` (string)
+* `email` (string)
+* `password` (string)
+
+**Response**:
+Returns a success status, JWT token, and user data.
+
+---
+
+### POST `/login`
+
+**Description**: Log in an existing user
+**Access**: Public
+**Body**:
+
+* `email` (string)
+* `password` (string)
+
+**Success Response**:
+
+* status: success
+* token: JWT
+* user data
+
+**Error Response**:
+
+* status: fail
+* message: Incorrect username or password
+
+---
+
+### POST `/create-admin`
+
+**Description**: Create an admin account
+**Access**: Public (for development only)
+**Body**: Same as `/signup`, but sets role to `admin`
+
+---
+
+### GET `/me`
+
+**Description**: Get current logged-in user
+**Access**: Protected (JWT token required)
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+## 🎬 VIDEO ROUTES
+
+### GET `/`
+
+**Description**: Get all videos
+**Access**: Public
+**Optional Query Parameters**:
+
+* `category`
+* `tag`
+* `videoId`
+* `search`
+* `sort`
+* `fields`
+* `page` (default: 1)
+* `limit` (default: 12)
+
+**Response**:
+
+* total results, current page, total pages
+* list of videos
+
+---
+
+### GET `/categories`
+
+**Description**: Get all video categories
+**Access**: Public
+
+---
+
+### GET `/tags`
+
+**Description**: Get popular video tags
+**Access**: Public
+
+---
+
+### GET `/stats`
+
+**Description**: Get video statistics
+**Access**: Protected + Admin only
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+### GET `/:id`
+
+**Description**: Get video by ID
+**Access**: Public
+
+---
+
+### POST `/extract-metadata`
+
+**Description**: Extract metadata from a video link
+**Access**: Protected
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+### POST `/`
+
+**Description**: Add a new video
+**Access**: Protected
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+### PATCH `/:id`
+
+**Description**: Update a video by ID
+**Access**: Admin only
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+### DELETE `/:id`
+
+**Description**: Delete a video by ID
+**Access**: Admin only
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+### POST `/extract-from-page`
+
+**Description**: Extract multiple videos from a webpage
+**Access**: Admin only
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+## 💬 COMMENT ROUTES
+
+### GET `/:videoId/comments`
+
+**Description**: Get comments for a video
+**Access**: Public
+
+---
+
+### POST `/:videoId/comments`
+
+**Description**: Add a comment to a video
+**Access**: Protected
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+### DELETE `/comments/:id`
+
+**Description**: Delete a comment by ID
+**Access**: Protected
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+## 👍 REACTION ROUTES
+
+### GET `/:videoId/reactions`
+
+**Description**: Get like/dislike counts for a video
+**Access**: Public
+
+---
+
+### POST `/:videoId/reactions`
+
+**Description**: Toggle like/dislike for a video
+**Access**: Protected
+**Headers**:
+
+* Authorization: Bearer `<token>`
+
+---
+
+Let me know if you want this saved as a markdown or PDF file.
