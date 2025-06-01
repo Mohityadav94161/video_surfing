@@ -816,7 +816,7 @@ const MainLayout = () => {
       <Content
         style={{
           padding: 0,
-          margin: 0,
+          margin: '60px',
           minHeight: "100vh",
           background: "transparent",
         }}

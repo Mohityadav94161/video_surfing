@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const Video = require('../models/Video');
 const { extractMetadata } = require('../utils/metadataExtractor');
 const Fuse = require('fuse.js');
@@ -6,9 +7,8 @@ const Fuse = require('fuse.js');
 
 
 exports.getAllVideos = async (req, res) => {
-  console.log('GET /videos hit');
-
   try {
+    // 2. Destructure query parameters (with defaults for page & limit):
     const {
       category,
       tag,
@@ -17,76 +17,140 @@ exports.getAllVideos = async (req, res) => {
       sort,
       fields,
       page = 1,
-      limit = 12,
+      limit = 12
     } = req.query;
 
-    // 1. Build filter object
+    // 3. Build a base filter for “active” videos + any simple filters:
     const filter = { active: true };
     if (category) filter.category = category;
     if (tag) filter.tags = tag;
     if (videoId) filter.videoId = videoId;
 
-    let query = Video.find(filter);
+    let useTextSearch = false;
+    let query;
 
-    // 2. Text Search
+    // 4. Attempt a text‐search if “search” param is provided:
     if (search) {
-      const searchQuery = buildSearchQuery(search);
-      query = Video.find({ ...filter, ...searchQuery })
-        .sort({ score: { $meta: 'textScore' } })
-        .select({ score: { $meta: 'textScore' } });
+      try {
+        useTextSearch = true;
+
+        // Build a MongoDB text‐search query on the “search” string:
+        query = Video.find({
+          ...filter,
+          $text: { $search: search }
+        })
+          // Sort by textScore
+          .sort({ score: { $meta: 'textScore' } })
+          // Include the textScore in the projection
+          .select({
+            score: { $meta: 'textScore' }
+          });
+      } catch (err) {
+        // If combining $text and other operators throws “NoQueryExecutionPlans,” fall back to regex:
+        console.warn('Text‐search failed, falling back to regex‐style search:', err);
+
+        const regex = new RegExp(search, 'i');
+        query = Video.find({
+          ...filter,
+          $or: [
+            { title: regex },
+            { description: regex },
+            { tags: regex },
+            { videoId: regex },
+            { category: regex }
+          ]
+        });
+        useTextSearch = false;
+      }
+    } else {
+      // 5. If no “search” param, start from a plain find(filter):
+      query = Video.find(filter);
     }
 
-    // 3. Sorting (only apply if not using textScore sort)
-    if (sort && !search) {
-      const sortBy = sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else if (!search) {
-      query = query.sort('-createdAt'); // Default sort
+    // 6. Apply sorting if not text‐searching; otherwise, textScore sort is already applied:
+    if (!useTextSearch) {
+      if (sort) {
+        // e.g. sort = "field1,-field2"
+        const sortBy = sort.split(',').join(' ');
+        query = query.sort(sortBy);
+      } else {
+        // Default sort: newest first
+        query = query.sort('-createdAt');
+      }
     }
 
-    // 4. Field limiting
+    // 7. Field limiting (projection):
     if (fields) {
+      // e.g. fields = "title,description,tags"
       const selectFields = fields.split(',').join(' ');
       query = query.select(selectFields);
     } else {
-      query = query.select('-__v');
+      query = query.select('-__v'); // Exclude __v by default
     }
 
-    // 5. Pagination
+    // 8. Pagination setup:
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
     query = query.skip(skip).limit(limitNum);
 
-    // 6. Execute with population
+    // 9. Execute the query (populate “addedBy.username”):
     let videos = await query.populate({
       path: 'addedBy',
-      select: 'username',
+      select: 'username'
     });
 
-    // 7. Fallback: Fuzzy search using Fuse.js
-    let totalResults = await Video.countDocuments(filter);
-    let fuzzyResults = null;
+    // 10. Determine totalResults (for pagination metadata):
+    let totalResults;
+    if (useTextSearch) {
+      // When using a text query, countDocuments must include the same $text filter
+      totalResults = await Video.countDocuments({
+        ...filter,
+        $text: { $search: search }
+      });
+    } else {
+      // If no text search, just count with the base “filter”
+      totalResults = await Video.countDocuments(filter);
+    }
 
-    if (videos.length === 0 && (search || category || tag || videoId)) {
+    // 11. Fuzzy fallback (only if no documents returned AND some filter/search applied):
+    if (
+      videos.length === 0 &&
+      (search || category || tag || videoId)
+    ) {
+      // Fetch all matching videos (without pagination) for Fuse.js
       const allVideos = await Video.find(filter).populate({
         path: 'addedBy',
-        select: 'username',
+        select: 'username'
       });
 
       const fuse = new Fuse(allVideos, {
-        keys: ['title', 'description', 'tags', 'videoId', 'addedBy.username', 'category'],
-        threshold: 0.3,
+        keys: [
+          'title',
+          'description',
+          'tags',
+          'videoId',
+          'addedBy.username',
+          'category'
+        ],
+        threshold: 0.3
       });
 
-      fuzzyResults = fuse.search(search || '');
-      const paginatedResults = fuzzyResults.map(r => r.item).slice(skip, skip + limitNum);
-      videos = paginatedResults;
-      totalResults = fuzzyResults.length;
+      // If “search” is present, use it in Fuse. Otherwise, Fuse on empty string
+      const fuseResults = fuse.search(search || '');
+
+      // Extract just the matched video documents
+      const matchedDocs = fuseResults.map(r => r.item);
+      totalResults = matchedDocs.length;
+
+      // Apply pagination manually on the fuseResults
+      const startIndex = skip;
+      const endIndex = skip + limitNum;
+      videos = matchedDocs.slice(startIndex, endIndex);
     }
 
-    // 8. Respond
+    // 12. Send response with pagination metadata
     res.status(200).json({
       status: 'success',
       results: videos.length,
@@ -94,15 +158,14 @@ exports.getAllVideos = async (req, res) => {
       totalPages: Math.ceil(totalResults / limitNum),
       currentPage: pageNum,
       data: {
-        videos,
-      },
+        videos
+      }
     });
-
   } catch (err) {
-    console.error('Error getting videos:', err);
+    console.error('Error fetching videos:', err);
     res.status(500).json({
       status: 'error',
-      message: 'Error fetching videos',
+      message: 'Error fetching videos'
     });
   }
 };
@@ -118,39 +181,112 @@ const buildSearchQuery = (searchTerm) => ({
 });
 
 
-// Get a single video
+
 exports.getVideo = async (req, res, next) => {
   try {
-    const video = await Video.findById(req.params.id).populate({
-      path: 'addedBy',
-      select: 'username'
-    });
+    const rawId = req.params.id;
+    let video = null;
 
-    if (!video || !video.active) {
+    // 1. If rawId is a valid MongoDB ObjectId, try find by _id
+    if (mongoose.Types.ObjectId.isValid(rawId)) {
+      video = await Video.findById(rawId)
+        .populate({ path: 'addedBy', select: 'username' });
+    }
+
+    // 2. If not found by _id (or rawId wasn't valid ObjectId), try find by videoId field
+    if (!video) {
+      video = await Video.findOne({ videoId: rawId, active: true })
+        .populate({ path: 'addedBy', select: 'username' });
+    }
+
+    // 3. If still not found, perform a fallback "related search"
+    if (!video) {
+      // Build a basic filter to only include active videos
+      const baseFilter = { active: true };
+
+      // Attempt a text search using MongoDB $text if index is present
+      let relatedVideos = [];
+      try {
+        relatedVideos = await Video.find({
+          ...baseFilter,
+          $text: { $search: rawId }
+        }, { score: { $meta: 'textScore' } })
+          .sort({ score: { $meta: 'textScore' } })
+          .limit(10)
+          .populate({ path: 'addedBy', select: 'username' });
+      } catch (textErr) {
+        // If text search fails (e.g., no text index or no plans), fall back to regex
+        const regex = new RegExp(rawId, 'i');
+        relatedVideos = await Video.find({
+          ...baseFilter,
+          $or: [
+            { title: regex },
+            { description: regex },
+            { tags: regex },
+            { category: regex }
+          ]
+        })
+          .limit(10)
+          .populate({ path: 'addedBy', select: 'username' });
+      }
+
+      // 4. If still no relatedVideos, use Fuse.js for a fuzzy search across all active videos
+      if (relatedVideos.length === 0) {
+        const allVideos = await Video.find(baseFilter)
+          .populate({ path: 'addedBy', select: 'username' });
+
+        const fuse = new Fuse(allVideos, {
+          keys: [
+            'title',
+            'description',
+            'tags',
+            'category',
+            'addedBy.username',
+            'videoId'
+          ],
+          threshold: 0.3
+        });
+
+        const fuseResults = fuse.search(rawId || '');
+        relatedVideos = fuseResults.map(r => r.item).slice(0, 10);
+      }
+
+      // 5. Return 404-like response with related results
       return res.status(404).json({
         status: 'fail',
-        message: 'No video found with that ID',
+        message: 'No video found with that identifier. Showing related results instead.',
+        data: {
+          relatedVideos
+        }
       });
     }
 
-    // Increment views
-    video.views += 1;
+    // 6. If a video was found by _id or videoId, but check that it’s active
+    if (!video.active) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'No active video found with that ID'
+      });
+    }
+
+    // 7. Increment view count (only for exact matches)
+    video.views = (video.views || 0) + 1;
     await video.save({ validateBeforeSave: false });
 
+    // 8. Return the found video
     res.status(200).json({
       status: 'success',
-      data: {
-        video,
-      },
+      data: { video }
     });
   } catch (err) {
-    console.error('Error getting video:', err);
+    console.error('Error fetching video:', err);
     res.status(500).json({
       status: 'error',
-      message: 'Error fetching video',
+      message: 'Error fetching video'
     });
   }
 };
+
 
 // Add a new video (for both regular users and admins)
 exports.addVideo = async (req, res, next) => {

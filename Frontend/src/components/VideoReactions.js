@@ -69,7 +69,7 @@ const VideoReactions = ({ videoId }) => {
       <Tooltip title={isAuthenticated ? 'Like' : 'Log in to like'}>
         <Button
           type="text"
-          icon={reactions.currentUserReaction === 'like' ? <LikeFilled /> : <LikeOutlined />}
+          icon={reactions.currentUserReaction === 'like' ? <LikeFilled style={{color:'white'}} /> : <LikeOutlined style={{color:'white'}}/>}
           onClick={() => handleReaction('like')}
           loading={loading}
           disabled={!isAuthenticated}
@@ -84,7 +84,7 @@ const VideoReactions = ({ videoId }) => {
       <Tooltip title={isAuthenticated ? 'Dislike' : 'Log in to dislike'}>
         <Button
           type="text"
-          icon={reactions.currentUserReaction === 'dislike' ? <DislikeFilled /> : <DislikeOutlined />}
+          icon={reactions.currentUserReaction === 'dislike' ? <DislikeFilled style={{color:'white'}}/> : <DislikeOutlined style={{color:'white'}}/>}
           onClick={() => handleReaction('dislike')}
           loading={loading}
           disabled={!isAuthenticated}

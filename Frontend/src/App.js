@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, theme } from 'antd';
 
 // Auth context
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -62,6 +62,7 @@ function App() {
           colorPrimary: '#FF1493',
           borderRadius: 6,
         },
+        algorithm: theme.darkAlgorithm,
       }}
     >
       <AuthProvider>

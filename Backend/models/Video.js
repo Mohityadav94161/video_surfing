@@ -75,6 +75,10 @@ const videoSchema = new mongoose.Schema(
     dislikesCount: {
       type: Number,
       default: 0
+    },
+    isTrending:{  
+      type:Boolean,
+      default:false
     }
   },
   {

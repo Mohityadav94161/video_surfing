@@ -10,9 +10,11 @@ import {
   UnorderedListOutlined,
   VideoCameraOutlined,
 } from "@ant-design/icons"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom"
+
 import axios from "axios"
 import "./Home.css"
+import { useRef } from "react"
 
 const { Option } = Select
 
@@ -27,8 +29,25 @@ const Home = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false) // Track authentication status
   const [viewMode, setViewMode] = useState("grid") // "grid" or "list"
   const [ageVerificationVisible, setAgeVerificationVisible] = useState(false)
+  const [popularTags, setPoppularTags] = useState(["Brunette", "Blonde", "Lesbian", "Hot", "Balochistan", "Ebony", "Asian", "Busty", "china"])
+
+  const [tagLoading, setTagLoading] = useState(false)
+  const [tagError, setTagError] = useState(null)
+  const [visibleCount, setVisibleCount] = useState(7);
+  const [tagReady, setTagReady] = useState(false)
+
+  const initialLoadDone = useRef(false)
+
+
+
+
 
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const showMoreTags = () => {
+    setVisibleCount((prev) => prev + 7);
+  };
 
   // const [showPopup, setShowPopup] = useState(true);
 
@@ -43,7 +62,6 @@ const Home = () => {
   // }, [showPopup]);
 
   // Predefined static tags for filtering
-  const predefinedTags = ["Brunette", "Blonde", "Lesbian", "Hot", "Balochistan", "Ebony", "Asian", "Busty", "china"]
 
   // Format view count
   const formatViewCount = (count) => {
@@ -81,76 +99,135 @@ const Home = () => {
     }
   }
 
-  // Fetch videos from API
+  // useEffect(() => {
+  //   const tagParam = searchParams.get("tag")
+
+  //   if (popularTags.length > 0 && !initialLoadDone.current) {
+  //     const matchedTag = popularTags.find(tag => tag.name === tagParam)
+
+  //     if (tagParam && matchedTag) {
+  //       setSelectedTag(matchedTag)
+  //     } else {
+  //       setSelectedTag(null)
+  //     }
+
+  //     setTagReady(true)
+  //     initialLoadDone.current = true // Prevents double load
+  //   }
+  // }, [searchParams, popularTags])
+
+
+
+
   useEffect(() => {
-    const fetchVideos = async () => {
-      setLoading(true)
-      setError(null)
+    const fetchPopularTags = async () => {
+      setTagLoading(true);
+      setTagError(null);
 
       try {
-        const response = await axios.get("/api/videos", {
+        const response = await axios.get("/api/videos/tags");
+        const tags = response.data.data.tags;
+        setPoppularTags(tags || []);
+      } catch (err) {
+        console.error("Error fetching tags:", err);
+        setError("Failed to load tags. Please try again later.");
+      } finally {
+        setTagLoading(false);
+      }
+    };
+
+    fetchPopularTags();
+  }, []);
+
+
+  // Fetch videos from API
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // 1. Fetch Tags First
+        const tagResponse = await axios.get("/api/videos/tags");
+        const tags = tagResponse.data.data.tags || [];
+        setPoppularTags(tags);
+
+        // 2. Sync selectedTag with URL param
+        const tagParam = searchParams.get("tag");
+        let matchedTag = null;
+        if (tagParam) {
+          matchedTag = tags.find((t) => t.name === tagParam);
+        }
+        setSelectedTag(matchedTag || null); // also handles invalid tag
+        const tagName = matchedTag?.name;
+
+        // 3. Fetch Videos based on tag + currentPage
+        const videoResponse = await axios.get("/api/videos", {
           params: {
             page: currentPage,
             limit: 100,
+            tag: tagName,
           },
-        })
+        });
 
-        const { videos: fetchedVideos, total } = response.data.data
-
-        // Ensure videos have tags array
+        const { videos: fetchedVideos, total } = videoResponse.data.data;
         const processedVideos = fetchedVideos.map((video) => ({
           ...video,
           tags: video.tags || [],
-        }))
+        }));
 
-        setVideos(processedVideos)
-        setFilteredVideos(processedVideos)
-        setTotalVideos(total)
-
-        // Fetch user reactions if authenticated
-        if (isAuthenticated) {
-          // fetchUserReactions()
-        }
+        setVideos(processedVideos);
+        setFilteredVideos(processedVideos);
+        setTotalVideos(total);
       } catch (err) {
-        console.error("Error fetching videos:", err)
-        setError("Failed to load videos. Please try again later.")
-
-        // Fallback to empty array if API fails
-        setVideos([])
-        setFilteredVideos([])
+        console.error("Error:", err);
+        setError("Failed to load content. Please try again later.");
+        setVideos([]);
+        setFilteredVideos([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchVideos()
-  }, [currentPage])
+    fetchData();
+  }, [currentPage, searchParams]); // Run when page or ?tag changes
+
+
+
 
   // Filter videos when a tag is selected
-  useEffect(() => {
-    if (selectedTag && predefinedTags.includes(selectedTag)) {
-      const filtered = videos.filter((video) => video.tags && video.tags.includes(selectedTag))
-      setFilteredVideos(filtered)
-    } else {
-      setFilteredVideos(videos)
-    }
-  }, [selectedTag, videos, predefinedTags])
+  // useEffect(() => {
+  //   if (selectedTag && predefinedTags.includes(selectedTag)) {
+  //     const filtered = videos.filter((video) => video.tags && video.tags.includes(selectedTag))
+  //     setFilteredVideos(filtered)
+  //   } else {
+  //     setFilteredVideos(videos)
+  //   }
+  // }, [selectedTag, videos, predefinedTags])
 
   // Handle tag selection
   const handleTagClick = (tag) => {
-    // Only handle clicks for predefined tags
-    if (predefinedTags.includes(tag)) {
-      if (selectedTag === tag) {
-        setSelectedTag(null) // Deselect if already selected
-      } else {
-        setSelectedTag(tag)
-      }
+    const currentTag = searchParams.get("tag");
+
+    if (currentTag === tag?.name) {
+      searchParams.delete("tag");
+      setSelectedTag(null);
+    } else {
+      searchParams.set("tag", tag?.name);
+      setSelectedTag(tag);
     }
-  }
+
+    // Trigger sync
+    setSearchParams(searchParams);
+    setCurrentPage(1); // Reset to first page on new filter
+  };
+
 
   const handlePageChange = (page) => {
     setCurrentPage(page)
   }
+
+
 
   // Check if user is authenticated
   useEffect(() => {
@@ -238,9 +315,9 @@ const Home = () => {
         closable={false}
         maskClosable={false}
         className="age-verification-modal"
-        width={400}
+      // width={400}
       >
-        <div style={{ textAlign: "center", padding: "20px 0" }}>
+        <div style={{ textAlign: "center", }}>
           <VideoCameraOutlined style={{ fontSize: "48px", color: "#ff1493", marginBottom: "20px" }} />
           <h2 style={{ color: "#ff1493", marginBottom: "20px" }}>Video Surfing</h2>
           <p style={{ color: "white", marginBottom: "30px", lineHeight: "1.6" }}>
@@ -293,22 +370,41 @@ const Home = () => {
 
       {/* Video Tags */}
       <div className="category-filters">
-        <div className="tag-header">{/* <TagOutlined /> <span>Filter by Tags:</span> */}</div>
-        {predefinedTags.map((tag, index) => (
-          <Tag
-            key={index}
-            color={selectedTag === tag ? "#FF1493" : "default"}
-            className="video-tag"
-            onClick={() => handleTagClick(tag)}
-          >
-            {tag}
-          </Tag>
-        ))}
-        {selectedTag && (
-          <Button type="link" size="small" onClick={() => setSelectedTag(null)} className="clear-tag-btn">
-            Clear filter
-          </Button>
-        )}
+        <div className="tag-header">
+          {/* Optional: Add icon or heading here */}
+        </div>
+
+        <Spin spinning={tagLoading}>
+          <div className="tag-list">
+            {popularTags.slice(0, visibleCount).map((tag, index) => (
+              <Tag
+                key={index}
+                color={selectedTag === tag ? "#FF1493" : "default"}
+                className="video-tag"
+                onClick={() => handleTagClick(tag)}
+              >
+                {tag?.name}
+              </Tag>
+            ))}
+
+            {selectedTag && (
+              <Button
+                type="link"
+                size="small"
+                onClick={() => setSelectedTag(null)}
+                className="clear-tag-btn"
+              >
+                Clear filter
+              </Button>
+            )}
+
+            {visibleCount < popularTags.length && (
+              <Button type="text" size="small" onClick={showMoreTags} className="show-more-btn">
+                Show More
+              </Button>
+            )}
+          </div>
+        </Spin>
       </div>
 
       {/* Video filters and sorting */}
@@ -374,10 +470,10 @@ const Home = () => {
           </div>
         ) : (
           <>
-            {selectedTag && predefinedTags.includes(selectedTag) && (
+            {selectedTag && popularTags.includes(selectedTag) && (
               <div className="filter-info">
                 <span>
-                  Showing videos tagged with: <Tag color="#FF1493">{selectedTag}</Tag>
+                  Showing videos tagged with: <Tag color="#FF1493">{selectedTag?.name}</Tag>
                 </span>
                 <span className="results-count">({filteredVideos.length} results)</span>
               </div>

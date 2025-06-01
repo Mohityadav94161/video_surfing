@@ -1,9 +1,10 @@
 /* Support page styles */
 .support-layout {
-  min-height: 100vh;
+
   background-color: #000000;
   display: flex;
   position: relative;
+  margin: 60px;
 }
 
 .support-sidebar {

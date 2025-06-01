@@ -91,17 +91,17 @@
 .empty-comments {
   padding: 40px 0;
   text-align: center;
-  background-color: #fafafa;
+  /* background-color: #fafafa; */
   border-radius: 8px;
-  border: 1px dashed #d9d9d9;
+  border: 1px dashed #d9d9d992;
 }
 
 .login-prompt {
   padding: 15px;
   text-align: center;
-  background-color: #f9f9f9;
+  /* background-color: #f9f9f9; */
   border-radius: 8px;
-  border: 1px dashed #d9d9d9;
+  border: 1px dashed #d9d9d998;
 }
 
 /* Animations */
