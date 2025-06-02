@@ -120,6 +120,7 @@ const Dashboard = () => {
         
         // Update state
         setVideos(videosData);
+        console.log('vide data ',videosData)
         setStats({
           totalVideos,
           totalViews,
@@ -257,6 +258,16 @@ const Dashboard = () => {
       render: (active) => (
         <Tag color={active ? 'success' : 'error'}>
           {active ? 'Active' : 'Inactive'}
+        </Tag>
+      ),
+    },
+    {
+      title: 'isTrending',
+      dataIndex: 'isTrending',
+      key: 'isTrending',
+      render: (isTrending) => (
+        <Tag color={isTrending ? 'success' : 'error'}>
+         {isTrending?'yes':'No'}
         </Tag>
       ),
     },

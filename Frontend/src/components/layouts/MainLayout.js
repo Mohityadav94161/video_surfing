@@ -40,6 +40,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext"
 import "./MainLayout.css"
 import "../../components/ModalStyles.css"
+import axios from "axios"
 
 const { Header, Content, Footer } = Layout
 const { Search } = Input
@@ -58,6 +59,7 @@ const MainLayout = () => {
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
+  const [menuData,setMenuData] = useState({'Trending':'','Categories':'','Pornstars':'','Recommended':''})
 
   // Search recommendations
   const searchRecommendations = ["Hot", "Blonde", "Short", "Blondie", "Brunette", "Busty", "Asian", "Ebony", "Lesbian"]
@@ -87,6 +89,21 @@ const MainLayout = () => {
     setDesktopMenuOpen(false)
     setActiveDropdown(null)
   }, [location.pathname])
+
+  useEffect(()=>{
+     const fetchCategories = async () => {
+      try {
+        const response = await axios.get("/api/videos/categories");
+        setMenuData({'Categories':response.data.data.categories || []});
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCategories();
+
+  },[])
+  console.log('object ',menuData[activeDropdown])
 
   const handleSearch = (value) => {
     if (value.trim()) {
@@ -415,7 +432,7 @@ const MainLayout = () => {
           </div>
           <div
             className="header-menu-item"
-            onMouseEnter={() => handleHeaderMenuHover("categories")}
+            onMouseEnter={() => handleHeaderMenuHover("Categories")}
             onMouseLeave={handleHeaderMenuLeave}
           >
             Categories
@@ -447,21 +464,21 @@ const MainLayout = () => {
             onMouseLeave={handleHeaderMenuLeave}
           >
             <div className="header-dropdown-grid">
-              {Array.from({ length: 8 }).map((_, index) => (
+              {menuData[activeDropdown]?.map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
                   onClick={() => {
                     // Handle tag filtering
-                    const tagName = `${activeDropdown}_${index + 1}`
-                    navigate(`/?tag=${tagName}`)
+                    const tagName = `${item}`
+                    navigate(`/?category=${tagName}`)
                     setActiveDropdown(null)
                   }}
                 >
                   <img src="/placeholder.svg?height=120&width=200" alt={`${activeDropdown} ${index + 1}`} />
                   <div className="header-dropdown-card-content">
                     <h4 className="header-dropdown-card-title">
-                      {activeDropdown.charAt(0).toUpperCase() + activeDropdown.slice(1)} Item {index + 1}
+                      {item}
                     </h4>
                   </div>
                 </div>

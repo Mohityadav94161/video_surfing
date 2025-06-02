@@ -113,7 +113,8 @@ const EditVideo = () => {
         description: values.description,
         category: values.category,
         tags: processedTags,
-        active: values.active
+        active: values.active,
+        isTrending: values.trending
       };
       
       // Call the API to update the video
@@ -287,6 +288,17 @@ const EditVideo = () => {
               <Select>
                 <Option value={true}>Active</Option>
                 <Option value={false}>Inactive</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="trending"
+              valuePropName="checked"
+              label="Trending"
+            >
+              <Select>
+                <Option value={true}>Yes</Option>
+                <Option value={false}>No</Option>
               </Select>
             </Form.Item>
             

@@ -718,6 +718,7 @@
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
+
 }
 
 .header-dropdown-card:hover {

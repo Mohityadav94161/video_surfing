@@ -2,6 +2,7 @@ const { default: mongoose } = require('mongoose');
 const Video = require('../models/Video');
 const { extractMetadata } = require('../utils/metadataExtractor');
 const Fuse = require('fuse.js');
+const Counter = require('../models/Counter');
 
 // Get all videos with filtering, sorting, and pagination
 
@@ -299,7 +300,7 @@ exports.addVideo = async (req, res, next) => {
       description,
       tags,
       category,
-      sourceWebsite, videoId
+      sourceWebsite
     } = req.body;
 
     if (!originalUrl) {
@@ -308,14 +309,17 @@ exports.addVideo = async (req, res, next) => {
         message: 'Video URL is required',
       });
     }
-    if (!videoId) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'videoId is required',
-      });
-    }
+    
 
     let videoData = {};
+
+    // Get next videoId from counter
+    let counter = await Counter.findOneAndUpdate(
+      { name: 'videoId' },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    const videoId = str(counter)
 
     // If user provided complete data, use it
     if (title && thumbnailUrl && category) {
@@ -345,6 +349,7 @@ exports.addVideo = async (req, res, next) => {
           category: category || metadata.category,
           sourceWebsite: sourceWebsite || metadata.sourceWebsite,
           videoType: videoType || 'normal',
+          videoId:videoId,
           addedBy: req.user.id,
         };
       } catch (metadataErr) {
@@ -367,6 +372,7 @@ exports.addVideo = async (req, res, next) => {
           sourceWebsite: sourceWebsite || new URL(originalUrl).hostname,
           videoType: videoType || 'normal',
           addedBy: req.user.id,
+          videoId:videoId
         };
       }
     }
@@ -392,12 +398,16 @@ exports.addVideo = async (req, res, next) => {
 // Update video (admin only)
 exports.updateVideo = async (req, res, next) => {
   try {
-    const updatableFields = ['title', 'description', 'tags', 'category', 'active', 'videoType'];
+    const updatableFields = ['title', 'description', 'tags', 'category', 'active', 'videoType','isTrending'];
+
 
     // Filter out unwanted fields
+
     const updateData = {};
     Object.keys(req.body).forEach(key => {
+      console.log('received key ',key ," and value ", req.body[key])
       if (updatableFields.includes(key)) {
+        console.log(key ," present ")
         updateData[key] = req.body[key];
       }
     });

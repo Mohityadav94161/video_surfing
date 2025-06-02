@@ -33,6 +33,7 @@ import Feedback from './pages/Feedback';
 // Components
 import MainLayout from './components/layouts/MainLayout';
 import AdminLayout from './components/layouts/AdminLayout';
+import EditVideo from './pages/admin/EditVideo';
 
 // Protected route component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -149,6 +150,7 @@ function App() {
                 <Route path="bulk-upload" element={<BulkVideoUpload />} />
                 <Route path="home-manager" element={<HomePageManager />} />
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="edit-video/:id" element={<EditVideo/>}/>
                 {/*<Route path="test" element={<TestComponent />} />*/}
               </Route>
 
