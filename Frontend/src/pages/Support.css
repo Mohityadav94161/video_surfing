@@ -1,16 +1,15 @@
-/* Support page styles */
+/* Support page styles - adjust margin to align with header-menu */
 .support-layout {
-
   background-color: #000000;
   display: flex;
   position: relative;
-  margin: 60px;
+  margin: 5px 60px 60px 60px;
 }
 
 .support-sidebar {
   background-color: #101827;
   padding: 24px 16px;
-  border-right: 1px solid #FF1493;
+  border-right: 1px solid #ff1493;
   transition: all 0.3s ease;
   overflow-y: auto;
   max-height: 100vh;
@@ -100,7 +99,7 @@
 }
 
 .support-link {
-  color: #FF1493 !important;
+  color: #ff1493 !important;
   text-decoration: none;
   transition: all 0.2s ease;
 }
@@ -111,7 +110,7 @@
 }
 
 .submit-button {
-  background: #FF1493 !important;
+  background: #ff1493 !important;
   color: #000000 !important;
   font-weight: bold !important;
   width: 200px;
@@ -146,14 +145,18 @@
   color: #d1d5db !important;
 }
 
-.ant-input, .ant-input-affix-wrapper, .ant-input-textarea {
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-textarea {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
   color: #f9fafb !important;
 }
 
-.ant-input:focus, .ant-input-affix-wrapper:focus, .ant-input-textarea:focus {
-  border-color: #FF1493 !important;
+.ant-input:focus,
+.ant-input-affix-wrapper:focus,
+.ant-input-textarea:focus {
+  border-color: #ff1493 !important;
   box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.2) !important;
 }
 
@@ -168,6 +171,7 @@
   background-color: #1a1a1a !important;
   border: 1px solid rgba(255, 20, 147, 0.3) !important;
   color: white !important;
+  width: 600px;
 }
 
 .ant-select-selection-item {
@@ -196,20 +200,20 @@
   .support-layout {
     flex-direction: column;
   }
-  
+
   .desktop-only {
     display: none !important;
   }
-  
+
   .mobile-support-selector {
     display: block;
   }
-  
+
   .support-content {
     padding: 20px;
     width: 100%;
   }
-  
+
   .submit-button {
     width: 100%;
     max-width: 200px;
@@ -221,15 +225,15 @@
   .support-content {
     padding: 15px;
   }
-  
+
   .support-card {
     padding: 15px !important;
   }
-  
+
   .support-title {
     font-size: 20px !important;
   }
-  
+
   .mobile-support-selector {
     margin-bottom: 15px;
   }

@@ -64,9 +64,9 @@
 .desktop-center {
   display: flex;
   justify-content: center;
-  flex: 1;
-  max-width: 600px;
-  margin: 0 40px;
+  flex: 2;
+  max-width: none;
+  margin: 0 20px;
 }
 
 .desktop-right {
@@ -121,7 +121,7 @@
 
 /* Desktop search - Fixed visibility */
 .desktop-search {
-  width: 400px !important;
+  width: 800px !important;
   margin-right: 20px;
   transition: all 0.3s ease;
   display: block !important;
@@ -191,8 +191,8 @@
 /* Update desktop search for new layout */
 .desktop-center .desktop-search {
   width: 100%;
-  max-width: 500px;
-  margin: 0;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 /* Style search input */
@@ -670,14 +670,12 @@
   gap: 4px;
 }
 
-.header-menu-item::after {
-  content: "▼";
-  font-size: 10px;
-  transition: transform 0.3s ease;
+.header-menu-item.home-button {
+  cursor: pointer;
 }
 
-.header-menu-item:hover::after {
-  transform: rotate(180deg);
+.header-menu-item.home-button:hover {
+  color: #ff1493;
 }
 
 .header-dropdown-overlay {
@@ -779,11 +777,11 @@
   }
 
   .content-container {
-    padding: 15px !important;
+    padding: 1px !important;
   }
 
   .ant-layout-content {
-    padding: 10px !important;
+    padding: px !important;
   }
 
   .ant-layout-footer {
@@ -838,7 +836,7 @@
   }
 
   .content-container {
-    padding: 10px !important;
+    padding: 1px !important;
   }
 
   .footer-links {
