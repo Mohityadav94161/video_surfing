@@ -988,8 +988,6 @@ body {
 .age-verification-modal .ant-modal-body {
   padding: 20px !important;
 }
-<<<<<<< HEAD
-=======
 
 /* Add styling for pagination info */
 .pagination-info {
@@ -1087,4 +1085,3 @@ body {
   font-size: 12px;
   color: #ccc;
 }
->>>>>>> 2fbbf1d (bulk upload, and other improvements)

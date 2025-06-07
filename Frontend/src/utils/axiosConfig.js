@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Set default base URL for all axios requests
-axios.defaults.baseURL = 'http://localhost:5001';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
 // Add a request interceptor to include credentials
 axios.interceptors.request.use(
