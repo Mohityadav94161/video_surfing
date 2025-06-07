@@ -1,11 +1,12 @@
 const Reaction = require('../models/Reaction');
 const Video = require('../models/Video');
+const mongoose = require('mongoose');
 
 // Add or update a reaction (like or dislike)
 exports.toggleReaction = async (req, res, next) => {
   try {
     const { type } = req.body;
-    const videoId = req.params.videoId;
+    const rawId = req.params.videoId;
     const userId = req.user.id;
     
     // Validate reaction type
@@ -16,8 +17,16 @@ exports.toggleReaction = async (req, res, next) => {
       });
     }
     
-    // Check if video exists
-    const video = await Video.findOne({ _id: videoId, active: true });
+    // Find video by _id or videoId
+    let video = null;
+    if (mongoose.Types.ObjectId.isValid(rawId)) {
+      video = await Video.findOne({ _id: rawId, active: true });
+    }
+    
+    // If not found by _id, try finding by videoId
+    if (!video) {
+      video = await Video.findOne({ videoId: rawId, active: true });
+    }
     
     if (!video) {
       return res.status(404).json({
@@ -28,7 +37,7 @@ exports.toggleReaction = async (req, res, next) => {
     
     // Check if user already reacted to this video
     const existingReaction = await Reaction.findOne({
-      video: videoId,
+      video: video._id,
       user: userId
     });
     
@@ -60,7 +69,7 @@ exports.toggleReaction = async (req, res, next) => {
       // Create new reaction
       reaction = await Reaction.create({
         type,
-        video: videoId,
+        video: video._id,
         user: userId
       });
     }
@@ -91,10 +100,18 @@ exports.toggleReaction = async (req, res, next) => {
 // Get reaction stats for a video
 exports.getReactionStats = async (req, res, next) => {
   try {
-    const videoId = req.params.videoId;
+    const rawId = req.params.videoId;
     
-    // Check if video exists
-    const video = await Video.findOne({ _id: videoId, active: true });
+    // Find video by _id or videoId
+    let video = null;
+    if (mongoose.Types.ObjectId.isValid(rawId)) {
+      video = await Video.findOne({ _id: rawId, active: true });
+    }
+    
+    // If not found by _id, try finding by videoId
+    if (!video) {
+      video = await Video.findOne({ videoId: rawId, active: true });
+    }
     
     if (!video) {
       return res.status(404).json({
@@ -108,7 +125,7 @@ exports.getReactionStats = async (req, res, next) => {
     
     if (req.user) {
       const userReaction = await Reaction.findOne({
-        video: videoId,
+        video: video._id,
         user: req.user.id
       });
       

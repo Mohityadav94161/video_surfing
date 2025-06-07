@@ -15,6 +15,9 @@ import {
   Descriptions,
   Image,
   Tooltip,
+  Modal,
+  Input,
+  message,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -22,6 +25,8 @@ import {
   CalendarOutlined,
   GlobalOutlined,
   LinkOutlined,
+  ShareAltOutlined,
+  CopyOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 import VideoComments from '../components/VideoComments';
@@ -36,6 +41,7 @@ const Video = () => {
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
 
   // Fetch video details
   useEffect(() => {
@@ -87,6 +93,17 @@ const Video = () => {
     if (video?.originalUrl) {
       window.open(video.originalUrl, '_blank');
     }
+  };
+
+  // Function to copy text to clipboard
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        message.success('Copied to clipboard!');
+      })
+      .catch(() => {
+        message.error('Failed to copy. Please try again.');
+      });
   };
 
   if (loading) {
@@ -223,6 +240,16 @@ const Video = () => {
                 Watch Video
               </Button>
               
+              <Button
+                type="default"
+                size="large"
+                icon={<ShareAltOutlined />}
+                onClick={() => setShareModalVisible(true)}
+                style={{ marginRight: 8 }}
+              >
+                Share
+              </Button>
+              
               <AddToCollection video={video} />
             </div>
           </Card>
@@ -247,14 +274,8 @@ const Video = () => {
               <Descriptions.Item label="Source">
                 {video.sourceWebsite}
               </Descriptions.Item>
-              <Descriptions.Item label="Likes">
-                {video.likesCount || 0}
-              </Descriptions.Item>
-              <Descriptions.Item label="Dislikes">
-                {video.dislikesCount || 0}
-              </Descriptions.Item>
-              <Descriptions.Item label="Video Type">
-                {video.videoType === 'terbox' ? 'Terbox Video' : 'Normal Video'}
+              <Descriptions.Item label="Video ID">
+                {video.videoId || 'N/A'}
               </Descriptions.Item>
             </Descriptions>
           </Card>
@@ -268,6 +289,74 @@ const Video = () => {
           </Card>
         </Col>
       </Row>
+      
+      {/* Share Modal */}
+      <Modal
+        title="Share Video"
+        open={shareModalVisible}
+        onCancel={() => setShareModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setShareModalVisible(false)}>
+            Close
+          </Button>
+        ]}
+      >
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <div>
+            <Text strong>Share using Full URL</Text>
+            <Input.Group compact>
+              <Input
+                value={`${window.location.origin}/video/${id}`}
+                readOnly
+                style={{ width: 'calc(100% - 32px)' }}
+              />
+              <Tooltip title="Copy">
+                <Button
+                  icon={<CopyOutlined />}
+                  onClick={() => copyToClipboard(`${window.location.origin}/video/${id}`)}
+                />
+              </Tooltip>
+            </Input.Group>
+          </div>
+          
+          <div style={{ marginTop: 16 }}>
+            <Text strong>Share using Video ID</Text>
+            <Input.Group compact>
+              <Input
+                value={`${window.location.origin}/video/${video.videoId}`}
+                readOnly
+                style={{ width: 'calc(100% - 32px)' }}
+              />
+              <Tooltip title="Copy">
+                <Button
+                  icon={<CopyOutlined />}
+                  onClick={() => copyToClipboard(`${window.location.origin}/video/${video.videoId}`)}
+                />
+              </Tooltip>
+            </Input.Group>
+          </div>
+          
+          <div style={{ marginTop: 16 }}>
+            <Text strong>Video ID only</Text>
+            <Input.Group compact>
+              <Input
+                value={video.videoId || ''}
+                readOnly
+                style={{ width: 'calc(100% - 32px)' }}
+              />
+              <Tooltip title="Copy">
+                <Button
+                  icon={<CopyOutlined />}
+                  onClick={() => copyToClipboard(video.videoId || '')}
+                />
+              </Tooltip>
+            </Input.Group>
+            <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+              Users can search for this video directly using this ID in the search bar.
+            </Text>
+          </div>
+        </Space>
+      </Modal>
     </div>
   );
 };

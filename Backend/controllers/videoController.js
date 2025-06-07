@@ -21,8 +21,12 @@ exports.getAllVideos = async (req, res) => {
       limit = 12
     } = req.query;
 
-    // 3. Build a base filter for “active” videos + any simple filters:
-    const filter = { active: true };
+    // Check if the request is from an admin user
+    const isAdmin = req.user && req.user.role === 'admin';
+    
+    // 3. Build a base filter - only include active videos for non-admin users
+    const filter = isAdmin ? {} : { active: true };
+    
     if (category) filter.category = category;
     if (tag) filter.tags = tag;
     if (videoId) filter.videoId = videoId;
@@ -30,12 +34,12 @@ exports.getAllVideos = async (req, res) => {
     let useTextSearch = false;
     let query;
 
-    // 4. Attempt a text‐search if “search” param is provided:
+    // 4. Attempt a text-search if "search" param is provided:
     if (search) {
       try {
         useTextSearch = true;
 
-        // Build a MongoDB text‐search query on the “search” string:
+        // Build a MongoDB text-search query on the "search" string:
         query = Video.find({
           ...filter,
           $text: { $search: search }
@@ -47,8 +51,8 @@ exports.getAllVideos = async (req, res) => {
             score: { $meta: 'textScore' }
           });
       } catch (err) {
-        // If combining $text and other operators throws “NoQueryExecutionPlans,” fall back to regex:
-        console.warn('Text‐search failed, falling back to regex‐style search:', err);
+        // If combining $text and other operators throws "NoQueryExecutionPlans," fall back to regex:
+        console.warn('Text-search failed, falling back to regex-style search:', err);
 
         const regex = new RegExp(search, 'i');
         query = Video.find({
@@ -64,11 +68,11 @@ exports.getAllVideos = async (req, res) => {
         useTextSearch = false;
       }
     } else {
-      // 5. If no “search” param, start from a plain find(filter):
+      // 5. If no "search" param, start from a plain find(filter):
       query = Video.find(filter);
     }
 
-    // 6. Apply sorting if not text‐searching; otherwise, textScore sort is already applied:
+    // 6. Apply sorting if not text-searching; otherwise, textScore sort is already applied:
     if (!useTextSearch) {
       if (sort) {
         // e.g. sort = "field1,-field2"
@@ -96,7 +100,7 @@ exports.getAllVideos = async (req, res) => {
 
     query = query.skip(skip).limit(limitNum);
 
-    // 9. Execute the query (populate “addedBy.username”):
+    // 9. Execute the query (populate "addedBy.username"):
     let videos = await query.populate({
       path: 'addedBy',
       select: 'username'
@@ -111,7 +115,7 @@ exports.getAllVideos = async (req, res) => {
         $text: { $search: search }
       });
     } else {
-      // If no text search, just count with the base “filter”
+      // If no text search, just count with the base "filter"
       totalResults = await Video.countDocuments(filter);
     }
 
@@ -138,7 +142,7 @@ exports.getAllVideos = async (req, res) => {
         threshold: 0.3
       });
 
-      // If “search” is present, use it in Fuse. Otherwise, Fuse on empty string
+      // If "search" is present, use it in Fuse. Otherwise, Fuse on empty string
       const fuseResults = fuse.search(search || '');
 
       // Extract just the matched video documents
@@ -262,7 +266,7 @@ exports.getVideo = async (req, res, next) => {
       });
     }
 
-    // 6. If a video was found by _id or videoId, but check that it’s active
+    // 6. If a video was found by _id or videoId, but check that it's active
     if (!video.active) {
       return res.status(404).json({
         status: 'fail',
@@ -319,7 +323,7 @@ exports.addVideo = async (req, res, next) => {
       { $inc: { seq: 1 } },
       { new: true, upsert: true }
     );
-    const videoId = str(counter)
+    const videoId = counter.seq.toString();
 
     // If user provided complete data, use it
     if (title && thumbnailUrl && category) {
@@ -546,7 +550,21 @@ exports.extractMetadata = async (req, res, next) => {
 // Extract all videos from a webpage (for bulk upload)
 exports.extractVideosFromPage = async (req, res, next) => {
   try {
-    const { url, customSelectors, fileExtensions, options } = req.body;
+    const { 
+      url, 
+      customSelectors = [], 
+      fileExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'],
+      scanScriptTags = true,
+      scanIframeAttributes = true, 
+      scanDataAttributes = true,
+      followExternalLinks = false,
+      scanOnlyMainContent = false,
+      minVideoDuration = 0,
+      maxScanDepth = 1,
+      browser = 'chrome',
+      maxPages = 1,          // Number of pages to scan (for pagination)
+      maxVideos = 500        // Maximum number of videos to extract
+    } = req.body;
 
     if (!url) {
       return res.status(400).json({
@@ -555,24 +573,125 @@ exports.extractVideosFromPage = async (req, res, next) => {
       });
     }
 
+    // Log the extraction attempt
+    console.log(`🔍 Video extraction requested for URL: ${url}`);
+    console.log(`📋 Configuration: ${JSON.stringify({
+      customSelectors,
+      fileExtensions,
+      scanScriptTags,
+      scanIframeAttributes,
+      scanDataAttributes,
+      followExternalLinks,
+      scanOnlyMainContent,
+      minVideoDuration,
+      maxScanDepth,
+      browser,
+      maxPages,
+      maxVideos
+    }, null, 2)}`);
+
     // Import the page scraper utility
     const { scrapePageForVideos } = require('../utils/metadataExtractor');
 
-    // Extract all videos from the page with optional custom selectors
-    const videos = await scrapePageForVideos(url, customSelectors, fileExtensions, options);
+    // Configure extraction options for Playwright
+    const options = {
+      // Browser configuration
+      browser,
+      playwrightOptions: {
+        headless: true,
+        timeout: 60000, // 60 seconds timeout
+      },
+      
+      // Viewport
+      viewport: {
+        width: browser === 'mobile' ? 375 : 1920,
+        height: browser === 'mobile' ? 812 : 1080,
+      },
+      
+      // Extraction configuration
+      customSelectors,
+      fileExtensions,
+      scanScriptTags,
+      scanDataAttributes,
+      scanIframeAttributes,
+      
+      // Performance options
+      timeout: 60000,
+      additionalWaitTime: 5000,
+      
+      // Behavior options
+      scrollPage: true,
+      blockAds: true,
+      debug: process.env.NODE_ENV === 'development',
+      
+      // Content scanning
+      followExternalLinks,
+      maxScanDepth,
+      minVideoDuration,
+      scanOnlyMainContent,
+      
+      // Pagination options
+      maxPages,
+      maxVideos,
+      
+      // Age verification
+      ageVerification: true,
+      
+      // Don't take screenshots in production
+      takeScreenshot: process.env.NODE_ENV === 'development'
+    };
+
+    // Extract all videos from the page
+    console.log(`🚀 Starting video extraction with options: ${JSON.stringify(options, null, 2)}`);
+    const result = await scrapePageForVideos(url, options);
+
+    // Process the results to enhance with additional metadata
+    const enhancedVideos = result.videos.map(video => {
+      // Add confidence if not present (calculated by the extractor)
+      const confidence = video.confidence || calculateConfidenceScore(video);
+      
+      return {
+        ...video,
+        confidence,
+        extractedAt: new Date().toISOString()
+      };
+    });
+
+    // Sort videos by confidence score (highest first)
+    enhancedVideos.sort((a, b) => b.confidence - a.confidence);
+
+    // Log extraction success
+    console.log(`✅ Successfully extracted ${enhancedVideos.length} videos from ${url}`);
 
     res.status(200).json({
       status: 'success',
       data: {
-        videos,
-        count: videos.length,
+        url: result.url,
+        domain: result.domain,
+        pageTitle: result.metadata?.pageTitle || '',
+        isAdultContent: result.isAdultContent || false,
+        videos: enhancedVideos,
+        count: enhancedVideos.length,
+        extractionMethods: result.metadata?.extractionMethods || [],
+        pagination: result.metadata?.pagination || { totalPages: 1, pagesScanned: 1 },
+        extractionTime: new Date().toISOString()
       },
     });
   } catch (err) {
-    console.error('Error extracting videos from page:', err);
+    console.error('❌ Error extracting videos from page:', err);
+    
+    // Provide more detailed error response
+    const errorMessage = err.message || 'Failed to extract videos from page';
+    const errorDetails = {
+      url: req.body.url,
+      errorType: err.name,
+      errorStack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    };
+    
     res.status(500).json({
       status: 'error',
-      message: err.message || 'Failed to extract videos from page',
+      message: errorMessage,
+      details: errorDetails
     });
   }
 };
@@ -617,4 +736,30 @@ exports.getVideoStats = async (req, res, next) => {
       message: 'Error fetching video statistics'
     });
   }
-}; 
+};
+
+/**
+ * Calculate confidence score for a video
+ */
+function calculateConfidenceScore(video) {
+  let score = 0.5; // Default medium confidence
+  
+  // Adjust based on video type
+  if (video.type === 'direct') score += 0.3;
+  if (video.type === 'hls-stream' || video.type === 'dash-stream') score += 0.15;
+  if (video.type === 'youtube' || video.type === 'vimeo') score += 0.1;
+  
+  // Adjust based on extraction method
+  if (video.foundBy?.includes('video-element')) score += 0.2;
+  if (video.foundBy?.includes('network-request')) score += 0.15;
+  if (video.foundBy?.includes('jwplayer') || video.foundBy?.includes('videojs')) score += 0.1;
+  if (video.foundBy?.includes('json-ld')) score += 0.2;
+  
+  // Adjust based on metadata completeness
+  if (video.title && video.title !== `Video from ${video.sourceWebsite}`) score += 0.05;
+  if (video.thumbnailUrl) score += 0.1;
+  if (video.quality && video.quality !== 'unknown') score += 0.05;
+  
+  // Cap score at 1.0
+  return Math.min(score, 1.0);
+} 

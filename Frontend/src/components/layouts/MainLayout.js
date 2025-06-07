@@ -91,16 +91,102 @@ const MainLayout = () => {
   }, [location.pathname])
 
   useEffect(()=>{
-     const fetchCategories = async () => {
+     const fetchMenuData = async () => {
       try {
-        const response = await axios.get("/api/videos/categories");
-        setMenuData({'Categories':response.data.data.categories || []});
+        // Fetch categories
+        const categoryResponse = await axios.get("/api/videos/categories");
+        const categories = categoryResponse.data.data.categories || [];
+        
+        // Fetch tags for trending and pornstars
+        const tagsResponse = await axios.get("/api/videos/tags");
+        const tags = tagsResponse.data.data.tags || [];
+        
+        // Make sure tags are properly formatted
+        const formattedTags = tags.map(tag => {
+          // If tag is already an object with name property, return it
+          if (tag && typeof tag === 'object' && tag.name) {
+            return tag;
+          }
+          // If tag is a string, convert it to object with name property
+          if (typeof tag === 'string') {
+            return { name: tag };
+          }
+          // Default fallback
+          return { name: String(tag || 'Unknown') };
+        });
+        
+        // For trending videos, find actual videos with isTrending flag
+        const trendingResponse = await axios.get("/api/videos", {
+          params: {
+            isTrending: true,
+            limit: 12
+          }
+        });
+        
+        // Create trending tags with thumbnails
+        const trendingVideos = trendingResponse.data.data.videos || [];
+        const trendingTags = trendingVideos.map(video => ({
+          name: video.title,
+          thumbnail: video.thumbnailUrl,
+          tag: video.tags?.[0]?.name || 'trending',
+          id: video._id
+        }));
+        
+        // If not enough trending videos, supplement with regular tags
+        if (trendingTags.length < 12) {
+          const additionalTags = formattedTags
+            .filter(tag => !trendingTags.find(t => t.tag === tag.name))
+            .slice(0, 12 - trendingTags.length)
+            .map(tag => ({
+              name: tag.name,
+              tag: tag.name
+            }));
+          
+          trendingTags.push(...additionalTags);
+        }
+        
+        // Filter tags for pornstars (using some tags as pornstar names for demo)
+        const pornstarTags = formattedTags.filter(tag => 
+          ["Brunette", "Blonde", "Asian", "Ebony", "Latina", "Redhead"].includes(tag?.name)
+        ).slice(0, 12);
+        
+        // For recommended, we'll fetch most popular videos
+        const videosResponse = await axios.get("/api/videos", {
+          params: {
+            sort: "-views",
+            limit: 12
+          }
+        });
+        
+        // Extract categories from popular videos
+        const recommendedCategories = videosResponse.data.data.videos
+          .map(video => video.category)
+          .filter(Boolean)
+          .filter((value, index, self) => self.indexOf(value) === index)
+          .slice(0, 12);
+        
+        // Add home menu with recent items
+        const homeMenu = videosResponse.data.data.videos
+          .slice(0, 6)
+          .map(video => ({ 
+            name: video.title,
+            thumbnail: video.thumbnailUrl,
+            id: video._id
+          }));
+        
+        setMenuData({
+          'home': homeMenu,
+          'Categories': categories,
+          'Trending': trendingTags,
+          'Pornstars': pornstarTags,
+          'Recommended': recommendedCategories
+        });
       } catch (err) {
-        console.error("Error fetching categories:", err);
+        console.error("Error fetching menu data:", err);
       }
     };
 
-    fetchCategories();
+    fetchMenuData();
 
   },[])
   console.log('object ',menuData[activeDropdown])
@@ -420,12 +506,16 @@ const MainLayout = () => {
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("home")}
             onMouseLeave={handleHeaderMenuLeave}
+            onClick={() => {
+              navigate("/");
+              setActiveDropdown(null);
+            }}
           >
             Home
           </div>
           <div
             className="header-menu-item"
-            onMouseEnter={() => handleHeaderMenuHover("trending")}
+            onMouseEnter={() => handleHeaderMenuHover("Trending")}
             onMouseLeave={handleHeaderMenuLeave}
           >
             Trending
@@ -439,14 +529,14 @@ const MainLayout = () => {
           </div>
           <div
             className="header-menu-item"
-            onMouseEnter={() => handleHeaderMenuHover("pornstars")}
+            onMouseEnter={() => handleHeaderMenuHover("Pornstars")}
             onMouseLeave={handleHeaderMenuLeave}
           >
             Pornstars
           </div>
           <div
             className="header-menu-item"
-            onMouseEnter={() => handleHeaderMenuHover("recommended")}
+            onMouseEnter={() => handleHeaderMenuHover("Recommended")}
             onMouseLeave={handleHeaderMenuLeave}
           >
             Recommended
@@ -464,21 +554,99 @@ const MainLayout = () => {
             onMouseLeave={handleHeaderMenuLeave}
           >
             <div className="header-dropdown-grid">
-              {menuData[activeDropdown]?.map((item, index) => (
+              {activeDropdown === 'home' && menuData[activeDropdown]?.map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
                   onClick={() => {
-                    // Handle tag filtering
-                    const tagName = `${item}`
-                    navigate(`/?category=${tagName}`)
-                    setActiveDropdown(null)
+                    navigate(`/video/${item.id}`);
+                    setActiveDropdown(null);
                   }}
                 >
-                  <img src="/placeholder.svg?height=120&width=200" alt={`${activeDropdown} ${index + 1}`} />
+                  <img 
+                    src={item.thumbnail || `/placeholder.svg?height=120&width=200&text=${encodeURIComponent(item.name)}`} 
+                    alt={item.name} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/home.jpg";
+                    }}
+                  />
                   <div className="header-dropdown-card-content">
                     <h4 className="header-dropdown-card-title">
-                      {item}
+                      {item.name}
+                    </h4>
+                  </div>
+                </div>
+              ))}
+              
+              {activeDropdown === 'Trending' && menuData[activeDropdown]?.map((item, index) => (
+                <div
+                  key={index}
+                  className="header-dropdown-card"
+                  onClick={() => {
+                    if (item.id) {
+                      // If it's a video, navigate to video page
+                      navigate(`/video/${item.id}`);
+                    } else {
+                      // Otherwise filter by tag
+                      navigate(`/?tag=${item.tag || item.name}`);
+                    }
+                    setActiveDropdown(null);
+                    
+                    // Force a page refresh to ensure filters apply correctly
+                    if (window.location.pathname === '/' && !item.id) {
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  <img 
+                    src={item.thumbnail || `/placeholder.svg?height=120&width=200&text=${encodeURIComponent(item.name)}`} 
+                    alt={item.name} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/home.jpg";
+                    }}
+                  />
+                  <div className="header-dropdown-card-content">
+                    <h4 className="header-dropdown-card-title">
+                      {item.name}
+                    </h4>
+                  </div>
+                </div>
+              ))}
+              
+              {(activeDropdown !== 'home' && activeDropdown !== 'Trending') && menuData[activeDropdown]?.map((item, index) => (
+                <div
+                  key={index}
+                  className="header-dropdown-card"
+                  onClick={() => {
+                    // Handle navigation based on dropdown type
+                    if (activeDropdown === 'Categories') {
+                      navigate(`/?category=${item}`);
+                    } else if (activeDropdown === 'Trending' || activeDropdown === 'Pornstars') {
+                      navigate(`/?tag=${item?.name || item}`);
+                    } else if (activeDropdown === 'Recommended') {
+                      navigate(`/?category=${item}`);
+                    }
+                    setActiveDropdown(null);
+                    
+                    // Force a page refresh to ensure filters apply correctly
+                    if (window.location.pathname === '/') {
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  <img 
+                    src={`/placeholder.svg?height=120&width=200&text=${encodeURIComponent(item?.name || item)}`} 
+                    alt={`${activeDropdown} ${index + 1}`} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/home.jpg";
+                    }}
+                  />
+                  <div className="header-dropdown-card-content">
+                    <h4 className="header-dropdown-card-title">
+                      {item?.name || item}
                     </h4>
                   </div>
                 </div>

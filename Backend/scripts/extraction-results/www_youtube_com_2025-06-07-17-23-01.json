@@ -1,0 +1,48 @@
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "domain": "www.youtube.com",
+  "isAdultContent": false,
+  "videos": [
+    {
+      "url": "blob:https://www.youtube.com/b6dde047-65fe-4412-a4f0-ebb2229e1acd",
+      "title": "html5 Video from www.youtube.com",
+      "thumbnailUrl": "",
+      "sourceWebsite": "YouTube",
+      "foundBy": "generic-player-html5",
+      "type": "youtube",
+      "format": "unknown",
+      "attributes": {
+        "mimeType": "",
+        "width": 640,
+        "height": 360,
+        "duration": 213.061
+      },
+      "quality": "360p"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "title": "Streaming Video from www.youtube.com",
+      "thumbnailUrl": "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+      "sourceWebsite": "YouTube",
+      "foundBy": "media-source-extensions",
+      "type": "youtube",
+      "format": "unknown",
+      "note": "Streaming video detected but direct URL not found",
+      "videoId": "dQw4w9WgXcQ"
+    }
+  ],
+  "metadata": {
+    "pageTitle": "Rick Astley - Never Gonna Give You Up (Official Music Video) - YouTube",
+    "scanTimestamp": "2025-06-07T17:22:51.879Z",
+    "extractionMethods": [
+      "video-elements",
+      "iframe-elements",
+      "network-requests",
+      "media-elements",
+      "video-players",
+      "javascript-variables",
+      "media-source-extensions"
+    ],
+    "totalFound": 2
+  }
+}

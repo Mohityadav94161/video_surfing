@@ -13,7 +13,8 @@ import {
   message,
   Select,
   Image,
-  Breadcrumb
+  Breadcrumb,
+  Tooltip
 } from 'antd';
 import { 
   SaveOutlined,
@@ -225,6 +226,25 @@ const EditVideo = () => {
               </Text>
               <Text type="secondary" style={{ marginLeft: 8 }}>
                 Views: {video.views}
+              </Text>
+            </div>
+            
+            <div style={{ marginBottom: 10 }}>
+              <Text strong>Video ID: </Text>
+              <Tooltip title="Click to copy">
+                <Tag 
+                  color="green" 
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(video.videoId || '');
+                    message.success('Video ID copied to clipboard');
+                  }}
+                >
+                  {video.videoId || 'N/A'}
+                </Tag>
+              </Tooltip>
+              <Text type="secondary" style={{ marginLeft: 8 }}>
+                (Users can search by this ID)
               </Text>
             </div>
             

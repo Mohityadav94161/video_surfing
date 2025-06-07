@@ -20,7 +20,11 @@ import {
   Collapse,
   Tooltip,
   Tabs,
-  Switch
+  Switch,
+  Radio,
+  Badge,
+  Select,
+  Statistic
 } from 'antd';
 import { 
   LinkOutlined, 
@@ -36,7 +40,12 @@ import {
   DeleteOutlined,
   FileOutlined,
   LinkOutlined as LinkIcon,
-  FilterOutlined
+  FilterOutlined,
+  ChromeOutlined,
+  FirefoxOutlined,
+  IeOutlined,
+  AppleOutlined,
+  MobileOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -44,6 +53,7 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 const BulkVideoUpload = () => {
   const [form] = Form.useForm();
@@ -54,6 +64,7 @@ const BulkVideoUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [extractionStats, setExtractionStats] = useState(null);
   const [customSelectors, setCustomSelectors] = useState([
     { type: 'css', selector: 'video' },
     { type: 'css', selector: 'iframe[src*="youtube"], iframe[src*="vimeo"]' }
@@ -70,7 +81,10 @@ const BulkVideoUpload = () => {
     followExternalLinks: false,
     scanOnlyMainContent: false,
     minVideoDuration: 0,
-    maxScanDepth: 1
+    maxScanDepth: 1,
+    browser: 'chrome',
+    maxPages: 1,          // Number of pages to scan for pagination
+    maxVideos: 500        // Maximum number of videos to extract
   });
 
   // Function to add a custom selector
@@ -131,6 +145,22 @@ const BulkVideoUpload = () => {
     });
   };
 
+  // Get confidence color based on score
+  const getConfidenceColor = (confidence) => {
+    if (confidence >= 0.8) return 'green';
+    if (confidence >= 0.5) return 'orange';
+    return 'red';
+  };
+
+  // Get quality badge color based on quality
+  const getQualityColor = (quality) => {
+    if (quality === '4K') return '#f50';
+    if (quality === '1080p') return '#87d068';
+    if (quality === '720p') return '#108ee9';
+    if (quality === '480p') return '#2db7f5';
+    return '#d3d3d3';
+  };
+
   // Function to extract videos from a URL
   const extractVideos = async () => {
     const url = form.getFieldValue('url');
@@ -142,16 +172,39 @@ const BulkVideoUpload = () => {
     
     setLoading(true);
     setError(null);
+    setExtractionStats(null);
     
     try {
-      // Call the API to extract videos from the URL with custom selectors
+      // Call the API to extract videos from the URL with all options
       const response = await axios.post('/api/videos/extract-from-page', { 
         url,
-        customSelectors,
+        customSelectors: customSelectors.map(s => s.selector),
         fileExtensions,
-        options: advancedOptions
+        scanScriptTags: advancedOptions.scanScriptTags,
+        scanIframeAttributes: advancedOptions.scanIframeAttributes,
+        scanDataAttributes: advancedOptions.scanDataAttributes,
+        followExternalLinks: advancedOptions.followExternalLinks,
+        scanOnlyMainContent: advancedOptions.scanOnlyMainContent,
+        minVideoDuration: advancedOptions.minVideoDuration,
+        maxScanDepth: advancedOptions.maxScanDepth,
+        browser: advancedOptions.browser,
+        maxPages: advancedOptions.maxPages,
+        maxVideos: advancedOptions.maxVideos
       });
-      const extractedVideos = response.data.data.videos;
+      
+      // Extract video array and stats from response
+      const { videos: extractedVideos, count, extractionMethods, pageTitle, domain, isAdultContent, pagination } = response.data.data;
+      
+      // Set extraction stats
+      setExtractionStats({
+        url,
+        pageTitle,
+        domain,
+        isAdultContent,
+        count,
+        extractionMethods,
+        pagination
+      });
       
       if (extractedVideos.length === 0) {
         message.warning('No videos found on the provided page');
@@ -172,7 +225,9 @@ const BulkVideoUpload = () => {
     } catch (err) {
       console.error('Error extracting videos:', err);
       const errorMessage = err.response?.data?.message || 'Failed to extract videos from the provided URL';
-      setError(errorMessage);
+      const errorDetails = err.response?.data?.details || {};
+      
+      setError(`${errorMessage}${errorDetails.url ? ` - URL: ${errorDetails.url}` : ''}`);
       message.error(errorMessage);
     } finally {
       setLoading(false);
@@ -236,7 +291,8 @@ const BulkVideoUpload = () => {
             thumbnailUrl: video.thumbnailUrl,
             category: video.category || 'Other',
             tags: video.tags || [],
-            sourceWebsite: video.sourceWebsite || new URL(video.url).hostname
+            sourceWebsite: video.sourceWebsite || new URL(video.url).hostname,
+            quality: video.quality
           });
           
           uploaded++;
@@ -488,6 +544,81 @@ const BulkVideoUpload = () => {
                         </Form.Item>
                       </Col>
                     </Row>
+                    
+                    <Form.Item
+                      label="Browser Emulation"
+                      tooltip="Mimic a specific browser to improve video extraction capabilities"
+                    >
+                      <Select
+                        value={advancedOptions.browser}
+                        onChange={(value) => handleAdvancedOptionChange('browser', value)}
+                        style={{ width: '100%' }}
+                      >
+                        <Option value="chrome">
+                          <Space>
+                            <ChromeOutlined />
+                            Chrome
+                          </Space>
+                        </Option>
+                        <Option value="firefox">
+                          <Space>
+                            Firefox
+                          </Space>
+                        </Option>
+                        <Option value="edge">
+                          <Space>
+                            <IeOutlined />
+                            Edge
+                          </Space>
+                        </Option>
+                        <Option value="safari">
+                          <Space>
+                            <AppleOutlined />
+                            Safari
+                          </Space>
+                        </Option>
+                        <Option value="mobile">
+                          <Space>
+                            <MobileOutlined />
+                            Mobile Browser
+                          </Space>
+                        </Option>
+                      </Select>
+                    </Form.Item>
+                    
+                    <Divider orientation="left">Pagination Options</Divider>
+                    <Row gutter={16}>
+                      <Col span={12}>
+                        <Form.Item
+                          label="Maximum Pages to Scan"
+                          tooltip="Number of pages to scan when the website has pagination (1 = current page only)"
+                        >
+                          <Input
+                            type="number"
+                            min={1}
+                            max={20}
+                            value={advancedOptions.maxPages}
+                            onChange={(e) => handleAdvancedOptionChange('maxPages', parseInt(e.target.value) || 1)}
+                            addonAfter="pages"
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          label="Maximum Videos to Extract"
+                          tooltip="Limit the total number of videos that will be extracted"
+                        >
+                          <Input
+                            type="number"
+                            min={10}
+                            max={1000}
+                            value={advancedOptions.maxVideos}
+                            onChange={(e) => handleAdvancedOptionChange('maxVideos', parseInt(e.target.value) || 500)}
+                            addonAfter="videos"
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   </div>
                 </TabPane>
               </Tabs>
@@ -499,6 +630,7 @@ const BulkVideoUpload = () => {
             onClick={extractVideos} 
             loading={loading}
             icon={<PlayCircleOutlined />}
+            size="large"
           >
             Extract Videos
           </Button>
@@ -513,6 +645,52 @@ const BulkVideoUpload = () => {
           showIcon
           style={{ marginBottom: 20 }}
         />
+      )}
+      
+      {extractionStats && (
+        <Card title="Extraction Statistics" style={{ marginBottom: 20 }}>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Statistic title="Page Title" value={extractionStats.pageTitle || 'Unknown'} />
+            </Col>
+            <Col span={8}>
+              <Statistic title="Domain" value={extractionStats.domain || 'Unknown'} />
+            </Col>
+            <Col span={8}>
+              <Statistic 
+                title="Videos Found" 
+                value={extractionStats.count} 
+                suffix={extractionStats.isAdultContent ? <Tag color="red">Adult Content</Tag> : null}
+              />
+            </Col>
+          </Row>
+          {extractionStats.pagination && (
+            <Row gutter={16} style={{ marginTop: 16 }}>
+              <Col span={12}>
+                <Statistic 
+                  title="Pages Scanned" 
+                  value={extractionStats.pagination.pagesScanned || 1} 
+                  suffix={`of ${extractionStats.pagination.totalPages || 1}`}
+                />
+              </Col>
+              <Col span={12}>
+                <Statistic 
+                  title="Pagination"
+                  value={extractionStats.pagination.pagesScanned > 1 ? "Multiple pages" : "Single page"}
+                  valueStyle={{
+                    color: extractionStats.pagination.pagesScanned > 1 ? '#52c41a' : '#1890ff'
+                  }}
+                />
+              </Col>
+            </Row>
+          )}
+          <Divider orientation="left">Extraction Methods</Divider>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {(extractionStats.extractionMethods || []).map((method, index) => (
+              <Tag key={index} color="blue">{method}</Tag>
+            ))}
+          </div>
+        </Card>
       )}
       
       {/* Modal for video selection and upload */}
@@ -548,6 +726,11 @@ const BulkVideoUpload = () => {
             <Text type="secondary">
               {selectedVideos.length} of {videos.length} videos selected
             </Text>
+            {extractionStats?.pagination && extractionStats.pagination.pagesScanned > 1 && (
+              <Tag color="green">
+                Videos from {extractionStats.pagination.pagesScanned} pages
+              </Tag>
+            )}
           </Space>
         </div>
         
@@ -579,6 +762,10 @@ const BulkVideoUpload = () => {
                       alt={video.title} 
                       src={video.thumbnailUrl || process.env.REACT_APP_DEFAULT_THUMBNAIL} 
                       style={{ width: '100%' }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://placehold.co/320x180?text=No+Thumbnail';
+                      }}
                     />
                     <a 
                       href={video.url} 
@@ -600,6 +787,17 @@ const BulkVideoUpload = () => {
                     >
                       <VideoCameraOutlined /> View
                     </a>
+                    {video.quality && video.quality !== 'unknown' && (
+                      <Badge 
+                        count={video.quality} 
+                        style={{ 
+                          backgroundColor: getQualityColor(video.quality),
+                          position: 'absolute',
+                          top: 8,
+                          right: 8
+                        }}
+                      />
+                    )}
                   </div>
                 }
                 actions={[
@@ -629,11 +827,27 @@ const BulkVideoUpload = () => {
                             URL: {video.url}
                           </Text>
                         </Tooltip>
-                        {video.foundBy && (
-                          <Tag color="blue" style={{ marginTop: 4 }}>
-                            <FilterOutlined /> {video.foundBy}
-                          </Tag>
-                        )}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                          {video.foundBy && (
+                            <Tag color="blue">
+                              <FilterOutlined /> {video.foundBy}
+                            </Tag>
+                          )}
+                          {video.confidence && (
+                            <Tooltip title={`Confidence: ${Math.round(video.confidence * 100)}%`}>
+                              <Tag color={getConfidenceColor(video.confidence)}>
+                                {Math.round(video.confidence * 100)}% confidence
+                              </Tag>
+                            </Tooltip>
+                          )}
+                          {video.extractedAt && (
+                            <Tooltip title={`Extracted: ${new Date(video.extractedAt).toLocaleString()}`}>
+                              <Tag>
+                                {new Date(video.extractedAt).toLocaleTimeString()}
+                              </Tag>
+                            </Tooltip>
+                          )}
+                        </div>
                       </Space>
                     </div>
                   }

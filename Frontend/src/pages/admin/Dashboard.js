@@ -86,6 +86,11 @@ const Dashboard = () => {
         
         if (filters.search) {
           params.set('search', filters.search);
+          
+          // Check if search might be a videoId (no spaces)
+          if (filters.search.trim().indexOf(' ') === -1) {
+            params.set('videoId', filters.search.trim());
+          }
         }
         
         if (filters.category) {
@@ -226,6 +231,26 @@ const Dashboard = () => {
         <Link to={`/video/${record._id}`}>{text}</Link>
       ),
       sorter: (a, b) => a.title.localeCompare(b.title),
+    },
+    {
+      title: 'Video ID',
+      dataIndex: 'videoId',
+      key: 'videoId',
+      render: (videoId) => (
+        <Tooltip title="Click to copy">
+          <Tag 
+            color="blue"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              navigator.clipboard.writeText(videoId || '');
+              message.success('Video ID copied to clipboard');
+            }}
+          >
+            {videoId || 'N/A'}
+          </Tag>
+        </Tooltip>
+      ),
+      width: 120,
     },
     {
       title: 'Category',
@@ -434,13 +459,12 @@ const Dashboard = () => {
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={8}>
               <Input.Search
-                placeholder="Search by title or tag"
+                placeholder="Search by title, tag, or video ID"
                 allowClear
-                enterButton={<SearchOutlined />}
-                onSearch={handleSearch}
-                style={{ width: '100%' }}
                 value={filters.search}
-                onChange={(e) => setFilters({...filters, search: e.target.value})}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onSearch={handleSearch}
+                style={{ width: 300, marginRight: 16 }}
               />
             </Col>
             <Col xs={24} sm={8}>

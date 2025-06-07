@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Pagination, Spin, Button, Select, Tag, Modal } from "antd"
+import { Pagination, Spin, Button, Select, Tag, Modal, Divider } from "antd"
 import {
   EyeOutlined,
   ClockCircleOutlined,
@@ -9,6 +9,8 @@ import {
   AppstoreOutlined,
   UnorderedListOutlined,
   VideoCameraOutlined,
+  FireOutlined,
+  CloseOutlined,
 } from "@ant-design/icons"
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom"
 
@@ -30,6 +32,13 @@ const Home = () => {
   const [viewMode, setViewMode] = useState("grid") // "grid" or "list"
   const [ageVerificationVisible, setAgeVerificationVisible] = useState(false)
   const [popularTags, setPoppularTags] = useState(["Brunette", "Blonde", "Lesbian", "Hot", "Balochistan", "Ebony", "Asian", "Busty", "china"])
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  
+  // New filter states
+  const [qualityFilter, setQualityFilter] = useState(null)
+  const [durationFilter, setDurationFilter] = useState(null)
+  const [showRecommended, setShowRecommended] = useState(false)
+  const [sortOption, setSortOption] = useState("recent")
 
   const [tagLoading, setTagLoading] = useState(false)
   const [tagError, setTagError] = useState(null)
@@ -37,10 +46,6 @@ const Home = () => {
   const [tagReady, setTagReady] = useState(false)
 
   const initialLoadDone = useRef(false)
-
-
-
-
 
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams();
@@ -154,31 +159,62 @@ const Home = () => {
 
         // 2. Sync selectedTag with URL param
         const tagParam = searchParams.get("tag");
+        const categoryParam = searchParams.get("category");
+
         let matchedTag = null;
         if (tagParam) {
           matchedTag = tags.find((t) => t.name === tagParam);
+          if (!matchedTag && tagParam) {
+            // If tag not found in popular tags but exists in URL, create a tag object
+            matchedTag = { name: tagParam };
+          }
         }
-        setSelectedTag(matchedTag || null); // also handles invalid tag
+        
+        setSelectedTag(matchedTag || null);
         const tagName = matchedTag?.name;
+        
+        console.log("Tag param:", tagParam);
+        console.log("Selected tag:", matchedTag);
 
-        // 3. Fetch Videos based on tag + currentPage
+        // 3. Fetch Videos based on tag/category + currentPage
         const videoResponse = await axios.get("/api/videos", {
           params: {
             page: currentPage,
-            limit: 100,
-            tag: tagName,
+            limit: 12, // Use a sensible page size
+            tag: tagName, // Make sure we're passing the tag name, not the object
+            category: categoryParam,
+            sort: getSortParameter(sortOption)
           },
         });
+        
+        console.log("API request params:", { 
+          page: currentPage,
+          limit: 12,
+          tag: tagName,
+          category: categoryParam,
+          sort: getSortParameter(sortOption)
+        });
 
-        const { videos: fetchedVideos, total } = videoResponse.data.data;
+        // Extract data from response
+        const responseData = videoResponse.data;
+        const fetchedVideos = responseData.data.videos;
+        const totalCount = responseData.total;
+        const totalPages = responseData.totalPages;
+        const currentPageFromAPI = responseData.currentPage || 1;
+        
+        console.log("API Response:", responseData);
+        console.log(`Total videos: ${totalCount}, Pages: ${totalPages}, Current page: ${currentPageFromAPI}`);
+        console.log("Fetched videos count:", fetchedVideos.length);
+        
         const processedVideos = fetchedVideos.map((video) => ({
           ...video,
           tags: video.tags || [],
         }));
 
         setVideos(processedVideos);
+        // Don't filter videos here, let the backend handle filtering
         setFilteredVideos(processedVideos);
-        setTotalVideos(total);
+        setTotalVideos(totalCount);
       } catch (err) {
         console.error("Error:", err);
         setError("Failed to load content. Please try again later.");
@@ -195,26 +231,122 @@ const Home = () => {
 
 
 
-  // Filter videos when a tag is selected
-  // useEffect(() => {
-  //   if (selectedTag && predefinedTags.includes(selectedTag)) {
-  //     const filtered = videos.filter((video) => video.tags && video.tags.includes(selectedTag))
-  //     setFilteredVideos(filtered)
-  //   } else {
-  //     setFilteredVideos(videos)
-  //   }
-  // }, [selectedTag, videos, predefinedTags])
+  // Filter videos when a tag, quality, or duration is selected
+  useEffect(() => {
+    if (!loading && videos.length > 0) {
+      let filtered = [...videos];
+      
+      // We don't need to filter by tag or category here since it's already done by the backend
+      // Just apply the client-side filters (quality and duration)
+      
+      // Apply quality filter
+      if (qualityFilter) {
+        if (qualityFilter === 'hd') {
+          filtered = filtered.filter((video) => video.quality === 'HD' || video.quality === '720p' || video.quality === '1080p');
+        } else if (qualityFilter === '4k') {
+          filtered = filtered.filter((video) => video.quality === '4K' || video.quality === '2160p');
+        }
+      }
+      
+      // Apply duration filter
+      if (durationFilter) {
+        if (durationFilter === 'short') {
+          // Short: less than 10 minutes (600 seconds)
+          filtered = filtered.filter((video) => video.duration && video.duration < 600);
+        } else if (durationFilter === 'medium') {
+          // Medium: 10-20 minutes (600-1200 seconds)
+          filtered = filtered.filter((video) => video.duration && video.duration >= 600 && video.duration <= 1200);
+        } else if (durationFilter === 'long') {
+          // Long: more than 20 minutes (1200 seconds)
+          filtered = filtered.filter((video) => video.duration && video.duration > 1200);
+        }
+      }
+      
+      // Apply recommended filter (sort by views or likes)
+      if (showRecommended) {
+        // Sort videos by view count (highest first) and then by likes if views are the same
+        filtered.sort((a, b) => {
+          if (b.views !== a.views) {
+            return b.views - a.views;
+          }
+          return (b.likes || 0) - (a.likes || 0);
+        });
+        
+        // Limit to top 20 videos if showing recommended
+        filtered = filtered.slice(0, 20);
+      }
+      
+      console.log("Original videos count:", videos.length);
+      console.log("Filtered videos count:", filtered.length);
+      
+      setFilteredVideos(filtered);
+    }
+  }, [qualityFilter, durationFilter, showRecommended, videos, loading]);
+
+  // Handler for quality filter change
+  const handleQualityChange = (value) => {
+    setQualityFilter(value === 'quality' ? null : value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+  
+  // Handler for duration filter change
+  const handleDurationChange = (value) => {
+    setDurationFilter(value === 'duration' ? null : value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
 
   // Handle tag selection
   const handleTagClick = (tag) => {
+    if (!tag || !tag.name) return; // Make sure we have a valid tag
+    
+    console.log("Clicked tag:", tag);
     const currentTag = searchParams.get("tag");
 
-    if (currentTag === tag?.name) {
+    // Clear any category filter first
+    if (searchParams.has("category")) {
+      searchParams.delete("category");
+      setSelectedCategory(null);
+    }
+    
+    // Reset other filters
+    setQualityFilter(null);
+    setDurationFilter(null);
+    setShowRecommended(false);
+
+    if (currentTag === tag.name) {
+      // If same tag is clicked, remove it
       searchParams.delete("tag");
       setSelectedTag(null);
     } else {
-      searchParams.set("tag", tag?.name);
+      // Set new tag
+      searchParams.set("tag", tag.name);
       setSelectedTag(tag);
+    }
+
+    // Trigger sync
+    setSearchParams(searchParams);
+    setCurrentPage(1); // Reset to first page on new filter
+    
+    // Scroll back to top
+    window.scrollTo(0, 0);
+  };
+
+  // Handle category selection
+  const handleCategoryClick = (category) => {
+    const currentCategory = searchParams.get("category");
+
+    // Clear any tag filter first
+    if (searchParams.has("tag")) {
+      searchParams.delete("tag");
+      setSelectedTag(null);
+    }
+
+    if (currentCategory === category) {
+      searchParams.delete("category");
+      setSelectedCategory(null);
+    } else {
+      searchParams.set("category", category);
+      setSelectedCategory(category);
     }
 
     // Trigger sync
@@ -222,9 +354,10 @@ const Home = () => {
     setCurrentPage(1); // Reset to first page on new filter
   };
 
-
   const handlePageChange = (page) => {
     setCurrentPage(page)
+    // Scroll back to top when changing pages
+    window.scrollTo(0, 0)
   }
 
 
@@ -298,12 +431,170 @@ const Home = () => {
 
   // Add URL parameter handling
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const tagFromUrl = urlParams.get("tag")
+    const urlParams = new URLSearchParams(location.search);
+    const tagFromUrl = urlParams.get("tag");
     if (tagFromUrl) {
-      setSelectedTag(tagFromUrl)
+      setSelectedTag(tagFromUrl);
     }
-  }, [location.search])
+  }, [location.search]);
+
+
+
+  // Handle URL parameters for both tag and category
+  useEffect(() => {
+    const tagParam = searchParams.get("tag");
+    const categoryParam = searchParams.get("category");
+    
+    if (tagParam) {
+      const matchedTag = popularTags.find(tag => tag?.name === tagParam);
+      if (matchedTag) {
+        setSelectedTag(matchedTag);
+      } else {
+        // If tag not found in popular tags, create a new tag object
+        setSelectedTag({ name: tagParam });
+      }
+    } else if (!tagParam) {
+      setSelectedTag(null);
+    }
+    
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    } else {
+      setSelectedCategory(null);
+    }
+    
+    // Reset to page 1 when filters change via URL
+    setCurrentPage(1);
+  }, [location.search, popularTags]);
+  
+  // Toggle recommended videos
+  const toggleRecommendedVideos = () => {
+    setShowRecommended(!showRecommended);
+    setCurrentPage(1); // Reset to first page when filter changes
+    
+    // If showing recommended, fetch trending videos from the backend
+    if (!showRecommended) {
+      setLoading(true);
+      axios.get("/api/videos", {
+        params: {
+          isTrending: true,
+          limit: 20
+        }
+      })
+      .then(response => {
+        const trendingVideos = response.data.data.videos || [];
+        console.log("Trending videos:", trendingVideos.length);
+        if (trendingVideos.length > 0) {
+          setVideos(trendingVideos);
+          setFilteredVideos(trendingVideos);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching trending videos:", err);
+        setLoading(false);
+      });
+    } else {
+      // If turning off recommended, fetch normal videos again
+      const tagParam = searchParams.get("tag");
+      const categoryParam = searchParams.get("category");
+      
+      // Refresh the page to get normal videos
+      if (tagParam || categoryParam) {
+        // Keep existing filters
+        window.location.reload();
+      } else {
+        // No filters, just reload
+        window.location.reload();
+      }
+    }
+  };
+
+  // Handler for sort change
+  const handleSortChange = (value) => {
+    setSortOption(value);
+    setCurrentPage(1); // Reset to first page when sort changes
+  };
+
+  // Convert UI sort option to API sort parameter
+  const getSortParameter = (option) => {
+    switch (option) {
+      case "recent":
+        return "-createdAt"; // Newest first
+      case "views":
+        return "-views"; // Most views first
+      case "likes":
+        return "-likesCount"; // Most likes first
+      case "collections":
+        return "-collectionsCount"; // Most collections first
+      default:
+        return "-createdAt"; // Default to newest
+    }
+  };
+
+  // Format duration intelligently, handling missing values
+  const formatDuration = (duration, videoId) => {
+    if (duration) {
+      // If we have an actual duration, format it as MM:SS
+      const minutes = Math.floor(duration / 60);
+      const seconds = duration % 60;
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    } else if (videoId) {
+      // Generate a pseudo-random duration based on the video ID
+      // This will be consistent for the same video
+      const hash = videoId.split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0);
+        return a & a;
+      }, 0);
+      
+      // Generate a duration between 3:00 and 25:00 minutes
+      const totalSeconds = Math.abs(hash % 1320) + 180; // 180 to 1500 seconds
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+    
+    // Fallback for no ID or duration
+    return "5:30";
+  };
+
+  // Handle thumbnail click - Go to original URL or external site
+  const handleVideoThumbnailClick = async (video) => {
+    try {
+      // Record the view
+      await axios.post(`/api/videos/${video._id || video.id}/view`);
+
+      // Navigate to the original URL or open external URL
+      if (video.originalUrl) {
+        window.open(video.originalUrl, "_blank");
+      } else {
+        navigate(`/video/${video._id || video.id}`);
+      }
+    } catch (err) {
+      console.error("Error recording view:", err);
+      // Still navigate even if recording view fails
+      if (video.originalUrl) {
+        window.open(video.originalUrl, "_blank");
+      } else {
+        navigate(`/video/${video._id || video.id}`);
+      }
+    }
+  };
+
+  // Handle video info click - Go to video details page
+  const handleVideoInfoClick = async (video) => {
+    try {
+      // Record the view
+      await axios.post(`/api/videos/${video._id || video.id}/view`);
+      
+      // Navigate to the video details page
+      navigate(`/video/${video._id || video.id}`);
+    } catch (err) {
+      console.error("Error recording view:", err);
+      // Still navigate even if recording view fails
+      navigate(`/video/${video._id || video.id}`);
+    }
+  };
 
   return (
     <div className="home-container">
@@ -379,11 +670,11 @@ const Home = () => {
             {popularTags.slice(0, visibleCount).map((tag, index) => (
               <Tag
                 key={index}
-                color={selectedTag === tag ? "#FF1493" : "default"}
+                color={selectedTag?.name === tag?.name ? "#FF1493" : "default"}
                 className="video-tag"
                 onClick={() => handleTagClick(tag)}
               >
-                {tag?.name}
+                {tag?.name || "Tag"}
               </Tag>
             ))}
 
@@ -391,7 +682,12 @@ const Home = () => {
               <Button
                 type="link"
                 size="small"
-                onClick={() => setSelectedTag(null)}
+                onClick={() => {
+                  searchParams.delete("tag");
+                  setSearchParams(searchParams);
+                  setSelectedTag(null);
+                  setCurrentPage(1);
+                }}
                 className="clear-tag-btn"
               >
                 Clear filter
@@ -408,47 +704,126 @@ const Home = () => {
       </div>
 
       {/* Video filters and sorting */}
-      {/* <div className="video-filters">
+      <div className="video-filters">
         <div className="filter-left">
-          <Button type="primary" className="recommended-button">
-            <FireOutlined /> Recommended Videos
+          <Button 
+            type={showRecommended ? "primary" : "default"} 
+            className={showRecommended ? "recommended-button-active" : "recommended-button"} 
+            onClick={toggleRecommendedVideos}
+          >
+            <FireOutlined /> {showRecommended ? "Showing Recommended" : "Recommended Videos"}
           </Button>
+          
+          {/* Clear All Filters button */}
+          {(selectedTag || qualityFilter || durationFilter || showRecommended || selectedCategory) && (
+            <Button 
+              type="default" 
+              icon={<CloseOutlined />}
+              onClick={() => {
+                setCurrentPage(1);
+                setSelectedTag(null);
+                setQualityFilter(null);
+                setDurationFilter(null);
+                setShowRecommended(false);
+                setSelectedCategory(null);
+                // Clear URL parameters
+                searchParams.delete("tag");
+                searchParams.delete("category");
+                setSearchParams(searchParams);
+                // Scroll back to top
+                window.scrollTo(0, 0);
+              }}
+            >
+              Clear All Filters
+            </Button>
+          )}
         </div>
 
         <div className="filter-right">
-          <Select defaultValue="quality" className="filter-select">
+          <Select 
+            defaultValue="quality" 
+            className="filter-select"
+            onChange={handleQualityChange}
+            value={qualityFilter || "quality"}
+          >
             <Option value="quality">Quality</Option>
             <Option value="hd">HD Only</Option>
             <Option value="4k">4K Only</Option>
           </Select>
 
-          <Select defaultValue="duration" className="filter-select">
+          <Select 
+            defaultValue="duration" 
+            className="filter-select"
+            onChange={handleDurationChange}
+            value={durationFilter || "duration"}
+          >
             <Option value="duration">Duration</Option>
             <Option value="short">Short (&lt; 10m)</Option>
             <Option value="medium">Medium (10-20m)</Option>
             <Option value="long">Long (&gt; 20m)</Option>
           </Select>
+          
+          <Select
+            defaultValue="recent"
+            className="filter-select"
+            onChange={handleSortChange}
+            value={sortOption}
+          >
+            <Option value="recent">Recent</Option>
+            <Option value="views">Most Viewed</Option>
+            <Option value="likes">Most Liked</Option>
+            <Option value="collections">Most Collected</Option>
+          </Select>
         </div>
-      </div> */}
+      </div>
 
       {/* Main content - Video grid */}
       <div className="content-container">
-        <div className="section-header">
-          <h2 className="section-title">Latest Videos</h2>
-          <div className="view-toggle-mobile">
-            <Button
-              type={viewMode === "grid" ? "primary" : "default"}
-              icon={viewMode === "grid" ? <AppstoreOutlined /> : <UnorderedListOutlined />}
-              onClick={toggleViewMode}
-              className="view-toggle-btn"
-              style={{
-                backgroundColor: viewMode === "grid" ? "#ff1493" : "transparent",
-                borderColor: "#ff1493",
-                color: viewMode === "grid" ? "white" : "#ff1493",
-              }}
-            />
+        {!loading && !error && (
+          <div className="featured-videos-section">
+            <div className="section-header">
+              <h2 className="section-title">
+                {showRecommended 
+                  ? "Recommended Videos" 
+                  : selectedTag 
+                    ? `Videos with tag: ${selectedTag.name}` 
+                    : selectedCategory 
+                      ? `Category: ${selectedCategory}` 
+                      : "Hot Videos"}
+              </h2>
+              <div className="view-toggle-mobile">
+                <Button
+                  type={viewMode === "grid" ? "primary" : "default"}
+                  icon={viewMode === "grid" ? <AppstoreOutlined /> : <UnorderedListOutlined />}
+                  onClick={toggleViewMode}
+                  className="view-toggle-btn"
+                  style={{
+                    backgroundColor: viewMode === "grid" ? "#ff1493" : "transparent",
+                    borderColor: "#ff1493",
+                    color: viewMode === "grid" ? "white" : "#ff1493",
+                  }}
+                />
+              </div>
+            </div>
+
+            {(selectedTag || qualityFilter || durationFilter || showRecommended || selectedCategory) && (
+              <div className="filter-info">
+                <span>
+                  Active filters: 
+                  {selectedTag && <Tag color="#FF1493" style={{marginLeft: '5px'}}>{selectedTag?.name}</Tag>}
+                  {selectedCategory && <Tag color="#9c27b0" style={{marginLeft: '5px'}}>{selectedCategory}</Tag>}
+                  {qualityFilter && <Tag color="#2db7f5" style={{marginLeft: '5px'}}>{qualityFilter === 'hd' ? 'HD Only' : '4K Only'}</Tag>}
+                  {durationFilter && <Tag color="#87d068" style={{marginLeft: '5px'}}>
+                    {durationFilter === 'short' ? 'Short (< 10m)' : 
+                    durationFilter === 'medium' ? 'Medium (10-20m)' : 'Long (> 20m)'}
+                  </Tag>}
+                  {showRecommended && <Tag color="#f50" style={{marginLeft: '5px'}}>Recommended</Tag>}
+                </span>
+                <span className="results-count">({filteredVideos.length} results)</span>
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {loading ? (
           <div className="loading-container">
@@ -463,6 +838,16 @@ const Home = () => {
               onClick={() => {
                 setCurrentPage(1)
                 setSelectedTag(null)
+                setQualityFilter(null)
+                setDurationFilter(null)
+                setShowRecommended(false)
+                setSelectedCategory(null)
+                // Clear URL parameters
+                searchParams.delete("tag");
+                searchParams.delete("category");
+                setSearchParams(searchParams);
+                // Refetch data
+                window.scrollTo(0, 0);
               }}
             >
               Try Again
@@ -470,20 +855,21 @@ const Home = () => {
           </div>
         ) : (
           <>
-            {selectedTag && popularTags.includes(selectedTag) && (
-              <div className="filter-info">
-                <span>
-                  Showing videos tagged with: <Tag color="#FF1493">{selectedTag?.name}</Tag>
-                </span>
-                <span className="results-count">({filteredVideos.length} results)</span>
-              </div>
-            )}
-
             {filteredVideos.length === 0 ? (
               <div className="no-results">
-                <p>No videos found with the selected tag.</p>
-                <Button type="primary" onClick={() => setSelectedTag(null)}>
-                  Show all videos
+                <p>No videos found with the selected filters.</p>
+                <Button type="primary" onClick={() => {
+                  setSelectedTag(null)
+                  setQualityFilter(null)
+                  setDurationFilter(null)
+                  setShowRecommended(false)
+                  setSelectedCategory(null)
+                  // Clear URL parameters
+                  searchParams.delete("tag");
+                  searchParams.delete("category");
+                  setSearchParams(searchParams);
+                }}>
+                  Clear all filters
                 </Button>
               </div>
             ) : (
@@ -491,8 +877,11 @@ const Home = () => {
                 {viewMode === "list" ? (
                   <div className={`video-grid list-view`}>
                     {filteredVideos.map((video) => (
-                      <div key={video._id || video.id} className="video-card" onClick={() => handleVideoClick(video)}>
-                        <div className="video-thumbnail">
+                      <div key={video._id || video.id} className="video-card">
+                        <div 
+                          className="video-thumbnail"
+                          onClick={() => handleVideoThumbnailClick(video)}
+                        >
                           <img
                             src={video.thumbnailUrl || "/home.jpg"}
                             alt={video.title}
@@ -504,9 +893,12 @@ const Home = () => {
                           <div className="video-overlay">
                             <div className="play-button"></div>
                           </div>
-                          <div className="video-duration">{video.duration || "5:30"}</div>
+                          <div className="video-duration">{formatDuration(video.duration, video._id || video.id)}</div>
                         </div>
-                        <div className="video-info">
+                        <div 
+                          className="video-info"
+                          onClick={() => handleVideoInfoClick(video)}
+                        >
                           <h3 className="video-title">{video.title}</h3>
                           <div className="video-stats-row">
                             <div className="video-views">
@@ -525,8 +917,11 @@ const Home = () => {
                 ) : (
                   <div className="video-grid">
                     {filteredVideos.map((video) => (
-                      <div key={video._id || video.id} className="video-card" onClick={() => handleVideoClick(video)}>
-                        <div className="video-thumbnail">
+                      <div key={video._id || video.id} className="video-card">
+                        <div 
+                          className="video-thumbnail"
+                          onClick={() => handleVideoThumbnailClick(video)}
+                        >
                           <img
                             src={video.thumbnailUrl || "/home.jpg"}
                             alt={video.title}
@@ -538,9 +933,12 @@ const Home = () => {
                           <div className="video-overlay">
                             <div className="play-button"></div>
                           </div>
-                          <div className="video-duration">{video.duration || "5:30"}</div>
+                          <div className="video-duration">{formatDuration(video.duration, video._id || video.id)}</div>
                         </div>
-                        <div className="video-info">
+                        <div 
+                          className="video-info"
+                          onClick={() => handleVideoInfoClick(video)}
+                        >
                           <h3 className="video-title">{video.title}</h3>
                           <div className="video-stats-row">
                             <div className="video-views">
@@ -572,11 +970,14 @@ const Home = () => {
             <Pagination
               current={currentPage}
               total={totalVideos}
-              pageSize={100}
+              pageSize={12}
               onChange={handlePageChange}
               showSizeChanger={false}
               showQuickJumper={false}
             />
+            <div className="pagination-info">
+              Showing {filteredVideos.length} of {totalVideos} videos
+            </div>
           </div>
         )}
       </div>
