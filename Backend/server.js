@@ -7,6 +7,7 @@ const session = require('express-session');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const { logRequest } = require('./middleware/analyticsMiddleware');
+const { detectUnusualActivity, requireCaptcha } = require('./middleware/captchaMiddleware');
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +18,8 @@ const videoRoutes = require('./routes/videoRoutes');
 const homeSectionRoutes = require('./routes/homeSectionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const collectionRoutes = require('./routes/collectionRoutes');
+const captchaRoutes = require('./routes/captchaRoutes');
+const supportRoutes = require('./routes/supportRoutes');
 
 // Initialize express app
 const app = express();
@@ -62,6 +65,9 @@ app.use((req, res, next) => {
 // Analytics logging
 app.use(logRequest);
 
+// Unusual activity detection for all routes
+app.use(detectUnusualActivity);
+
 // Rate limiting
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -71,12 +77,37 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
+// Apply captcha middleware to all API routes except captcha-related endpoints
+app.use('/api', (req, res, next) => {
+  // Skip captcha middleware for captcha-related routes
+  if (req.path.startsWith('/captcha/')) {
+    return next();
+  }
+  
+  // Apply captcha middleware
+  requireCaptcha(req, res, next);
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/home-sections', homeSectionRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/collections', collectionRoutes);
+app.use('/api/captcha', captchaRoutes);
+app.use('/api/support', supportRoutes);
+
+// Add a special route to always force captcha for new visitors
+app.get('/api/initial-check', (req, res) => {
+  // Force captcha for demonstration purposes
+  res.status(200).json({
+    status: 'success',
+    data: {
+      captchaRequired: true,
+      reason: 'initial_visit'
+    }
+  });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

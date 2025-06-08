@@ -762,4 +762,46 @@ function calculateConfidenceScore(video) {
   
   // Cap score at 1.0
   return Math.min(score, 1.0);
-} 
+}
+
+// Get trending videos
+exports.getTrendingVideos = async (req, res) => {
+  try {
+    const { page = 1, limit = 12 } = req.query;
+    
+    // Convert string values to numbers
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Find videos with isTrending = true
+    const videos = await Video.find({ active: true, isTrending: true })
+      .sort('-createdAt')
+      .skip(skip)
+      .limit(limitNum)
+      .populate({
+        path: 'addedBy',
+        select: 'username'
+      });
+    
+    // Get total count for pagination
+    const totalResults = await Video.countDocuments({ active: true, isTrending: true });
+    
+    res.status(200).json({
+      status: 'success',
+      results: videos.length,
+      total: totalResults,
+      totalPages: Math.ceil(totalResults / limitNum),
+      currentPage: pageNum,
+      data: {
+        videos
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching trending videos:', err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error fetching trending videos'
+    });
+  }
+}; 

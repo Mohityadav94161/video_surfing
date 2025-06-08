@@ -10,6 +10,7 @@ const router = express.Router();
 router.get('/', videoController.getAllVideos);
 router.get('/categories', videoController.getCategories);
 router.get('/tags', videoController.getPopularTags);
+router.get('/trending', videoController.getTrendingVideos);
 
 // Protected routes (require authentication)
 router.use('/stats', authMiddleware.protect);
