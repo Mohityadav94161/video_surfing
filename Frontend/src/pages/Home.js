@@ -15,8 +15,10 @@ import {
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom"
 
 import axios from "axios"
+import api from "../utils/api"
 import "./Home.css"
 import { useRef } from "react"
+import TrendingVideos from "../components/TrendingVideos"
 
 const { Option } = Select
 
@@ -44,6 +46,8 @@ const Home = () => {
   const [tagError, setTagError] = useState(null)
   const [visibleCount, setVisibleCount] = useState(7);
   const [tagReady, setTagReady] = useState(false)
+  const [trendingVideos, setTrendingVideos] = useState([])
+  const [trendingLoading, setTrendingLoading] = useState(false)
 
   const initialLoadDone = useRef(false)
 
@@ -130,7 +134,7 @@ const Home = () => {
       setTagError(null);
 
       try {
-        const response = await axios.get("/api/videos/tags");
+        const response = await api.get("/api/videos/tags");
         const tags = response.data.data.tags;
         setPoppularTags(tags || []);
       } catch (err) {
@@ -153,7 +157,7 @@ const Home = () => {
 
       try {
         // 1. Fetch Tags First
-        const tagResponse = await axios.get("/api/videos/tags");
+        const tagResponse = await api.get("/api/videos/tags");
         const tags = tagResponse.data.data.tags || [];
         setPoppularTags(tags);
 
@@ -177,7 +181,7 @@ const Home = () => {
         console.log("Selected tag:", matchedTag);
 
         // 3. Fetch Videos based on tag/category + currentPage
-        const videoResponse = await axios.get("/api/videos", {
+        const videoResponse = await api.get("/api/videos", {
           params: {
             page: currentPage,
             limit: 12, // Use a sensible page size
@@ -386,7 +390,7 @@ const Home = () => {
   const handleVideoClick = async (video) => {
     try {
       // Record the view
-      await axios.post(`/api/videos/${video._id || video.id}/view`)
+      await api.post(`/api/videos/${video._id || video.id}/view`)
 
       // Navigate to the video page or open external URL
       if (video.originalUrl) {
@@ -475,9 +479,8 @@ const Home = () => {
     // If showing recommended, fetch trending videos from the backend
     if (!showRecommended) {
       setLoading(true);
-      axios.get("/api/videos", {
+      api.get("/api/videos/trending", {
         params: {
-          isTrending: true,
           limit: 20
         }
       })
@@ -562,7 +565,7 @@ const Home = () => {
   const handleVideoThumbnailClick = async (video) => {
     try {
       // Record the view
-      await axios.post(`/api/videos/${video._id || video.id}/view`);
+      await api.post(`/api/videos/${video._id || video.id}/view`);
 
       // Navigate to the original URL or open external URL
       if (video.originalUrl) {
@@ -585,7 +588,7 @@ const Home = () => {
   const handleVideoInfoClick = async (video) => {
     try {
       // Record the view
-      await axios.post(`/api/videos/${video._id || video.id}/view`);
+      await api.post(`/api/videos/${video._id || video.id}/view`);
       
       // Navigate to the video details page
       navigate(`/video/${video._id || video.id}`);
@@ -596,8 +599,39 @@ const Home = () => {
     }
   };
 
+  // Fetch trending videos
+  useEffect(() => {
+    const fetchTrendingVideos = async () => {
+      setTrendingLoading(true);
+      try {
+        const response = await api.get("/api/videos/trending");
+        const fetchedVideos = response.data.data.videos;
+        setTrendingVideos(fetchedVideos);
+      } catch (err) {
+        console.error("Error fetching trending videos:", err);
+      } finally {
+        setTrendingLoading(false);
+      }
+    };
+
+    fetchTrendingVideos();
+  }, []);
+
+  const handleTrendingClick = () => {
+    // Clear any existing filters
+    setSelectedTag(null);
+    setSelectedCategory(null);
+    setQualityFilter(null);
+    setDurationFilter(null);
+    
+    // Navigate to trending videos page
+    navigate('/videos/trending');
+  };
+
   return (
-    <div className="home-container">
+    <div className="page-container">
+      {/* <TrendingVideos /> */}
+      
       {/* Age Verification Modal */}
       <Modal
         open={ageVerificationVisible}
@@ -606,7 +640,6 @@ const Home = () => {
         closable={false}
         maskClosable={false}
         className="age-verification-modal"
-      // width={400}
       >
         <div style={{ textAlign: "center", }}>
           <VideoCameraOutlined style={{ fontSize: "48px", color: "#ff1493", marginBottom: "20px" }} />
@@ -644,221 +677,188 @@ const Home = () => {
         </div>
       </Modal>
 
-      {/* Banner ad */}
-      <div className="banner-ad">
-        <div className="banner-content">
-          <h2>ADVERTISEMENT</h2>
-          <h3>Enjoy Premium Access – Free for 7 Days!</h3>
-          <Button
-            type="primary"
-            className="join-button"
-            onClick={() => window.open("https://your-advertiser-link.com", "_blank")}
-          >
-            Learn More
-          </Button>
-        </div>
-      </div>
-
-      {/* Video Tags */}
-      <div className="category-filters">
-        <div className="tag-header">
-          {/* Optional: Add icon or heading here */}
-        </div>
-
-        <Spin spinning={tagLoading}>
-          <div className="tag-list">
-            {popularTags.slice(0, visibleCount).map((tag, index) => (
-              <Tag
-                key={index}
-                color={selectedTag?.name === tag?.name ? "#FF1493" : "default"}
-                className="video-tag"
-                onClick={() => handleTagClick(tag)}
-              >
-                {tag?.name || "Tag"}
-              </Tag>
-            ))}
-
-            {selectedTag && (
-              <Button
-                type="link"
-                size="small"
-                onClick={() => {
-                  searchParams.delete("tag");
-                  setSearchParams(searchParams);
-                  setSelectedTag(null);
-                  setCurrentPage(1);
-                }}
-                className="clear-tag-btn"
-              >
-                Clear filter
-              </Button>
-            )}
-
-            {visibleCount < popularTags.length && (
-              <Button type="text" size="small" onClick={showMoreTags} className="show-more-btn">
-                Show More
-              </Button>
-            )}
-          </div>
-        </Spin>
-      </div>
-
-      {/* Video filters and sorting */}
-      <div className="video-filters">
-        <div className="filter-left">
-          <Button 
-            type={showRecommended ? "primary" : "default"} 
-            className={showRecommended ? "recommended-button-active" : "recommended-button"} 
-            onClick={toggleRecommendedVideos}
-          >
-            <FireOutlined /> {showRecommended ? "Showing Recommended" : "Recommended Videos"}
-          </Button>
-          
-          {/* Clear All Filters button */}
-          {(selectedTag || qualityFilter || durationFilter || showRecommended || selectedCategory) && (
-            <Button 
-              type="default" 
-              icon={<CloseOutlined />}
-              onClick={() => {
-                setCurrentPage(1);
-                setSelectedTag(null);
-                setQualityFilter(null);
-                setDurationFilter(null);
-                setShowRecommended(false);
-                setSelectedCategory(null);
-                // Clear URL parameters
-                searchParams.delete("tag");
-                searchParams.delete("category");
-                setSearchParams(searchParams);
-                // Scroll back to top
-                window.scrollTo(0, 0);
-              }}
-            >
-              Clear All Filters
-            </Button>
-          )}
-        </div>
-
-        <div className="filter-right">
-          <Select 
-            defaultValue="quality" 
-            className="filter-select"
-            onChange={handleQualityChange}
-            value={qualityFilter || "quality"}
-          >
-            <Option value="quality">Quality</Option>
-            <Option value="hd">HD Only</Option>
-            <Option value="4k">4K Only</Option>
-          </Select>
-
-          <Select 
-            defaultValue="duration" 
-            className="filter-select"
-            onChange={handleDurationChange}
-            value={durationFilter || "duration"}
-          >
-            <Option value="duration">Duration</Option>
-            <Option value="short">Short (&lt; 10m)</Option>
-            <Option value="medium">Medium (10-20m)</Option>
-            <Option value="long">Long (&gt; 20m)</Option>
-          </Select>
-          
-          <Select
-            defaultValue="recent"
-            className="filter-select"
-            onChange={handleSortChange}
-            value={sortOption}
-          >
-            <Option value="recent">Recent</Option>
-            <Option value="views">Most Viewed</Option>
-            <Option value="likes">Most Liked</Option>
-            <Option value="collections">Most Collected</Option>
-          </Select>
-        </div>
-      </div>
-
-      {/* Main content - Video grid */}
-      <div className="content-container">
-        {!loading && !error && (
-          <div className="featured-videos-section">
-            <div className="section-header">
-              <h2 className="section-title">
-                {showRecommended 
-                  ? "Recommended Videos" 
-                  : selectedTag 
-                    ? `Videos with tag: ${selectedTag.name}` 
-                    : selectedCategory 
-                      ? `Category: ${selectedCategory}` 
-                      : "Hot Videos"}
-              </h2>
-              <div className="view-toggle-mobile">
-                <Button
-                  type={viewMode === "grid" ? "primary" : "default"}
-                  icon={viewMode === "grid" ? <AppstoreOutlined /> : <UnorderedListOutlined />}
-                  onClick={toggleViewMode}
-                  className="view-toggle-btn"
-                  style={{
-                    backgroundColor: viewMode === "grid" ? "#ff1493" : "transparent",
-                    borderColor: "#ff1493",
-                    color: viewMode === "grid" ? "white" : "#ff1493",
-                  }}
-                />
+      <div className="home-container">
+        <div className="filters">
+          <div className="filter-row tags-filter">
+            <div className="category-filters">
+              <div className="tag-header">
+                {/* Optional: Add icon or heading here */}
               </div>
+
+              <Spin spinning={tagLoading}>
+                <div className="tag-list">
+                  {popularTags.slice(0, visibleCount).map((tag, index) => (
+                    <Tag
+                      key={index}
+                      color={selectedTag?.name === tag?.name ? "#FF1493" : "default"}
+                      className="video-tag"
+                      onClick={() => handleTagClick(tag)}
+                    >
+                      {tag?.name || "Tag"}
+                    </Tag>
+                  ))}
+
+                  {selectedTag && (
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={() => {
+                        searchParams.delete("tag");
+                        setSearchParams(searchParams);
+                        setSelectedTag(null);
+                        setCurrentPage(1);
+                      }}
+                      className="clear-tag-btn"
+                    >
+                      Clear filter
+                    </Button>
+                  )}
+
+                  {visibleCount < popularTags.length && (
+                    <Button type="text" size="small" onClick={showMoreTags} className="show-more-btn">
+                      Show More
+                    </Button>
+                  )}
+                </div>
+              </Spin>
             </div>
 
-            {(selectedTag || qualityFilter || durationFilter || showRecommended || selectedCategory) && (
-              <div className="filter-info">
-                <span>
-                  Active filters: 
-                  {selectedTag && <Tag color="#FF1493" style={{marginLeft: '5px'}}>{selectedTag?.name}</Tag>}
-                  {selectedCategory && <Tag color="#9c27b0" style={{marginLeft: '5px'}}>{selectedCategory}</Tag>}
-                  {qualityFilter && <Tag color="#2db7f5" style={{marginLeft: '5px'}}>{qualityFilter === 'hd' ? 'HD Only' : '4K Only'}</Tag>}
-                  {durationFilter && <Tag color="#87d068" style={{marginLeft: '5px'}}>
-                    {durationFilter === 'short' ? 'Short (< 10m)' : 
-                    durationFilter === 'medium' ? 'Medium (10-20m)' : 'Long (> 20m)'}
-                  </Tag>}
-                  {showRecommended && <Tag color="#f50" style={{marginLeft: '5px'}}>Recommended</Tag>}
-                </span>
-                <span className="results-count">({filteredVideos.length} results)</span>
+            {/* Video filters and sorting */}
+            <div className="video-filters">
+              <div className="filter-left">
+                <Button 
+                  type={showRecommended ? "primary" : "default"} 
+                  className={showRecommended ? "recommended-button-active" : "recommended-button"} 
+                  onClick={toggleRecommendedVideos}
+                >
+                  <FireOutlined /> {showRecommended ? "Showing Recommended" : "Recommended Videos"}
+                </Button>
+                
+                {/* Clear All Filters button */}
+                {(selectedTag || qualityFilter || durationFilter || showRecommended || selectedCategory) && (
+                  <Button 
+                    type="default" 
+                    icon={<CloseOutlined />}
+                    onClick={() => {
+                      setCurrentPage(1);
+                      setSelectedTag(null);
+                      setQualityFilter(null);
+                      setDurationFilter(null);
+                      setShowRecommended(false);
+                      setSelectedCategory(null);
+                      // Clear URL parameters
+                      searchParams.delete("tag");
+                      searchParams.delete("category");
+                      setSearchParams(searchParams);
+                      // Scroll back to top
+                      window.scrollTo(0, 0);
+                    }}
+                  >
+                    Clear All Filters
+                  </Button>
+                )}
               </div>
-            )}
-          </div>
-        )}
 
-        {loading ? (
-          <div className="loading-container">
-            <Spin size="large" />
-            <p>Loading videos...</p>
+              <div className="filter-right">
+                <Select 
+                  defaultValue="quality" 
+                  className="filter-select"
+                  onChange={handleQualityChange}
+                  value={qualityFilter || "quality"}
+                >
+                  <Option value="quality">Quality</Option>
+                  <Option value="hd">HD Only</Option>
+                  <Option value="4k">4K Only</Option>
+                </Select>
+
+                <Select 
+                  defaultValue="duration" 
+                  className="filter-select"
+                  onChange={handleDurationChange}
+                  value={durationFilter || "duration"}
+                >
+                  <Option value="duration">Duration</Option>
+                  <Option value="short">Short (&lt; 10m)</Option>
+                  <Option value="medium">Medium (10-20m)</Option>
+                  <Option value="long">Long (&gt; 20m)</Option>
+                </Select>
+                
+                <Select
+                  defaultValue="recent"
+                  className="filter-select"
+                  onChange={handleSortChange}
+                  value={sortOption}
+                >
+                  <Option value="recent">Recent</Option>
+                  <Option value="views">Most Viewed</Option>
+                  <Option value="likes">Most Liked</Option>
+                  <Option value="collections">Most Collected</Option>
+                </Select>
+              </div>
+            </div>
           </div>
-        ) : error ? (
-          <div className="error-container">
-            <p>{error}</p>
-            <Button
-              type="primary"
-              onClick={() => {
-                setCurrentPage(1)
-                setSelectedTag(null)
-                setQualityFilter(null)
-                setDurationFilter(null)
-                setShowRecommended(false)
-                setSelectedCategory(null)
-                // Clear URL parameters
-                searchParams.delete("tag");
-                searchParams.delete("category");
-                setSearchParams(searchParams);
-                // Refetch data
-                window.scrollTo(0, 0);
-              }}
-            >
-              Try Again
-            </Button>
-          </div>
-        ) : (
-          <>
-            {filteredVideos.length === 0 ? (
-              <div className="no-results">
-                <p>No videos found with the selected filters.</p>
-                <Button type="primary" onClick={() => {
+        </div>
+
+        {/* Main content - Video grid */}
+        <div className="content-container">
+          {!loading && !error && (
+            <div className="featured-videos-section">
+              <div className="section-header">
+                <h2 className="section-title">
+                  {showRecommended 
+                    ? "Recommended Videos" 
+                    : selectedTag 
+                      ? `Videos with tag: ${selectedTag.name}` 
+                      : selectedCategory 
+                        ? `Category: ${selectedCategory}` 
+                        : "Hot Videos"}
+                </h2>
+                <div className="view-toggle-mobile">
+                  <Button
+                    type={viewMode === "grid" ? "primary" : "default"}
+                    icon={viewMode === "grid" ? <AppstoreOutlined /> : <UnorderedListOutlined />}
+                    onClick={toggleViewMode}
+                    className="view-toggle-btn"
+                    style={{
+                      backgroundColor: viewMode === "grid" ? "#ff1493" : "transparent",
+                      borderColor: "#ff1493",
+                      color: viewMode === "grid" ? "white" : "#ff1493",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {(selectedTag || qualityFilter || durationFilter || showRecommended || selectedCategory) && (
+                <div className="filter-info">
+                  <span>
+                    Active filters: 
+                    {selectedTag && <Tag color="#FF1493" style={{marginLeft: '5px'}}>{selectedTag?.name}</Tag>}
+                    {selectedCategory && <Tag color="#9c27b0" style={{marginLeft: '5px'}}>{selectedCategory}</Tag>}
+                    {qualityFilter && <Tag color="#2db7f5" style={{marginLeft: '5px'}}>{qualityFilter === 'hd' ? 'HD Only' : '4K Only'}</Tag>}
+                    {durationFilter && <Tag color="#87d068" style={{marginLeft: '5px'}}>
+                      {durationFilter === 'short' ? 'Short (< 10m)' : 
+                      durationFilter === 'medium' ? 'Medium (10-20m)' : 'Long (> 20m)'}
+                    </Tag>}
+                    {showRecommended && <Tag color="#f50" style={{marginLeft: '5px'}}>Recommended</Tag>}
+                  </span>
+                  <span className="results-count">({filteredVideos.length} results)</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="loading-container">
+              <Spin size="large" />
+              <p>Loading videos...</p>
+            </div>
+          ) : error ? (
+            <div className="error-container">
+              <p>{error}</p>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setCurrentPage(1)
                   setSelectedTag(null)
                   setQualityFilter(null)
                   setDurationFilter(null)
@@ -868,118 +868,141 @@ const Home = () => {
                   searchParams.delete("tag");
                   searchParams.delete("category");
                   setSearchParams(searchParams);
-                }}>
-                  Clear all filters
-                </Button>
-              </div>
-            ) : (
-              <>
-                {viewMode === "list" ? (
-                  <div className={`video-grid list-view`}>
-                    {filteredVideos.map((video) => (
-                      <div key={video._id || video.id} className="video-card">
-                        <div 
-                          className="video-thumbnail"
-                          onClick={() => handleVideoThumbnailClick(video)}
-                        >
-                          <img
-                            src={video.thumbnailUrl || "/home.jpg"}
-                            alt={video.title}
-                            onError={(e) => {
-                              e.target.onerror = null
-                              e.target.src = "/home.jpg"
-                            }}
-                          />
-                          <div className="video-overlay">
-                            <div className="play-button"></div>
-                          </div>
-                          <div className="video-duration">{formatDuration(video.duration, video._id || video.id)}</div>
-                        </div>
-                        <div 
-                          className="video-info"
-                          onClick={() => handleVideoInfoClick(video)}
-                        >
-                          <h3 className="video-title">{video.title}</h3>
-                          <div className="video-stats-row">
-                            <div className="video-views">
-                              <EyeOutlined />
-                              <span>{formatViewCount(video.views || 0)}</span>
-                            </div>
-                            <div className="video-likes">
-                              <LikeOutlined />
-                              <span>{formatViewCount(video.likesCount || 0)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="video-grid">
-                    {filteredVideos.map((video) => (
-                      <div key={video._id || video.id} className="video-card">
-                        <div 
-                          className="video-thumbnail"
-                          onClick={() => handleVideoThumbnailClick(video)}
-                        >
-                          <img
-                            src={video.thumbnailUrl || "/home.jpg"}
-                            alt={video.title}
-                            onError={(e) => {
-                              e.target.onerror = null
-                              e.target.src = "/home.jpg"
-                            }}
-                          />
-                          <div className="video-overlay">
-                            <div className="play-button"></div>
-                          </div>
-                          <div className="video-duration">{formatDuration(video.duration, video._id || video.id)}</div>
-                        </div>
-                        <div 
-                          className="video-info"
-                          onClick={() => handleVideoInfoClick(video)}
-                        >
-                          <h3 className="video-title">{video.title}</h3>
-                          <div className="video-stats-row">
-                            <div className="video-views">
-                              <EyeOutlined />
-                              <span>{formatViewCount(video.views || 0)}</span>
-                            </div>
-                            <div className="video-likes">
-                              <LikeOutlined />
-                              <span>{formatViewCount(video.likesCount || 0)}</span>
-                            </div>
-                          </div>
-                          <div className="video-upload-date">
-                            <ClockCircleOutlined />
-                            <span>{formatRelativeTime(video.createdAt)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
-
-        {/* Pagination */}
-        {!loading && !error && filteredVideos.length > 0 && (
-          <div className="pagination-container">
-            <Pagination
-              current={currentPage}
-              total={totalVideos}
-              pageSize={12}
-              onChange={handlePageChange}
-              showSizeChanger={false}
-              showQuickJumper={false}
-            />
-            <div className="pagination-info">
-              Showing {filteredVideos.length} of {totalVideos} videos
+                  // Refetch data
+                  window.scrollTo(0, 0);
+                }}
+              >
+                Try Again
+              </Button>
             </div>
-          </div>
-        )}
+          ) : (
+            <>
+              {filteredVideos.length === 0 ? (
+                <div className="no-results">
+                  <p>No videos found with the selected filters.</p>
+                  <Button type="primary" onClick={() => {
+                    setSelectedTag(null)
+                    setQualityFilter(null)
+                    setDurationFilter(null)
+                    setShowRecommended(false)
+                    setSelectedCategory(null)
+                    // Clear URL parameters
+                    searchParams.delete("tag");
+                    searchParams.delete("category");
+                    setSearchParams(searchParams);
+                  }}>
+                    Clear all filters
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {viewMode === "list" ? (
+                    <div className={`video-grid list-view`}>
+                      {filteredVideos.map((video) => (
+                        <div key={video._id || video.id} className="video-card">
+                          <div 
+                            className="video-thumbnail"
+                            onClick={() => handleVideoThumbnailClick(video)}
+                          >
+                            <img
+                              src={video.thumbnailUrl || "/home.jpg"}
+                              alt={video.title}
+                              onError={(e) => {
+                                e.target.onerror = null
+                                e.target.src = "/home.jpg"
+                              }}
+                            />
+                            <div className="video-overlay">
+                              <div className="play-button"></div>
+                            </div>
+                            <div className="video-duration">{formatDuration(video.duration, video._id || video.id)}</div>
+                          </div>
+                          <div 
+                            className="video-info"
+                            onClick={() => handleVideoInfoClick(video)}
+                          >
+                            <h3 className="video-title">{video.title}</h3>
+                            <div className="video-stats-row">
+                              <div className="video-views">
+                                <EyeOutlined />
+                                <span>{formatViewCount(video.views || 0)}</span>
+                              </div>
+                              <div className="video-likes">
+                                <LikeOutlined />
+                                <span>{formatViewCount(video.likesCount || 0)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="video-grid">
+                      {filteredVideos.map((video) => (
+                        <div key={video._id || video.id} className="video-card">
+                          <div 
+                            className="video-thumbnail"
+                            onClick={() => handleVideoThumbnailClick(video)}
+                          >
+                            <img
+                              src={video.thumbnailUrl || "/home.jpg"}
+                              alt={video.title}
+                              onError={(e) => {
+                                e.target.onerror = null
+                                e.target.src = "/home.jpg"
+                              }}
+                            />
+                            <div className="video-overlay">
+                              <div className="play-button"></div>
+                            </div>
+                            <div className="video-duration">{formatDuration(video.duration, video._id || video.id)}</div>
+                          </div>
+                          <div 
+                            className="video-info"
+                            onClick={() => handleVideoInfoClick(video)}
+                          >
+                            <h3 className="video-title">{video.title}</h3>
+                            <div className="video-stats-row">
+                              <div className="video-views">
+                                <EyeOutlined />
+                                <span>{formatViewCount(video.views || 0)}</span>
+                              </div>
+                              <div className="video-likes">
+                                <LikeOutlined />
+                                <span>{formatViewCount(video.likesCount || 0)}</span>
+                              </div>
+                            </div>
+                            <div className="video-upload-date">
+                              <ClockCircleOutlined />
+                              <span>{formatRelativeTime(video.createdAt)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
+
+          {/* Pagination */}
+          {!loading && !error && filteredVideos.length > 0 && (
+            <div className="pagination-container">
+              <Pagination
+                current={currentPage}
+                total={totalVideos}
+                pageSize={12}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+                showQuickJumper={false}
+              />
+              <div className="pagination-info">
+                Showing {filteredVideos.length} of {totalVideos} videos
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

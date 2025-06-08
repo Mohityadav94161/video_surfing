@@ -40,7 +40,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext"
 import "./MainLayout.css"
 import "../../components/ModalStyles.css"
-import axios from "axios"
+import api from "../../utils/api"
 
 const { Header, Content, Footer } = Layout
 const { Search } = Input
@@ -94,11 +94,11 @@ const MainLayout = () => {
      const fetchMenuData = async () => {
       try {
         // Fetch categories
-        const categoryResponse = await axios.get("/api/videos/categories");
+        const categoryResponse = await api.get("/api/videos/categories");
         const categories = categoryResponse.data.data.categories || [];
         
         // Fetch tags for trending and pornstars
-        const tagsResponse = await axios.get("/api/videos/tags");
+        const tagsResponse = await api.get("/api/videos/tags");
         const tags = tagsResponse.data.data.tags || [];
         
         // Make sure tags are properly formatted
@@ -116,7 +116,7 @@ const MainLayout = () => {
         });
         
         // For trending videos, find actual videos with isTrending flag
-        const trendingResponse = await axios.get("/api/videos", {
+        const trendingResponse = await api.get("/api/videos", {
           params: {
             isTrending: true,
             limit: 12
@@ -151,7 +151,7 @@ const MainLayout = () => {
         ).slice(0, 12);
         
         // For recommended, we'll fetch most popular videos
-        const videosResponse = await axios.get("/api/videos", {
+        const videosResponse = await api.get("/api/videos", {
           params: {
             sort: "-views",
             limit: 12

@@ -18,6 +18,8 @@ import {
   LoginOutlined 
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import Captcha from '../components/Captcha';
+import axios from 'axios';
 
 const { Title, Text } = Typography;
 
@@ -32,11 +34,30 @@ const Login = () => {
   
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [captchaRequired, setCaptchaRequired] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
+
+  // Check if captcha is required
+  const checkCaptchaRequired = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/captcha/check-required`);
+      if (response.data.status === 'success') {
+        setCaptchaRequired(response.data.data.captchaRequired);
+      }
+    } catch (err) {
+      console.error('Error checking captcha requirement:', err);
+      // Default to requiring captcha if there's an error
+      setCaptchaRequired(true);
+    }
+  };
 
   // Redirect if user is already authenticated
   useEffect(() => {
     if (isAuthenticated && !initializing) {
       navigate(from, { replace: true });
+    } else if (!initializing) {
+      checkCaptchaRequired();
     }
   }, [isAuthenticated, initializing, navigate, from]);
 
@@ -45,22 +66,48 @@ const Login = () => {
     setError(null);
     
     try {
+      // If captcha is required but not verified, show captcha modal
+      if (captchaRequired && !captchaVerified) {
+        setCaptchaModalVisible(true);
+        setFormLoading(false);
+        return;
+      }
+      
       const { username, password } = values;
-      // Convert username to email format for backend consistency
-      // const email = username.includes('@') ? username : username + '@example.com';
       const result = await login(username, password);
       
       if (result.success) {
         navigate(from, { replace: true });
       } else {
         setError(result.message || 'Login failed. Please try again.');
+        // If login fails, reset captcha verification
+        setCaptchaVerified(false);
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      
+      // Handle captcha required error
+      if (err.response && err.response.status === 403 && 
+          err.response.data && err.response.data.data && err.response.data.data.captchaRequired) {
+        setCaptchaRequired(true);
+        setCaptchaModalVisible(true);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+      
+      // Reset captcha verification
+      setCaptchaVerified(false);
     } finally {
       setFormLoading(false);
     }
+  };
+
+  const handleCaptchaVerified = () => {
+    setCaptchaVerified(true);
+    setCaptchaModalVisible(false);
+    
+    // Retry form submission after captcha verification
+    form.submit();
   };
 
   // Show loading spinner while authentication state is initializing
@@ -158,6 +205,21 @@ const Login = () => {
           By logging in, you agree to our Terms of Service and Privacy Policy.
         </Text>
       </div>
+
+      {/* Captcha Modal */}
+      <Modal
+        title="Security Verification"
+        open={captchaModalVisible}
+        footer={null}
+        closable={true}
+        onCancel={() => setCaptchaModalVisible(false)}
+        destroyOnClose={true}
+      >
+        <Captcha 
+          onVerify={handleCaptchaVerified}
+          onError={(errorMsg) => setError(errorMsg)}
+        />
+      </Modal>
     </div>
   );
 };

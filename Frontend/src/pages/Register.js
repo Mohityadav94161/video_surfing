@@ -11,7 +11,8 @@ import {
   Space,
   Spin,
   Tooltip,
-  Progress
+  Progress,
+  Modal
 } from 'antd';
 import { 
   UserOutlined, 
@@ -20,6 +21,8 @@ import {
   InfoCircleOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import Captcha from '../components/Captcha';
+import axios from 'axios';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -66,6 +69,23 @@ const Register = () => {
   const [error, setError] = useState(null);
   const [passwordValue, setPasswordValue] = useState('');
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [captchaRequired, setCaptchaRequired] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
+  
+  // Check if captcha is required
+  const checkCaptchaRequired = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/captcha/check-required`);
+      if (response.data.status === 'success') {
+        setCaptchaRequired(response.data.data.captchaRequired);
+      }
+    } catch (err) {
+      console.error('Error checking captcha requirement:', err);
+      // Default to requiring captcha if there's an error
+      setCaptchaRequired(true);
+    }
+  };
   
   // Update password strength when password changes
   useEffect(() => {
@@ -73,10 +93,12 @@ const Register = () => {
     setPasswordStrength(strength);
   }, [passwordValue]);
   
-  // Redirect if user is already authenticated
+  // Redirect if user is already authenticated and check captcha requirement
   useEffect(() => {
     if (isAuthenticated && !initializing) {
       navigate('/');
+    } else if (!initializing) {
+      checkCaptchaRequired();
     }
   }, [isAuthenticated, initializing, navigate]);
 
@@ -85,6 +107,13 @@ const Register = () => {
     setError(null);
     
     try {
+      // If captcha is required but not verified, show captcha modal
+      if (captchaRequired && !captchaVerified) {
+        setCaptchaModalVisible(true);
+        setFormLoading(false);
+        return;
+      }
+      
       const { username, password } = values;
       // Using empty string for email since it's no longer required in the UI
       // but the auth context still expects it
@@ -94,15 +123,36 @@ const Register = () => {
         navigate('/');
       } else {
         setError(result.message || 'Registration failed. Please try again.');
+        // Reset captcha verification if registration fails
+        setCaptchaVerified(false);
       }
     } catch (err) {
       console.error('Registration error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      
+      // Handle captcha required error
+      if (err.response && err.response.status === 403 && 
+          err.response.data && err.response.data.data && err.response.data.data.captchaRequired) {
+        setCaptchaRequired(true);
+        setCaptchaModalVisible(true);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+      
+      // Reset captcha verification
+      setCaptchaVerified(false);
     } finally {
       setFormLoading(false);
     }
   };
   
+  const handleCaptchaVerified = () => {
+    setCaptchaVerified(true);
+    setCaptchaModalVisible(false);
+    
+    // Retry form submission after captcha verification
+    form.submit();
+  };
+
   // Show loading spinner while authentication state is initializing
   if (initializing) {
     return (
@@ -280,6 +330,21 @@ const Register = () => {
           Your password is securely stored and never shared with third parties.
         </Paragraph>
       </div>
+      
+      {/* Captcha Modal */}
+      <Modal
+        title="Security Verification"
+        open={captchaModalVisible}
+        footer={null}
+        closable={true}
+        onCancel={() => setCaptchaModalVisible(false)}
+        destroyOnClose={true}
+      >
+        <Captcha 
+          onVerify={handleCaptchaVerified}
+          onError={(errorMsg) => setError(errorMsg)}
+        />
+      </Modal>
     </div>
   );
 };

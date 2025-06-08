@@ -12,7 +12,7 @@ import {
   CloudUploadOutlined,
   LayoutOutlined,
   BarChartOutlined,
-  LineChartOutlined
+  MessageOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -118,6 +118,11 @@ const AdminLayout = () => {
               key: 'analytics',
               icon: <BarChartOutlined />,
               label: <Link to="/admin/analytics">Analytics & Tracking</Link>,
+            },
+            {
+              key: 'support-submissions',
+              icon: <MessageOutlined />,
+              label: <Link to="/admin/support-submissions">Support Submissions</Link>,
             },
             // {
             //   key: 'test',
