@@ -126,10 +126,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Register function
-  const register = async (username, email, password) => {
+  const register = async (username, password) => {
     try {
       setLoading(true);
-      const res = await axios.post('/api/auth/signup', { username, email, password });
+      const res = await axios.post('/api/auth/signup', { username, password });
       
       // Set token with expiration
       setToken(res.data.token);

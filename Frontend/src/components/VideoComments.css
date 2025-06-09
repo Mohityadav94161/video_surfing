@@ -53,13 +53,11 @@
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 10px;
-  /* background-color: #fafafa; */
-  border: 1px solid #d9d9d992;
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
 .comment-list .ant-list-item:hover {
-  /* background-color: #f5f5f5; */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   transform: translateY(-2px);
 }

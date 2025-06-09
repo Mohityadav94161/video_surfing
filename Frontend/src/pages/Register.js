@@ -117,7 +117,7 @@ const Register = () => {
       const { username, password } = values;
       // Using empty string for email since it's no longer required in the UI
       // but the auth context still expects it
-      const result = await register(username, username + '@example.com', password);
+      const result = await register(username, password);
       
       if (result.success) {
         navigate('/');
