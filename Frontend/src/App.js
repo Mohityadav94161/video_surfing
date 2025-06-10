@@ -27,6 +27,7 @@ import NotFound from './pages/NotFound';
 import MyCollections from './pages/collections/MyCollections';
 import CollectionDetail from './pages/collections/CollectionDetail';
 import CreateCollection from './pages/collections/CreateCollection';
+import TrendingPage from './pages/TrendingPage';
 
 // Footer Pages
 import Support from './pages/Support';
@@ -93,100 +94,101 @@ function App() {
         <CollectionProvider>
           <CaptchaProvider>
             <CaptchaContextConnector>
-              <Router>
+          <Router>
                 {/* Global captcha modal that can appear on any page */}
                 <GlobalCaptchaModal />
                 
-                <Routes>
-                  {/* Public routes with MainLayout */}
-                  <Route path="/" element={<MainLayout />}>
-                    <Route index element={<Home />} />
-                    <Route path="video/:id" element={<Video />} />
-                    <Route path="search" element={<Search />} />
-                    
-                    {/* Footer pages */}
-                    <Route path="support" element={<Support />} />
-                    <Route path="terms-of-service" element={<TermsOfService />} />
-                    <Route path="privacy-policy" element={<PrivacyPolicy />} />
-                    <Route path="faq" element={<FAQ />} />
-                    <Route path="feedback" element={
-                      <ProtectedRoute>
-                        <Feedback />
-                      </ProtectedRoute>
-                    } />
-                    
-                    {/* Upload video (protected) */}
-                    <Route 
-                      path="upload-video" 
-                      element={
-                        <ProtectedRoute>
-                          <UploadVideo />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    
-                    {/* User profile (protected) */}
-                    <Route 
-                      path="profile" 
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    
-                    {/* User collection routes (protected) */}
-                    <Route path="collections">
-                      <Route 
-                        index 
-                        element={
-                          <ProtectedRoute>
-                            <MyCollections />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path="create" 
-                        element={
-                          <ProtectedRoute>
-                            <CreateCollection />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      <Route 
-                        path=":id" 
-                        element={
-                          <ProtectedRoute>
-                            <CollectionDetail />
-                          </ProtectedRoute>
-                        } 
-                      />
-                    </Route>
-                  </Route>
-
-                  {/* Admin routes with AdminLayout */}
+            <Routes>
+              {/* Public routes with MainLayout */}
+              <Route path="/" element={<MainLayout />}>
+                <Route index element={<Home />} />
+                <Route path="video/:id" element={<Video />} />
+                <Route path="search" element={<Search />} />
+                <Route path="trending" element={<TrendingPage />} />
+                
+                {/* Footer pages */}
+                <Route path="support" element={<Support />} />
+                <Route path="terms-of-service" element={<TermsOfService />} />
+                <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="faq" element={<FAQ />} />
+                <Route path="feedback" element={
+                  <ProtectedRoute>
+                    <Feedback />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Upload video (protected) */}
+                <Route 
+                  path="upload-video" 
+                  element={
+                    <ProtectedRoute>
+                      <UploadVideo />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* User profile (protected) */}
+                <Route 
+                  path="profile" 
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* User collection routes (protected) */}
+                <Route path="collections">
                   <Route 
-                    path="/admin" 
+                    index 
                     element={
-                      <ProtectedRoute adminOnly={true}>
-                        <AdminLayout />
+                      <ProtectedRoute>
+                        <MyCollections />
                       </ProtectedRoute>
-                    }
-                  >
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="add-video" element={<AddVideo />} />
-                    <Route path="bulk-upload" element={<BulkVideoUpload />} />
-                    <Route path="home-manager" element={<HomePageManager />} />
-                    <Route path="analytics" element={<Analytics />} />
-                    <Route path="support-submissions" element={<SupportSubmissions />} />
-                    <Route path="edit-video/:id" element={<EditVideo/>}/>
-                    {/*<Route path="test" element={<TestComponent />} />*/}
-                  </Route>
+                    } 
+                  />
+                  <Route 
+                    path="create" 
+                    element={
+                      <ProtectedRoute>
+                        <CreateCollection />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path=":id" 
+                    element={
+                      <ProtectedRoute>
+                        <CollectionDetail />
+                      </ProtectedRoute>
+                    } 
+                  />
+                </Route>
+              </Route>
 
-                  {/* Not found */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Router>
+              {/* Admin routes with AdminLayout */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute adminOnly={true}>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<AdminDashboard />} />
+                <Route path="add-video" element={<AddVideo />} />
+                <Route path="bulk-upload" element={<BulkVideoUpload />} />
+                <Route path="home-manager" element={<HomePageManager />} />
+                <Route path="analytics" element={<Analytics />} />
+                    <Route path="support-submissions" element={<SupportSubmissions />} />
+                <Route path="edit-video/:id" element={<EditVideo/>}/>
+                {/*<Route path="test" element={<TestComponent />} />*/}
+              </Route>
+
+              {/* Not found */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
             </CaptchaContextConnector>
           </CaptchaProvider>
         </CollectionProvider>

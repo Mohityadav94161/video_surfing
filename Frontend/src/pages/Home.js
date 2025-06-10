@@ -23,12 +23,17 @@ import TrendingVideos from "../components/TrendingVideos"
 const { Option } = Select
 
 const Home = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  
   const [videos, setVideos] = useState([])
   const [filteredVideos, setFilteredVideos] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedTag, setSelectedTag] = useState(null)
   const [error, setError] = useState(null)
-  const [currentPage, setCurrentPage] = useState(1)
+  // Get initial page from URL or default to 1
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1"))
   const [totalVideos, setTotalVideos] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false) // Track authentication status
   const [viewMode, setViewMode] = useState("grid") // "grid" or "list"
@@ -48,11 +53,7 @@ const Home = () => {
   const [tagReady, setTagReady] = useState(false)
   const [trendingVideos, setTrendingVideos] = useState([])
   const [trendingLoading, setTrendingLoading] = useState(false)
-
   const initialLoadDone = useRef(false)
-
-  const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams();
 
   const showMoreTags = () => {
     setVisibleCount((prev) => prev + 7);
@@ -230,7 +231,7 @@ const Home = () => {
     };
 
     fetchData();
-  }, [currentPage, searchParams]); // Run when page or ?tag changes
+  }, [currentPage, searchParams, sortOption, selectedCategory]); // Include sortOption and selectedCategory dependencies
 
 
 
@@ -360,6 +361,9 @@ const Home = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page)
+    // Update the URL with the page parameter
+    searchParams.set("page", page)
+    setSearchParams(searchParams)
     // Scroll back to top when changing pages
     window.scrollTo(0, 0)
   }
@@ -431,8 +435,6 @@ const Home = () => {
     }
   }
 
-  const location = useLocation()
-
   // Add URL parameter handling
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -448,6 +450,7 @@ const Home = () => {
   useEffect(() => {
     const tagParam = searchParams.get("tag");
     const categoryParam = searchParams.get("category");
+    const pageParam = searchParams.get("page");
     
     if (tagParam) {
       const matchedTag = popularTags.find(tag => tag?.name === tagParam);
@@ -467,9 +470,12 @@ const Home = () => {
       setSelectedCategory(null);
     }
     
-    // Reset to page 1 when filters change via URL
-    setCurrentPage(1);
-  }, [location.search, popularTags]);
+    // Sync currentPage with URL parameter
+    if (pageParam) {
+      setCurrentPage(parseInt(pageParam));
+    }
+    
+  }, [location.search, popularTags, searchParams]);
   
   // Toggle recommended videos
   const toggleRecommendedVideos = () => {
@@ -625,7 +631,7 @@ const Home = () => {
     setDurationFilter(null);
     
     // Navigate to trending videos page
-    navigate('/videos/trending');
+    navigate('/trending');
   };
 
   return (

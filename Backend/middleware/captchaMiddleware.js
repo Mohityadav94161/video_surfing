@@ -104,22 +104,22 @@ exports.detectUnusualActivity = async (req, res, next) => {
     });
 
     // Comment out or remove this block to stop requiring captcha for every visitor
-    /*
+    
     // For demonstration purposes, consider every new visitor as requiring captcha verification
     if (!hasVerifiedCaptcha) {
       console.log(`New visitor detected from IP: ${ipAddress}, requiring captcha verification`);
       req.unusualActivity = true;
     }
-    */
+    
     
     // Detect unusual activity based on request rate
     // - More than 30 requests in 1 minute
     // - More than 120 requests in 5 minutes
     // - More than 500 requests in 1 hour
     if (
-      requestCountLastMinute > 30 || 
-      requestCountLastFiveMinutes > 120 || 
-      requestCountLastHour > 500
+      requestCountLastMinute > 100 || 
+      requestCountLastFiveMinutes > 320 || 
+      requestCountLastHour > 700
     ) {
       // Record unusual activity
       console.warn(`Unusual activity detected from IP: ${ipAddress}`);
@@ -128,7 +128,7 @@ exports.detectUnusualActivity = async (req, res, next) => {
       req.unusualActivity = true;
       
       // If the activity is very aggressive, invalidate any existing captcha
-      if (requestCountLastMinute > 60) {
+      if (requestCountLastMinute > 130) {
         await Captcha.updateMany(
           { 
             ipAddress, 
@@ -148,7 +148,7 @@ exports.detectUnusualActivity = async (req, res, next) => {
       createdAt: { $gt: oneMinuteAgo }
     });
     
-    if (distinctEndpointsLastMinute.length > 15) {
+    if (distinctEndpointsLastMinute.length > 55) {
       console.warn(`Unusual navigation pattern detected from IP: ${ipAddress}`);
       req.unusualActivity = true;
     }

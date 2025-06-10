@@ -92,7 +92,7 @@ const Login = () => {
         setCaptchaRequired(true);
         setCaptchaModalVisible(true);
       } else {
-        setError('An unexpected error occurred. Please try again.');
+      setError('An unexpected error occurred. Please try again.');
       }
       
       // Reset captcha verification

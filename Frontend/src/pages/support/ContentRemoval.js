@@ -130,107 +130,107 @@ const ContentRemoval = ({ username = 'guest' }) => {
       
       <Spin spinning={loading}>
         <Form layout="vertical" onFinish={onFinish} form={form} style={{ marginTop: '20px' }}>
-          <Form.Item
-            name="requestType"
-            label={<Text style={{ color: 'white' }}>Request Type</Text>}
-            rules={[{ required: true, message: 'Please select a request type' }]}
-          >
-            <Select placeholder="Select request type">
-              <Option value="copyright">Copyright Infringement</Option>
-              <Option value="trademark">Trademark Infringement</Option>
-              <Option value="privacy">Privacy Violation</Option>
-              <Option value="other">Other Intellectual Property Claim</Option>
-            </Select>
-          </Form.Item>
-          
-          <Form.Item
-            name="fullName"
-            label={<Text style={{ color: 'white' }}>Full Name</Text>}
-            rules={[{ required: true, message: 'Please enter your full name' }]}
+        <Form.Item
+          name="requestType"
+          label={<Text style={{ color: 'white' }}>Request Type</Text>}
+          rules={[{ required: true, message: 'Please select a request type' }]}
+        >
+          <Select placeholder="Select request type">
+            <Option value="copyright">Copyright Infringement</Option>
+            <Option value="trademark">Trademark Infringement</Option>
+            <Option value="privacy">Privacy Violation</Option>
+            <Option value="other">Other Intellectual Property Claim</Option>
+          </Select>
+        </Form.Item>
+        
+        <Form.Item
+          name="fullName"
+          label={<Text style={{ color: 'white' }}>Full Name</Text>}
+          rules={[{ required: true, message: 'Please enter your full name' }]}
             initialValue={username !== 'guest' ? username : ''}
-          >
-            <Input prefix={<UserOutlined />} placeholder="Your full legal name" />
-          </Form.Item>
-          
-          <Form.Item
-            name="email"
-            label={<Text style={{ color: 'white' }}>Email Address</Text>}
-            rules={[
-              { required: true, message: 'Please enter your email' },
-              { type: 'email', message: 'Please enter a valid email' }
-            ]}
-          >
-            <Input prefix={<MailOutlined />} placeholder="Your email address" />
-          </Form.Item>
-          
-          <Form.Item
-            name="contentUrls"
-            label={<Text style={{ color: 'white' }}>URLs of Infringing Content</Text>}
-            rules={[{ required: true, message: 'Please enter at least one URL' }]}
-            extra={<Text style={{ color: '#d1d5db' }}>Enter one URL per line</Text>}
-          >
-            <TextArea 
-              rows={4} 
-              placeholder="https://videosurfing.com/video/..." 
-              prefix={<LinkOutlined />}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="originalContent"
-            label={<Text style={{ color: 'white' }}>Description of Original Content</Text>}
-            rules={[{ required: true, message: 'Please describe your original content' }]}
-          >
-            <TextArea 
-              rows={4} 
-              placeholder="Describe your original content that has been infringed..." 
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="originalUrls"
-            label={<Text style={{ color: 'white' }}>URLs of Original Content (if available)</Text>}
-          >
-            <TextArea 
-              rows={2} 
-              placeholder="https://..." 
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="declaration"
-            label={<Text style={{ color: 'white' }}>Legal Declaration</Text>}
-            rules={[{ required: true, message: 'You must agree to the declaration' }]}
+        >
+          <Input prefix={<UserOutlined />} placeholder="Your full legal name" />
+        </Form.Item>
+        
+        <Form.Item
+          name="email"
+          label={<Text style={{ color: 'white' }}>Email Address</Text>}
+          rules={[
+            { required: true, message: 'Please enter your email' },
+            { type: 'email', message: 'Please enter a valid email' }
+          ]}
+        >
+          <Input prefix={<MailOutlined />} placeholder="Your email address" />
+        </Form.Item>
+        
+        <Form.Item
+          name="contentUrls"
+          label={<Text style={{ color: 'white' }}>URLs of Infringing Content</Text>}
+          rules={[{ required: true, message: 'Please enter at least one URL' }]}
+          extra={<Text style={{ color: '#d1d5db' }}>Enter one URL per line</Text>}
+        >
+          <TextArea 
+            rows={4} 
+            placeholder="https://videosurfing.com/video/..." 
+            prefix={<LinkOutlined />}
+          />
+        </Form.Item>
+        
+        <Form.Item
+          name="originalContent"
+          label={<Text style={{ color: 'white' }}>Description of Original Content</Text>}
+          rules={[{ required: true, message: 'Please describe your original content' }]}
+        >
+          <TextArea 
+            rows={4} 
+            placeholder="Describe your original content that has been infringed..." 
+          />
+        </Form.Item>
+        
+        <Form.Item
+          name="originalUrls"
+          label={<Text style={{ color: 'white' }}>URLs of Original Content (if available)</Text>}
+        >
+          <TextArea 
+            rows={2} 
+            placeholder="https://..." 
+          />
+        </Form.Item>
+        
+        <Form.Item
+          name="declaration"
+          label={<Text style={{ color: 'white' }}>Legal Declaration</Text>}
+          rules={[{ required: true, message: 'You must agree to the declaration' }]}
             initialValue="I hereby state that I have a good faith belief that the disputed use of the copyrighted material is not authorized by the copyright owner, its agent, or the law. I hereby state that the information in this notice is accurate and, under penalty of perjury, that I am the owner, or authorized to act on behalf of the owner, of the copyright or of an exclusive right under the copyright that is allegedly infringed."
-          >
-            <TextArea 
-              rows={4} 
-              disabled
-            />
-          </Form.Item>
-          
-          <Form.Item
-            name="electronicSignature"
-            label={<Text style={{ color: 'white' }}>Electronic Signature</Text>}
-            rules={[{ required: true, message: 'Please type your full name as electronic signature' }]}
-            extra={<Text style={{ color: '#d1d5db' }}>Type your full legal name as your electronic signature</Text>}
-          >
-            <Input placeholder="Your full legal name" />
-          </Form.Item>
-          
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="submit-button"
-              style={{ marginTop: '10px' }}
+        >
+          <TextArea 
+            rows={4} 
+            disabled
+          />
+        </Form.Item>
+        
+        <Form.Item
+          name="electronicSignature"
+          label={<Text style={{ color: 'white' }}>Electronic Signature</Text>}
+          rules={[{ required: true, message: 'Please type your full name as electronic signature' }]}
+          extra={<Text style={{ color: '#d1d5db' }}>Type your full legal name as your electronic signature</Text>}
+        >
+          <Input placeholder="Your full legal name" />
+        </Form.Item>
+        
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="submit-button"
+            style={{ marginTop: '10px' }}
               icon={<SendOutlined />}
               loading={loading}
-            >
-              <Text style={{color:'white'}}>Submit DMCA Notice</Text>
-            </Button>
-          </Form.Item>
-        </Form>
+          >
+            <Text style={{color:'white'}}>Submit DMCA Notice</Text>
+          </Button>
+        </Form.Item>
+      </Form>
       </Spin>
       
       <Divider style={{ borderColor: 'rgba(255, 20, 147, 0.2)', margin: '40px 0 20px' }} />

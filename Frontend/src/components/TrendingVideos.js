@@ -33,7 +33,7 @@ const TrendingVideos = () => {
   };
 
   const handleShowMoreClick = () => {
-    navigate('/videos/trending');
+    navigate('/trending');
   };
 
   // Format view count

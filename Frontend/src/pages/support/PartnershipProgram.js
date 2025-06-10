@@ -314,26 +314,26 @@ const PartnershipProgram = ({ username = 'guest' }) => {
       {showApplicationForm ? (
         renderApplicationForm()
       ) : (
-        <div style={{ textAlign: 'center', marginTop: '30px' }}>
-          <Button
-            type="primary"
-            size="large"
-            style={{ 
-              backgroundColor: '#FF1493', 
-              borderColor: '#FF1493',
-              height: '48px',
-              width: '200px',
-              fontSize: '16px'
-            }}
+      <div style={{ textAlign: 'center', marginTop: '30px' }}>
+        <Button
+          type="primary"
+          size="large"
+          style={{ 
+            backgroundColor: '#FF1493', 
+            borderColor: '#FF1493',
+            height: '48px',
+            width: '200px',
+            fontSize: '16px'
+          }}
             onClick={() => setShowApplicationForm(true)}
-          >
-            Apply Now
-          </Button>
-          
-          <Paragraph style={{ marginTop: '16px', color: '#d1d5db', fontSize: '14px' }}>
-            Our team will review your application and respond within 5 business days.
-          </Paragraph>
-        </div>
+        >
+          Apply Now
+        </Button>
+        
+        <Paragraph style={{ marginTop: '16px', color: '#d1d5db', fontSize: '14px' }}>
+          Our team will review your application and respond within 5 business days.
+        </Paragraph>
+      </div>
       )}
     </Card>
   );

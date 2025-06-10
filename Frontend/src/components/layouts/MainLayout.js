@@ -36,6 +36,8 @@ import {
   FileProtectOutlined,
   FileTextOutlined,
   PhoneOutlined,
+  DownOutlined,
+  ArrowRightOutlined,
 } from "@ant-design/icons"
 import { useAuth } from "../../contexts/AuthContext"
 import "./MainLayout.css"
@@ -59,8 +61,16 @@ const MainLayout = () => {
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
-  const [menuData,setMenuData] = useState({'Trending':'','Categories':'','Pornstars':'','Recommended':''})
-
+  const [menuData, setMenuData] = useState({'Trending':'','Categories':'','Pornstars':'','Recommended':''})
+  // Add state for displayed videos limit and pagination
+  const [displayLimit, setDisplayLimit] = useState({
+    home: 10,
+    Trending: 10,
+    Categories: 10,
+    Pornstars: 10,
+    Recommended: 10
+  })
+  
   // Search recommendations
   const searchRecommendations = ["Hot", "Blonde", "Short", "Blondie", "Brunette", "Busty", "Asian", "Ebony", "Lesbian"]
 
@@ -195,6 +205,8 @@ const MainLayout = () => {
     if (value.trim()) {
       navigate(`/search?q=${encodeURIComponent(value.trim())}`)
       setSearchVisible(false)
+      // Reset searchTerm after navigation
+      setTimeout(() => setSearchTerm(""), 100)
     }
   }
 
@@ -350,6 +362,30 @@ const MainLayout = () => {
 
   const handleHeaderMenuLeave = () => {
     setActiveDropdown(null)
+  }
+  
+  // Handle show more button click
+  const handleShowMore = (type) => {
+    if (type === 'home') {
+      navigate('/');
+    } else if (type === 'Trending') {
+      navigate('/trending');
+    } else if (type === 'Categories') {
+      navigate('/categories');
+    } else if (type === 'Pornstars') {
+      navigate('/pornstars');
+    } else if (type === 'Recommended') {
+      navigate('/?recommended=true');
+    }
+    setActiveDropdown(null);
+  }
+  
+  // Handle load more items in dropdown
+  const handleLoadMore = (type) => {
+    setDisplayLimit(prev => ({
+      ...prev,
+      [type]: prev[type] + 10
+    }));
   }
 
   return (
@@ -554,7 +590,7 @@ const MainLayout = () => {
             onMouseLeave={handleHeaderMenuLeave}
           >
             <div className="header-dropdown-grid">
-              {activeDropdown === 'home' && menuData[activeDropdown]?.map((item, index) => (
+              {activeDropdown === 'home' && menuData[activeDropdown]?.slice(0, displayLimit.home).map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
@@ -579,7 +615,7 @@ const MainLayout = () => {
                 </div>
               ))}
               
-              {activeDropdown === 'Trending' && menuData[activeDropdown]?.map((item, index) => (
+              {activeDropdown === 'Trending' && menuData[activeDropdown]?.slice(0, displayLimit.Trending).map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
@@ -615,7 +651,7 @@ const MainLayout = () => {
                 </div>
               ))}
               
-              {(activeDropdown !== 'home' && activeDropdown !== 'Trending') && menuData[activeDropdown]?.map((item, index) => (
+              {(activeDropdown !== 'home' && activeDropdown !== 'Trending') && menuData[activeDropdown]?.slice(0, displayLimit[activeDropdown]).map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
@@ -651,6 +687,34 @@ const MainLayout = () => {
                   </div>
                 </div>
               ))}
+              
+              {/* Load More Button - show if there are more items to load */}
+              {menuData[activeDropdown]?.length > displayLimit[activeDropdown] && (
+                <div 
+                  className="header-dropdown-card load-more-card"
+                  onClick={() => handleLoadMore(activeDropdown)}
+                >
+                  <div className="header-dropdown-card-content load-more-content">
+                    <Button type="primary" icon={<DownOutlined />}>
+                      Load More
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Show More Button - only show when total content is greater than 10 */}
+              {menuData[activeDropdown]?.length > 10 && (
+                <div 
+                  className="header-dropdown-card show-more-card"
+                  onClick={() => handleShowMore(activeDropdown)}
+                >
+                  <div className="header-dropdown-card-content show-more-content">
+                    <Button type="primary" icon={<ArrowRightOutlined />}>
+                      Show All {activeDropdown}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>

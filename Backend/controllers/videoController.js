@@ -762,7 +762,7 @@ function calculateConfidenceScore(video) {
   
   // Cap score at 1.0
   return Math.min(score, 1.0);
-}
+} 
 
 // Get trending videos
 exports.getTrendingVideos = async (req, res) => {

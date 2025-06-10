@@ -70,58 +70,58 @@ const ContactUs = ({ username = 'guest' }) => {
 
       <Spin spinning={loading}>
         <Form layout="vertical" onFinish={onFinish} form={form}>
-          <Row gutter={16}>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="username"
-                label="Username"
-                initialValue={username}
-              >
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="username"
+              label="Username"
+              initialValue={username}
+            >
                 <Input prefix={<UserOutlined />} disabled={username !== 'guest'} />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: 'Please enter your email' },
-                  { type: 'email', message: 'Please enter a valid email' },
-                ]}
-              >
-                <Input prefix={<MailOutlined />} placeholder="Your email" />
-              </Form.Item>
-            </Col>
-          </Row>
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[
+                { required: true, message: 'Please enter your email' },
+                { type: 'email', message: 'Please enter a valid email' },
+              ]}
+            >
+              <Input prefix={<MailOutlined />} placeholder="Your email" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          <Form.Item
-            name="subject"
-            label="Subject"
-            rules={[{ required: true, message: 'Please enter a subject' }]}
-            initialValue="Enquiry"
-          >
-            <Input placeholder="Subject" />
-          </Form.Item>
+        <Form.Item
+          name="subject"
+          label="Subject"
+          rules={[{ required: true, message: 'Please enter a subject' }]}
+          initialValue="Enquiry"
+        >
+          <Input placeholder="Subject" />
+        </Form.Item>
 
-          <Form.Item
-            name="message"
-            label="Message"
-            rules={[{ required: true, message: 'Please enter your message' }]}
-          >
-            <TextArea rows={4} placeholder="Your message"/>
-          </Form.Item>
+        <Form.Item
+          name="message"
+          label="Message"
+          rules={[{ required: true, message: 'Please enter your message' }]}
+        >
+          <TextArea rows={4} placeholder="Your message"/>
+        </Form.Item>
 
-          <Form.Item>
-            <Button
-              htmlType="submit"
-              className="submit-button"
+        <Form.Item>
+          <Button
+            htmlType="submit"
+            className="submit-button"
               loading={loading}
               icon={<SendOutlined />}
-            >
-              <Text style={{color:'white'}}>Send Message</Text>
-            </Button>
-          </Form.Item>
-        </Form>
+          >
+            <Text style={{color:'white'}}>Send Message</Text>
+          </Button>
+        </Form.Item>
+      </Form>
       </Spin>
 
       <Text className="support-paragraph">

@@ -135,7 +135,7 @@ const Register = () => {
         setCaptchaRequired(true);
         setCaptchaModalVisible(true);
       } else {
-        setError('An unexpected error occurred. Please try again.');
+      setError('An unexpected error occurred. Please try again.');
       }
       
       // Reset captcha verification
@@ -152,7 +152,7 @@ const Register = () => {
     // Retry form submission after captcha verification
     form.submit();
   };
-
+  
   // Show loading spinner while authentication state is initializing
   if (initializing) {
     return (

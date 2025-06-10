@@ -1,6 +1,15 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Helper function for consistent response format
+const sendResponse = (req, res, statusCode, message, data) => {
+  return res.status(statusCode).json({
+    status: statusCode >= 400 ? 'error' : 'success',
+    message,
+    data
+  });
+};
+
 // Function to sign JWT token
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -30,11 +39,12 @@ const createSendToken = (user, statusCode, res) => {
 
   res.status(statusCode).json({
     status: 'success',
-    token,
-    expiresIn,
+    message: "Authentication successful",
     data: {
       user,
-    },
+      token,
+      expiresIn
+    }
   });
 };
 
@@ -46,16 +56,13 @@ exports.signup = async (req, res, next) => {
     // Check if user already exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Username already in use',
-      });
+      return sendResponse(req, res, 400, "Username already in use", null);
     }
 
     // Create user with role 'user' by default
     const newUser = await User.create({
       username,
-      // email,   not using email for default role 
+      email: "", // Set email to empty string instead of undefined
       password,
       role: 'user', // Default role
     });
@@ -63,10 +70,7 @@ exports.signup = async (req, res, next) => {
     createSendToken(newUser, 201, res);
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      status: 'error',
-      message: 'Error signing up user',
-    });
+    return sendResponse(req, res, 500, "Error signing up user", null);
   }
 };
 
@@ -77,30 +81,21 @@ exports.login = async (req, res, next) => {
 
     // Check if email and password exist
     if (!username || !password) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Please provide username and password',
-      });
+      return sendResponse(req, res, 400, "Please provide username and password", null);
     }
 
     // Check if user exists && password is correct
     const user = await User.findOne({ username }).select('+password');
 
     if (!user || !(await user.correctPassword(password, user.password))) {
-      return res.status(401).json({
-        status: 'fail',
-        message: 'Incorrect username or password',
-      });
+      return sendResponse(req, res, 401, "Incorrect username or password", null);
     }
 
     // If everything ok, send token to client
     createSendToken(user, 200, res);
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      status: 'error',
-      message: 'Error logging in user',
-    });
+    return sendResponse(req, res, 500, "Error logging in user", null);
   }
 };
 
@@ -109,10 +104,7 @@ exports.createAdmin = async (req, res, next) => {
   try {
     // Only allow in development environment
     if (process.env.NODE_ENV !== 'development') {
-      return res.status(403).json({
-        status: 'fail',
-        message: 'This route is only available in development mode',
-      });
+      return sendResponse(req, res, 403, "This route is only available in development mode", null);
     }
 
     const { username, email, password } = req.body;
@@ -128,10 +120,7 @@ exports.createAdmin = async (req, res, next) => {
     createSendToken(adminUser, 201, res);
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      status: 'error',
-      message: 'Error creating admin user',
-    });
+    return sendResponse(req, res, 500, "Error creating admin user", null);
   }
 };
 
@@ -139,17 +128,9 @@ exports.createAdmin = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user,
-      },
-    });
+    return sendResponse(req, res, 200, "User data retrieved successfully", { user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      status: 'error',
-      message: 'Error getting user data',
-    });
+    return sendResponse(req, res, 500, "Error getting user data", null);
   }
 }; 

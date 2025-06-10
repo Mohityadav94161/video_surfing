@@ -741,6 +741,47 @@
   margin: 0;
 }
 
+/* Pagination buttons in header dropdown */
+.load-more-card,
+.show-more-card {
+  background: transparent !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.load-more-card:hover,
+.show-more-card:hover {
+  background: rgba(255, 20, 147, 0.1) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.load-more-content,
+.show-more-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 0 !important;
+}
+
+.load-more-content .ant-btn,
+.show-more-content .ant-btn {
+  background-color: #ff1493;
+  border-color: #ff1493;
+  width: 100%;
+  height: 40px;
+  font-weight: 500;
+}
+
+.load-more-content .ant-btn:hover,
+.show-more-content .ant-btn:hover {
+  background-color: #ff47a3;
+  border-color: #ff47a3;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
