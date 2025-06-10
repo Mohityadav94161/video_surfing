@@ -49,15 +49,11 @@ const Home = () => {
 
   const [tagLoading, setTagLoading] = useState(false)
   const [tagError, setTagError] = useState(null)
-  const [visibleCount, setVisibleCount] = useState(7);
+
   const [tagReady, setTagReady] = useState(false)
   const [trendingVideos, setTrendingVideos] = useState([])
   const [trendingLoading, setTrendingLoading] = useState(false)
   const initialLoadDone = useRef(false)
-
-  const showMoreTags = () => {
-    setVisibleCount((prev) => prev + 7);
-  };
 
   // const [showPopup, setShowPopup] = useState(true);
 
@@ -71,9 +67,6 @@ const Home = () => {
   //   }
   // }, [showPopup]);
 
-  // Predefined static tags for filtering
-
-  // Format view count
   const formatViewCount = (count) => {
     if (count >= 1000000) {
       return (count / 1000000).toFixed(1) + "M"
@@ -683,6 +676,20 @@ const Home = () => {
         </div>
       </Modal>
 
+      <div className="banner-ad">
+        <div className="banner-content">
+          <h2>ADVERTISEMENT</h2>
+          <h3>Enjoy Premium Access – Free for 7 Days!</h3>
+          <Button
+            type="primary"
+            className="join-button"
+            onClick={() => window.open("https://your-advertiser-link.com", "_blank")}
+          >
+            Learn More
+          </Button>
+        </div>
+      </div>
+
       <div className="home-container">
         <div className="filters">
           <div className="filter-row tags-filter">
@@ -693,7 +700,7 @@ const Home = () => {
 
               <Spin spinning={tagLoading}>
                 <div className="tag-list">
-                  {popularTags.slice(0, visibleCount).map((tag, index) => (
+                  {popularTags.map((tag, index) => (
                     <Tag
                       key={index}
                       color={selectedTag?.name === tag?.name ? "#FF1493" : "default"}
@@ -719,88 +726,8 @@ const Home = () => {
                       Clear filter
                     </Button>
                   )}
-
-                  {visibleCount < popularTags.length && (
-                    <Button type="text" size="small" onClick={showMoreTags} className="show-more-btn">
-                      Show More
-                    </Button>
-                  )}
                 </div>
               </Spin>
-            </div>
-
-            {/* Video filters and sorting */}
-            <div className="video-filters">
-              <div className="filter-left">
-                <Button 
-                  type={showRecommended ? "primary" : "default"} 
-                  className={showRecommended ? "recommended-button-active" : "recommended-button"} 
-                  onClick={toggleRecommendedVideos}
-                >
-                  <FireOutlined /> {showRecommended ? "Showing Recommended" : "Recommended Videos"}
-                </Button>
-                
-                {/* Clear All Filters button */}
-                {(selectedTag || qualityFilter || durationFilter || showRecommended || selectedCategory) && (
-                  <Button 
-                    type="default" 
-                    icon={<CloseOutlined />}
-                    onClick={() => {
-                      setCurrentPage(1);
-                      setSelectedTag(null);
-                      setQualityFilter(null);
-                      setDurationFilter(null);
-                      setShowRecommended(false);
-                      setSelectedCategory(null);
-                      // Clear URL parameters
-                      searchParams.delete("tag");
-                      searchParams.delete("category");
-                      setSearchParams(searchParams);
-                      // Scroll back to top
-                      window.scrollTo(0, 0);
-                    }}
-                  >
-                    Clear All Filters
-                  </Button>
-                )}
-              </div>
-
-              <div className="filter-right">
-                <Select 
-                  defaultValue="quality" 
-                  className="filter-select"
-                  onChange={handleQualityChange}
-                  value={qualityFilter || "quality"}
-                >
-                  <Option value="quality">Quality</Option>
-                  <Option value="hd">HD Only</Option>
-                  <Option value="4k">4K Only</Option>
-                </Select>
-
-                <Select 
-                  defaultValue="duration" 
-                  className="filter-select"
-                  onChange={handleDurationChange}
-                  value={durationFilter || "duration"}
-                >
-                  <Option value="duration">Duration</Option>
-                  <Option value="short">Short (&lt; 10m)</Option>
-                  <Option value="medium">Medium (10-20m)</Option>
-                  <Option value="long">Long (&gt; 20m)</Option>
-                </Select>
-                
-                <Select
-                  defaultValue="recent"
-                  className="filter-select"
-                  onChange={handleSortChange}
-                  value={sortOption}
-                >
-                  <Option value="recent">Recent</Option>
-                  <Option value="views">Most Viewed</Option>
-                  <Option value="likes">Most Liked</Option>
-                  <Option value="collections">Most Collected</Option>
-                </Select>
-              </div>
             </div>
           </div>
         </div>

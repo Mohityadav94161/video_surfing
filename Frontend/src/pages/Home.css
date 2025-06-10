@@ -107,6 +107,8 @@ body {
   padding-bottom: 8px;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+  scroll-behavior: smooth;
+  padding-right: 20px; /* Add some padding for better scroll experience */
 }
 
 .tag-list::-webkit-scrollbar {
