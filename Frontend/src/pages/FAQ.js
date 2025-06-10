@@ -127,7 +127,7 @@ const FAQ = () => {
     : faqCategories;
   
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
+    <div style={{ maxWidth: '1900px', margin: '0 auto', padding: '40px 20px' }}>
       <Title level={1} style={{ textAlign: 'center', marginBottom: '20px', color:'white' }}>Frequently Asked Questions</Title>
       <Paragraph style={{ textAlign: 'center', marginBottom: '40px', color:'white' }}>
         Find answers to the most common questions about Video Surfing

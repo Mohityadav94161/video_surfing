@@ -64,7 +64,6 @@ const MainLayout = () => {
   const [menuData, setMenuData] = useState({'Trending':'','Categories':'','Pornstars':'','Recommended':''})
   // Add state for displayed videos limit and pagination
   const [displayLimit, setDisplayLimit] = useState({
-    home: 10,
     Trending: 10,
     Categories: 10,
     Pornstars: 10,
@@ -357,7 +356,10 @@ const MainLayout = () => {
 
   // Handle header dropdown hover
   const handleHeaderMenuHover = (menuType) => {
-    setActiveDropdown(menuType)
+    // Don't show dropdown for home menu item
+    if (menuType !== "home") {
+      setActiveDropdown(menuType)
+    }
   }
 
   const handleHeaderMenuLeave = () => {
@@ -366,9 +368,7 @@ const MainLayout = () => {
   
   // Handle show more button click
   const handleShowMore = (type) => {
-    if (type === 'home') {
-      navigate('/');
-    } else if (type === 'Trending') {
+    if (type === 'Trending') {
       navigate('/trending');
     } else if (type === 'Categories') {
       navigate('/categories');
@@ -540,11 +540,8 @@ const MainLayout = () => {
         <div className="header-main-menu-inner">
           <div
             className="header-menu-item"
-            onMouseEnter={() => handleHeaderMenuHover("home")}
-            onMouseLeave={handleHeaderMenuLeave}
             onClick={() => {
-              navigate("/");
-              setActiveDropdown(null);
+              window.location.href = "/";
             }}
           >
             Home
@@ -554,28 +551,28 @@ const MainLayout = () => {
             onMouseEnter={() => handleHeaderMenuHover("Trending")}
             onMouseLeave={handleHeaderMenuLeave}
           >
-            Trending
+            Trending <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Categories")}
             onMouseLeave={handleHeaderMenuLeave}
           >
-            Categories
+            Categories <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Pornstars")}
             onMouseLeave={handleHeaderMenuLeave}
           >
-            Pornstars
+            Pornstars <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Recommended")}
             onMouseLeave={handleHeaderMenuLeave}
           >
-            Recommended
+            Recommended <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
           </div>
         </div>
       </div>
@@ -590,31 +587,7 @@ const MainLayout = () => {
             onMouseLeave={handleHeaderMenuLeave}
           >
             <div className="header-dropdown-grid">
-              {activeDropdown === 'home' && menuData[activeDropdown]?.slice(0, displayLimit.home).map((item, index) => (
-                <div
-                  key={index}
-                  className="header-dropdown-card"
-                  onClick={() => {
-                    navigate(`/video/${item.id}`);
-                    setActiveDropdown(null);
-                  }}
-                >
-                  <img 
-                    src={item.thumbnail || `/placeholder.svg?height=120&width=200&text=${encodeURIComponent(item.name)}`} 
-                    alt={item.name} 
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/home.jpg";
-                    }}
-                  />
-                  <div className="header-dropdown-card-content">
-                    <h4 className="header-dropdown-card-title">
-                      {item.name}
-                    </h4>
-                  </div>
-                </div>
-              ))}
-              
+
               {activeDropdown === 'Trending' && menuData[activeDropdown]?.slice(0, displayLimit.Trending).map((item, index) => (
                 <div
                   key={index}
@@ -1240,19 +1213,39 @@ const MainLayout = () => {
                 Help & Support
               </Title>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <Link to="/support" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
+                <a 
+                  href="/support" 
+                  className="footer-link" 
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/support";
+                  }}
+                >
                   Support Center
-                </Link>
-                <Link
-                  to="/support?page=contact-us"
+                </a>
+                <a
+                  href="/support?page=contact-us"
                   className="footer-link"
-                  style={{ margin: "5px 0", color: "#FF1493" }}
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/support?page=contact-us";
+                  }}
                 >
                   Contact Us
-                </Link>
-                <Link to="/faq" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
+                </a>
+                <a 
+                  href="/faq" 
+                  className="footer-link" 
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/faq";
+                  }}
+                >
                   FAQs
-                </Link>
+                </a>
                 {isAuthenticated && (
                   <Link to="/feedback" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
                     Feedback

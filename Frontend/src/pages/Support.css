@@ -3,7 +3,9 @@
   background-color: #000000;
   display: flex;
   position: relative;
-  margin: 5px 60px 60px 60px;
+  margin: 5px auto 60px auto;
+  max-width: 1900px;
+  padding: 0 20px;
 }
 
 .support-sidebar {
