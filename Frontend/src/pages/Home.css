@@ -1007,33 +1007,6 @@ body {
   align-items: center;
 }
 
-/* Featured Videos Section */
-.featured-videos-section {
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #333;
-}
-
-.featured-videos-section .section-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #fff;
-  position: relative;
-  display: inline-block;
-}
-
-.featured-videos-section .section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  width: 40px;
-  height: 3px;
-  background-color: #ff1493;
-  border-radius: 2px;
-}
-
 /* Video Card Enhancements */
 .video-card {
   border-radius: 8px;

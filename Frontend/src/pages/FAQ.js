@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, Collapse, Input, Button, Card, Divider, Tag, Space } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+import './FooterPages.css';
 
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
@@ -127,7 +128,7 @@ const FAQ = () => {
     : faqCategories;
   
   return (
-    <div style={{ maxWidth: '1900px', margin: '0 auto', padding: '40px 20px' }}>
+    <div className="footer-page-container" style={{ maxWidth: '1900px', margin: '0 auto', padding: '40px 20px' }}>
       <Title level={1} style={{ textAlign: 'center', marginBottom: '20px', color:'white' }}>Frequently Asked Questions</Title>
       <Paragraph style={{ textAlign: 'center', marginBottom: '40px', color:'white' }}>
         Find answers to the most common questions about Video Surfing

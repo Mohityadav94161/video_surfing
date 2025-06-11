@@ -201,6 +201,8 @@
 @media (max-width: 768px) {
   .support-layout {
     flex-direction: column;
+    margin: 5px 0 60px 0;
+    padding: 0;
   }
 
   .desktop-only {
@@ -212,7 +214,7 @@
   }
 
   .support-content {
-    padding: 20px;
+    padding: 20px 15px;
     width: 100%;
   }
 

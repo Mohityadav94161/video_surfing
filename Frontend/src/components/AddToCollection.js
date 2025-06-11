@@ -210,7 +210,11 @@ const AddToCollection = ({ video, compact = false }) => {
         <Button 
           icon={<FolderAddOutlined />} 
           onClick={(e) => e.preventDefault()}
-          style={{ marginRight: 8 }}
+          style={{ 
+            width: '100%',
+            minWidth: '150px'
+          }}
+          size="large"
         >
           Add to Collection
         </Button>

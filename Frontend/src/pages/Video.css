@@ -1,0 +1,42 @@
+/* Video page mobile responsiveness */
+
+.video-actions-container {
+  display: flex;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .video-actions-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .video-actions-container .ant-btn {
+    width: 100% !important;
+    margin-right: 0 !important;
+  }
+  
+  .video-actions-container > div {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+  
+  .video-actions-container .ant-dropdown-trigger {
+    width: 100% !important;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .video-actions-container {
+    gap: 8px;
+  }
+  
+  .video-actions-container .ant-btn {
+    font-size: 14px;
+    height: 40px;
+  }
+}

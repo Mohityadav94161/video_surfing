@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Rate, Typography, message, Card, Select } from 'antd';
 import { useAuth } from '../contexts/AuthContext';
+import './FooterPages.css';
 
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -37,7 +38,7 @@ const Feedback = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1900px', margin: '0 auto', padding: '40px 20px' }}>
+    <div className="footer-page-container" style={{ maxWidth: '1900px', margin: '0 auto', padding: '40px 20px' }}>
       <Card 
         bordered={false}
         style={{ 

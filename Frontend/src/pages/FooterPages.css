@@ -1,0 +1,47 @@
+/* Shared styles for footer link pages */
+
+/* Mobile view - make cards span edge to edge */
+@media (max-width: 768px) {
+  .footer-page-container {
+    padding: 20px 0 !important;
+    margin: 0 !important;
+  }
+  
+  .footer-page-container .ant-card {
+    margin: 0 0 20px 0 !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+  
+  .footer-page-container .ant-card-body {
+    padding: 20px 15px !important;
+  }
+  
+  /* Title and paragraph adjustments for mobile */
+  .footer-page-container h1 {
+    padding: 0 15px !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .footer-page-container .ant-typography {
+    padding: 0 15px !important;
+  }
+  
+  /* Last updated text */
+  .footer-page-container .ant-typography-caption {
+    padding: 0 15px !important;
+    margin-bottom: 20px !important;
+  }
+}
+
+/* Ensure proper spacing on larger screens */
+@media (min-width: 769px) {
+  .footer-page-container {
+    padding: 40px 20px !important;
+  }
+  
+  .footer-page-container .ant-card {
+    margin-bottom: 30px !important;
+  }
+}

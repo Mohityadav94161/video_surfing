@@ -1,11 +1,12 @@
 import React from 'react';
 import { Typography, Card } from 'antd';
+import './FooterPages.css';
 
 const { Title, Paragraph, Text } = Typography;
 
 const PrivacyPolicy = ({ inSupportPage = false }) => {
   return (
-    <div style={{ maxWidth: inSupportPage ? '100%' : '1900px', margin: inSupportPage ? '0' : '0 auto', padding: inSupportPage ? '0' : '40px 20px' }}>
+    <div className={inSupportPage ? '' : 'footer-page-container'} style={{ maxWidth: inSupportPage ? '100%' : '1900px', margin: inSupportPage ? '0' : '0 auto', padding: inSupportPage ? '0' : '40px 20px' }}>
       <Title level={1} style={{ textAlign: 'center', marginBottom: '20px', color:'white' }}>Privacy Policy</Title>
       <Paragraph type="secondary" style={{ textAlign: 'center', marginBottom: '40px', color: 'white'}}>
         Last Updated: June 1, 2024

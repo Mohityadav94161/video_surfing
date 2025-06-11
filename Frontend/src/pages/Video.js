@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import './Video.css';
 import {
   Typography,
   Row,
@@ -229,13 +230,13 @@ const Video = () => {
               {video.description || 'No description available.'}
             </Paragraph>
 
-            <div style={{ display: 'flex', marginTop: 16 }}>
+            <div className="video-actions-container">
               <Button
                 type="primary"
                 size="large"
                 icon={<LinkOutlined />}
                 onClick={handleRedirect}
-                style={{ marginRight: 8, flex: 1 }}
+                style={{ flex: '1 1 auto' }}
               >
                 Watch Video
               </Button>
@@ -245,12 +246,13 @@ const Video = () => {
                 size="large"
                 icon={<ShareAltOutlined />}
                 onClick={() => setShareModalVisible(true)}
-                style={{ marginRight: 8 }}
               >
                 Share
               </Button>
               
-              <AddToCollection video={video} />
+              <div>
+                <AddToCollection video={video} />
+              </div>
             </div>
           </Card>
           

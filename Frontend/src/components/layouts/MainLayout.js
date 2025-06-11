@@ -91,6 +91,11 @@ const MainLayout = () => {
     }
   }, [scrolled])
 
+  // Scroll to top on route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname, location.search]);
+
   // Close mobile menu when navigating
   useEffect(() => {
     setMobileMenuOpen(false)
@@ -1247,9 +1252,17 @@ const MainLayout = () => {
                   FAQs
                 </a>
                 {isAuthenticated && (
-                  <Link to="/feedback" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
+                  <a 
+                    href="/feedback" 
+                    className="footer-link" 
+                    style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.href = "/feedback";
+                    }}
+                  >
                     Feedback
-                  </Link>
+                  </a>
                 )}
               </div>
             </Col>
@@ -1259,22 +1272,50 @@ const MainLayout = () => {
                 Legal
               </Title>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <Link to="/terms-of-service" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
+                <a 
+                  href="/terms-of-service" 
+                  className="footer-link" 
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/terms-of-service";
+                  }}
+                >
                   Terms of Service
-                </Link>
-                <Link to="/privacy-policy" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
+                </a>
+                <a 
+                  href="/privacy-policy" 
+                  className="footer-link" 
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/privacy-policy";
+                  }}
+                >
                   Privacy Policy
-                </Link>
-                <Link to="/support?page=eu-dsa" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
+                </a>
+                <a 
+                  href="/support?page=eu-dsa" 
+                  className="footer-link" 
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/support?page=eu-dsa";
+                  }}
+                >
                   EU DSA
-                </Link>
-                <Link
-                  to="/support?page=2257-statement"
+                </a>
+                <a
+                  href="/support?page=2257-statement"
                   className="footer-link"
-                  style={{ margin: "5px 0", color: "#FF1493" }}
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/support?page=2257-statement";
+                  }}
                 >
                   2257 Statement
-                </Link>
+                </a>
               </div>
             </Col>
 

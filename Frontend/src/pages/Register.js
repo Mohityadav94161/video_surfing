@@ -214,22 +214,39 @@ const Register = () => {
             }
             rules={[
               { required: true, message: 'Please enter a password' },
-              { min: 8, message: 'Password must be at least 8 characters' },
+              { min: 8, message: 'Password must be at least 8 characters long' },
               {
-                pattern: /(?=.*[A-Z])/,
-                message: 'Password must contain at least one uppercase letter'
-              },
-              {
-                pattern: /(?=.*[a-z])/,
-                message: 'Password must contain at least one lowercase letter'
-              },
-              {
-                pattern: /(?=.*[0-9])/,
-                message: 'Password must contain at least one number'
-              },
-              {
-                pattern: /(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])/,
-                message: 'Password must contain at least one special character'
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  
+                  const errors = [];
+                  
+                  if (value.length < 8) {
+                    errors.push('Password must be at least 8 characters long');
+                  }
+                  
+                  if (!/(?=.*[A-Z])/.test(value)) {
+                    errors.push('Password must contain at least one uppercase letter');
+                  }
+                  
+                  if (!/(?=.*[a-z])/.test(value)) {
+                    errors.push('Password must contain at least one lowercase letter');
+                  }
+                  
+                  if (!/(?=.*[0-9])/.test(value)) {
+                    errors.push('Password must contain at least one number');
+                  }
+                  
+                  if (!/(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])/.test(value)) {
+                    errors.push('Password must contain at least one special character');
+                  }
+                  
+                  if (errors.length > 0) {
+                    return Promise.reject(new Error(errors.join('. ')));
+                  }
+                  
+                  return Promise.resolve();
+                }
               }
             ]}
             hasFeedback

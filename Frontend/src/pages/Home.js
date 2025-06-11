@@ -735,7 +735,7 @@ const Home = () => {
         {/* Main content - Video grid */}
         <div className="content-container">
           {!loading && !error && (
-            <div className="featured-videos-section">
+            <>
               <div className="section-header">
                 <h2 className="section-title">
                   {showRecommended 
@@ -777,7 +777,7 @@ const Home = () => {
                   <span className="results-count">({filteredVideos.length} results)</span>
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {loading ? (

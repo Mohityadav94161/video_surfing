@@ -97,6 +97,23 @@ app.use('/api/collections', collectionRoutes);
 app.use('/api/captcha', captchaRoutes);
 app.use('/api/support', supportRoutes);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  const healthCheck = {
+    uptime: process.uptime(),
+    message: 'OK',
+    timestamp: Date.now(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  };
+  
+  try {
+    res.status(200).json(healthCheck);
+  } catch (error) {
+    healthCheck.message = error;
+    res.status(503).json(healthCheck);
+  }
+});
+
 // Add a special route to always force captcha for new visitors
 app.get('/api/initial-check', (req, res) => {
   // Force captcha for demonstration purposes
