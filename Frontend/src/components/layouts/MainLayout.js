@@ -665,34 +665,6 @@ const MainLayout = () => {
                   </div>
                 </div>
               ))}
-              
-              {/* Load More Button - show if there are more items to load */}
-              {menuData[activeDropdown]?.length > displayLimit[activeDropdown] && (
-                <div 
-                  className="header-dropdown-card load-more-card"
-                  onClick={() => handleLoadMore(activeDropdown)}
-                >
-                  <div className="header-dropdown-card-content load-more-content">
-                    <Button type="primary" icon={<DownOutlined />}>
-                      Load More
-                    </Button>
-                  </div>
-                </div>
-              )}
-              
-              {/* Show More Button - only show when total content is greater than 10 */}
-              {menuData[activeDropdown]?.length > 10 && (
-                <div 
-                  className="header-dropdown-card show-more-card"
-                  onClick={() => handleShowMore(activeDropdown)}
-                >
-                  <div className="header-dropdown-card-content show-more-content">
-                    <Button type="primary" icon={<ArrowRightOutlined />}>
-                      Show All {activeDropdown}
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </>
