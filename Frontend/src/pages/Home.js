@@ -1010,7 +1010,7 @@ const Home = () => {
                               alt={video.title}
                               onError={(e) => {
                                 e.target.onerror = null
-                                e.target.src = "/home.jpg"
+                                // e.target.src = "/home.jpg"
                               }}
                             />
                             <div className="video-overlay">

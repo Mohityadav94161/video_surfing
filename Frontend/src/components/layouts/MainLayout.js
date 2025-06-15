@@ -1350,10 +1350,15 @@ const MainLayout = () => {
           </Row>
 
           <Divider style={{ margin: "20px 0", color: "rgba(255, 255, 255, 0.80)" }} />
-          <div>
-            <Text style={{ color: "rgba(255, 255, 255, 0.80)" }}>
-              Video Surfing ©{new Date().getFullYear()} - Your curated video directory
-            </Text>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <Text style={{ color: "rgba(255, 255, 255, 0.80)" }}>
+                Video Surfing ©{new Date().getFullYear()} - Your curated video directory
+              </Text>
+            </div>
+              <a href="https://www.rtalabel.org/" target="_blank" rel="noopener noreferrer">
+                <img src="/RTA_v1.svg" alt="RTA" style={{ height: '24px' }} />
+              </a>
           </div>
         </div>
       </Footer>
