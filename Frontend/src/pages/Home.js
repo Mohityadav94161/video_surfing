@@ -6,6 +6,7 @@ import {EyeOutlined,AppstoreOutlined,UnorderedListOutlined,VideoCameraOutlined,F
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom"
 import api from "../utils/api"
 import "./Home.css"
+import { useCollections } from '../contexts/CollectionContext'
 
 const { Option } = Select
 
@@ -52,13 +53,14 @@ const Home = () => {
   const [trendingLoading, setTrendingLoading] = useState(false)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
 
-  const [saveModalVisible, setSaveModalVisible] = useState(false)
-  const [selectedVideo, setSelectedVideo] = useState(null)
-  const [collections, setCollections] = useState([])
-  const [selectedCollections, setSelectedCollections] = useState([])
-  const [newCollectionName, setNewCollectionName] = useState("")
-  const [collectionsLoading, setCollectionsLoading] = useState(false)
-  const [saveLoading, setSaveLoading] = useState(false)
+  const { collections, loading: collectionsLoading, createCollection, addVideoToCollection, fetchUserCollections } = useCollections();
+  
+  // Keep the modal states
+  const [saveModalVisible, setSaveModalVisible] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [selectedCollections, setSelectedCollections] = useState([]);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [saveLoading, setSaveLoading] = useState(false);
 
   // const [showPopup, setShowPopup] = useState(true);
 
@@ -421,111 +423,6 @@ const Home = () => {
     }
   }, [])
 
-  // Handle save to collection click
-  const handleSaveToCollectionClick = async (video, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    console.log("Save clicked, isAuthenticated:", isAuthenticated) // Debug log
-    console.log("Token in localStorage:", !!localStorage.getItem("token")) // Debug log
-
-    if (!isAuthenticated) {
-      // Try to re-check authentication before showing error
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken") ||
-        localStorage.getItem("accessToken") ||
-        localStorage.getItem("jwt")
-
-      if (token) {
-        console.log("Token found, updating auth state") // Debug log
-        setIsAuthenticated(true)
-        // Continue with the save process
-      } else {
-        message.info("Please log in to save videos to collections")
-        return
-      }
-    }
-
-    setSelectedVideo(video)
-    setSaveModalVisible(true)
-
-    // Fetch user's collections
-    setCollectionsLoading(true)
-    try {
-      const response = await api.get("/api/collections")
-      setCollections(response.data.data.collections || [])
-    } catch (err) {
-      console.error("Error fetching collections:", err)
-      if (err.response?.status === 401) {
-        message.error("Please log in to access collections")
-        setIsAuthenticated(false)
-      } else {
-        message.error("Failed to load collections")
-      }
-    } finally {
-      setCollectionsLoading(false)
-    }
-  }
-
-  // Handle saving video to selected collections
-  const handleSaveVideo = async () => {
-    if (!selectedVideo) return
-
-    setSaveLoading(true)
-    try {
-      // Create new collection if specified
-      if (newCollectionName.trim()) {
-        const createResponse = await api.post("/api/collections", {
-          name: newCollectionName.trim(),
-          description: `Collection for ${selectedVideo.title}`,
-          videos: [selectedVideo._id || selectedVideo.id],
-        })
-
-        if (createResponse.data.success) {
-          message.success(`Created collection "${newCollectionName}" and saved video`)
-        }
-      }
-
-      // Save to existing collections
-      if (selectedCollections.length > 0) {
-        const savePromises = selectedCollections.map((collectionId) =>
-          api.post(`/api/collections/${collectionId}/videos`, {
-            videoId: selectedVideo._id || selectedVideo.id,
-          }),
-        )
-
-        await Promise.all(savePromises)
-        message.success(`Video saved to ${selectedCollections.length} collection(s)`)
-      }
-
-      if (!newCollectionName.trim() && selectedCollections.length === 0) {
-        message.warning("Please select collections or create a new one")
-        return
-      }
-
-      // Reset and close modal
-      setSaveModalVisible(false)
-      setSelectedVideo(null)
-      setSelectedCollections([])
-      setNewCollectionName("")
-    } catch (err) {
-      console.error("Error saving video:", err)
-      message.error("Failed to save video to collections")
-    } finally {
-      setSaveLoading(false)
-    }
-  }
-
-  // Handle collection selection
-  const handleCollectionSelect = (collectionId, checked) => {
-    if (checked) {
-      setSelectedCollections([...selectedCollections, collectionId])
-    } else {
-      setSelectedCollections(selectedCollections.filter((id) => id !== collectionId))
-    }
-  }
-
   // Handle video click to increment view count
   const handleVideoClick = async (video) => {
     try {
@@ -768,6 +665,117 @@ const Home = () => {
     navigate("/trending")
   }
 
+  // Update handleSaveToCollectionClick to use CollectionContext
+  const handleSaveToCollectionClick = async (video, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      message.info("Please log in to save videos to collections");
+      return;
+    }
+
+    try {
+      // Set the video and show modal immediately
+      setSelectedVideo(video);
+      setSaveModalVisible(true);
+
+      // Fetch collections using the context
+      await fetchUserCollections();
+    } catch (err) {
+      console.error("Error:", err);
+      message.error("Failed to access collections. Please try again.");
+      setSaveModalVisible(false);
+    }
+  };
+
+  // Update handleSaveVideo to use CollectionContext methods
+  const handleSaveVideo = async () => {
+    if (!selectedVideo) return;
+
+    if (!isAuthenticated) {
+      message.error("Please log in to save videos");
+      setSaveModalVisible(false);
+      return;
+    }
+
+    setSaveLoading(true);
+    try {
+      // Create new collection if specified
+      let newCollectionId = null;
+      if (newCollectionName.trim()) {
+        const result = await createCollection(
+          newCollectionName.trim(),
+          `Collection for ${selectedVideo.title}`
+        );
+        
+        if (result.success) {
+          newCollectionId = result.collection._id;
+          message.success(`Created collection "${newCollectionName}" and saved video`);
+        } else {
+          throw new Error(result.message || "Failed to create collection");
+        }
+      }
+
+      // Save to existing collections
+      if (selectedCollections.length > 0) {
+        const savePromises = selectedCollections.map(collectionId =>
+          addVideoToCollection(collectionId, selectedVideo._id || selectedVideo.id)
+        );
+
+        const results = await Promise.allSettled(savePromises);
+        
+        // Count successful saves
+        const successfulSaves = results.filter(r => r.status === 'fulfilled' && r.value?.success).length;
+        
+        if (successfulSaves > 0) {
+          message.success(`Video saved to ${successfulSaves} collection(s)`);
+        }
+        
+        // Handle any failed saves
+        const failedSaves = results.filter(r => r.status === 'rejected' || !r.value?.success);
+        if (failedSaves.length > 0) {
+          console.error("Some saves failed:", failedSaves);
+          message.warning(`${failedSaves.length} collection(s) failed to save`);
+        }
+      }
+
+      if (!newCollectionName.trim() && selectedCollections.length === 0) {
+        message.warning("Please select collections or create a new one");
+        return;
+      }
+
+      // Reset and close modal
+      setSaveModalVisible(false);
+      setSelectedVideo(null);
+      setSelectedCollections([]);
+      setNewCollectionName("");
+      
+      // Refresh collections list
+      await fetchUserCollections();
+
+    } catch (err) {
+      console.error("Error saving video:", err);
+      if (err.response?.status === 401) {
+        message.error("Your session has expired. Please log in again.");
+        setIsAuthenticated(false);
+      } else {
+        message.error(err.response?.data?.message || "Failed to save video to collections");
+      }
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  // Keep the handleCollectionSelect function as is
+  const handleCollectionSelect = (collectionId, checked) => {
+    if (checked) {
+      setSelectedCollections([...selectedCollections, collectionId]);
+    } else {
+      setSelectedCollections(selectedCollections.filter((id) => id !== collectionId));
+    }
+  };
+
   return (
     <div className="page-container">
       {/* <TrendingVideos /> */}
@@ -1002,7 +1010,7 @@ const Home = () => {
                               alt={video.title}
                               onError={(e) => {
                                 e.target.onerror = null
-                                // e.target.src = "/home.jpg"
+                                e.target.src = "/home.jpg"
                               }}
                             />
                             <div className="video-overlay">
@@ -1099,16 +1107,18 @@ const Home = () => {
         open={saveModalVisible}
         onOk={handleSaveVideo}
         onCancel={() => {
-          setSaveModalVisible(false)
-          setSelectedVideo(null)
-          setSelectedCollections([])
-          setNewCollectionName("")
+          setSaveModalVisible(false);
+          setSelectedVideo(null);
+          setSelectedCollections([]);
+          setNewCollectionName("");
         }}
         confirmLoading={saveLoading}
         okText="Save"
         cancelText="Cancel"
         width={500}
         className="save-collection-modal"
+        maskClosable={false}
+        destroyOnClose={true}
       >
         {selectedVideo && (
           <div style={{ marginBottom: "20px" }}>
@@ -1129,6 +1139,8 @@ const Home = () => {
                   borderColor: "#444",
                   color: "white",
                 }}
+                maxLength={50}
+                showCount
               />
             </div>
 
@@ -1140,7 +1152,10 @@ const Home = () => {
               </h5>
 
               {collectionsLoading ? (
-                <Spin size="small" />
+                <div style={{ textAlign: "center", padding: "20px" }}>
+                  <Spin size="large" />
+                  <p style={{ color: "#999", marginTop: "10px" }}>Loading collections...</p>
+                </div>
               ) : collections.length > 0 ? (
                 <List
                   dataSource={collections}
@@ -1165,12 +1180,19 @@ const Home = () => {
                       </Checkbox>
                     </List.Item>
                   )}
-                  style={{ maxHeight: "200px", overflowY: "auto" }}
+                  style={{ 
+                    maxHeight: "200px", 
+                    overflowY: "auto",
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#ff1493 #2a2a2a"
+                  }}
                 />
               ) : (
-                <p style={{ color: "#999", fontStyle: "italic" }}>
-                  No collections found. Create your first collection above.
-                </p>
+                <div style={{ textAlign: "center", padding: "20px" }}>
+                  <p style={{ color: "#999", fontStyle: "italic" }}>
+                    No collections found. Create your first collection above.
+                  </p>
+                </div>
               )}
             </div>
           </div>

@@ -62,7 +62,13 @@ const MainLayout = () => {
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
-  const [menuData, setMenuData] = useState({'Trending':'','Categories':'','Pornstars':'','Recommended':''})
+  const [menuData, setMenuData] = useState({
+    'Trending': [],
+    'Categories': [],
+    'Pornstars': [],
+    'Recommended': [],
+    'home': []
+  })
   const [pendingAction, setPendingAction] = useState(null)
   // Add state for displayed videos limit and pagination
   const [displayLimit, setDisplayLimit] = useState({
@@ -585,8 +591,7 @@ const MainLayout = () => {
             onMouseLeave={handleHeaderMenuLeave}
           >
             <div className="header-dropdown-grid">
-
-              {activeDropdown === 'Trending' && menuData[activeDropdown]?.slice(0, displayLimit.Trending).map((item, index) => (
+              {activeDropdown === 'Trending' && Array.isArray(menuData[activeDropdown]) && menuData[activeDropdown].slice(0, displayLimit.Trending).map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
@@ -622,7 +627,7 @@ const MainLayout = () => {
                 </div>
               ))}
               
-              {activeDropdown === 'Categories' && menuData[activeDropdown]?.slice(0, displayLimit.Categories).map((item, index) => (
+              {activeDropdown === 'Categories' && Array.isArray(menuData[activeDropdown]) && menuData[activeDropdown].slice(0, displayLimit.Categories).map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
@@ -653,7 +658,9 @@ const MainLayout = () => {
                 </div>
               ))}
 
-              {(activeDropdown !== 'home' && activeDropdown !== 'Trending' && activeDropdown !== 'Categories') && menuData[activeDropdown]?.slice(0, displayLimit[activeDropdown]).map((item, index) => (
+              {(activeDropdown !== 'home' && activeDropdown !== 'Trending' && activeDropdown !== 'Categories') && 
+               Array.isArray(menuData[activeDropdown]) && 
+               menuData[activeDropdown].slice(0, displayLimit[activeDropdown]).map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
