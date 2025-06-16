@@ -13,7 +13,7 @@ const sendResponse = (req, res, statusCode, message, data) => {
 // Function to sign JWT token
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d', // Default to 7 days if not specified in env
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 };
 
@@ -23,7 +23,7 @@ const createSendToken = (user, statusCode, res) => {
   
   // Calculate token expiry for response
   const tokenExpiry = process.env.JWT_EXPIRES_IN || '7d';
-  let expiresIn = 7 * 24 * 60 * 60 * 1000; // Default to 7 days in milliseconds
+  let expiresIn = 7 * 24 * 60 * 60 * 1000;
   
   if (typeof tokenExpiry === 'string') {
     const unit = tokenExpiry.slice(-1);

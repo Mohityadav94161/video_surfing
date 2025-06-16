@@ -14,6 +14,7 @@ dotenv.config();
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 const videoRoutes = require('./routes/videoRoutes');
 const homeSectionRoutes = require('./routes/homeSectionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
@@ -77,10 +78,15 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-// Apply captcha middleware to all API routes except captcha-related endpoints
+// Apply captcha middleware to all API routes except captcha-related endpoints and authenticated user actions
 app.use('/api', (req, res, next) => {
   // Skip captcha middleware for captcha-related routes
   if (req.path.startsWith('/captcha/')) {
+    return next();
+  }
+  
+  // Skip captcha middleware for authenticated user routes (they have their own auth protection)
+  if (req.path.startsWith('/users/') || req.path.startsWith('/auth/me')) {
     return next();
   }
   
@@ -90,6 +96,7 @@ app.use('/api', (req, res, next) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/home-sections', homeSectionRoutes);
 app.use('/api/analytics', analyticsRoutes);

@@ -2,15 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Pagination, Spin, Button, Select, Tag, Modal, Input, message, List, Checkbox } from "antd"
-import {
-  EyeOutlined,
-  AppstoreOutlined,
-  UnorderedListOutlined,
-  VideoCameraOutlined,
-  SaveOutlined,
-  PlusOutlined,
-  FolderOutlined,
-} from "@ant-design/icons"
+import {EyeOutlined,AppstoreOutlined,UnorderedListOutlined,VideoCameraOutlined,FolderAddOutlined,PlusOutlined,FolderOutlined,} from "@ant-design/icons"
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom"
 import api from "../utils/api"
 import "./Home.css"
@@ -832,7 +824,7 @@ const Home = () => {
           <Button
             type="primary"
             className="join-button"
-            onClick={() => window.open("https://your-advertiser-link.com", "_blank")}
+            onClick={() => window.open("https://www.trafficjunky.com/", "_blank")}
           >
             Learn More
           </Button>
@@ -1020,7 +1012,7 @@ const Home = () => {
                               className="save-to-collections-icon"
                               onClick={(e) => handleSaveToCollectionClick(video, e)}
                             >
-                              <SaveOutlined />
+                              <FolderAddOutlined />
                             </div>
                             <div className="video-duration">
                               {formatDuration(video.duration, video._id || video.id)}
@@ -1058,7 +1050,7 @@ const Home = () => {
                               className="save-to-collections-icon"
                               onClick={(e) => handleSaveToCollectionClick(video, e)}
                             >
-                              <SaveOutlined />
+                              <FolderAddOutlined />
                             </div>
                             <div className="video-duration">
                               {formatDuration(video.duration, video._id || video.id)}

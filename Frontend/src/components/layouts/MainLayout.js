@@ -36,8 +36,7 @@ import {
   FileProtectOutlined,
   FileTextOutlined,
   PhoneOutlined,
-  DownOutlined,
-  ArrowRightOutlined,
+  CaretDownOutlined,
 } from "@ant-design/icons"
 import { useAuth } from "../../contexts/AuthContext"
 import "./MainLayout.css"
@@ -62,12 +61,13 @@ const MainLayout = () => {
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [menuData, setMenuData] = useState({'Trending':'','Categories':'','Pornstars':'','Recommended':''})
+  const [pendingAction, setPendingAction] = useState(null)
   // Add state for displayed videos limit and pagination
   const [displayLimit, setDisplayLimit] = useState({
-    Trending: 10,
-    Categories: 10,
-    Pornstars: 10,
-    Recommended: 10
+    Trending: 12,
+    Categories: 12,
+    Pornstars: 12,
+    Recommended: 12
   })
   
   // Search recommendations
@@ -103,6 +103,15 @@ const MainLayout = () => {
     setDesktopMenuOpen(false)
     setActiveDropdown(null)
   }, [location.pathname])
+
+  // Execute pending action after successful authentication
+  useEffect(() => {
+    if (isAuthenticated && pendingAction) {
+      const actionToExecute = pendingAction
+      setPendingAction(null)
+      actionToExecute()
+    }
+  }, [isAuthenticated, pendingAction])
 
   useEffect(()=>{
      const fetchMenuData = async () => {
@@ -351,6 +360,7 @@ const MainLayout = () => {
 
   const handleProtectedAction = (action) => {
     if (!isAuthenticated) {
+      setPendingAction(() => action)
       setLoginVisible(true)
       setAvatarMenuOpen(false)
     } else {
@@ -369,28 +379,6 @@ const MainLayout = () => {
 
   const handleHeaderMenuLeave = () => {
     setActiveDropdown(null)
-  }
-  
-  // Handle show more button click
-  const handleShowMore = (type) => {
-    if (type === 'Trending') {
-      navigate('/trending');
-    } else if (type === 'Categories') {
-      navigate('/categories');
-    } else if (type === 'Pornstars') {
-      navigate('/pornstars');
-    } else if (type === 'Recommended') {
-      navigate('/?recommended=true');
-    }
-    setActiveDropdown(null);
-  }
-  
-  // Handle load more items in dropdown
-  const handleLoadMore = (type) => {
-    setDisplayLimit(prev => ({
-      ...prev,
-      [type]: prev[type] + 10
-    }));
   }
 
   return (
@@ -556,28 +544,28 @@ const MainLayout = () => {
             onMouseEnter={() => handleHeaderMenuHover("Trending")}
             onMouseLeave={handleHeaderMenuLeave}
           >
-            Trending <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+            Trending <CaretDownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Categories")}
             onMouseLeave={handleHeaderMenuLeave}
           >
-            Categories <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+            Categories <CaretDownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Pornstars")}
             onMouseLeave={handleHeaderMenuLeave}
           >
-            Pornstars <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+            Pornstars <CaretDownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Recommended")}
             onMouseLeave={handleHeaderMenuLeave}
           >
-            Recommended <DownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+            Recommended <CaretDownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
           </div>
         </div>
       </div>
@@ -629,15 +617,44 @@ const MainLayout = () => {
                 </div>
               ))}
               
-              {(activeDropdown !== 'home' && activeDropdown !== 'Trending') && menuData[activeDropdown]?.slice(0, displayLimit[activeDropdown]).map((item, index) => (
+              {activeDropdown === 'Categories' && menuData[activeDropdown]?.slice(0, displayLimit.Categories).map((item, index) => (
+                <div
+                  key={index}
+                  className="header-dropdown-card"
+                  onClick={() => {
+                    navigate(`/?category=${item}`);
+                    setActiveDropdown(null);
+                    
+                    // Force a page refresh to ensure filters apply correctly
+                    if (window.location.pathname === '/') {
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  <img 
+                    src={`/categories/${item.toLowerCase()}.jpg`} 
+                    alt={item} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      // Fallback to a default category image or home.jpg
+                      e.target.src = "/home.jpg";
+                    }}
+                  />
+                  <div className="header-dropdown-card-content">
+                    <h4 className="header-dropdown-card-title">
+                      {item}
+                    </h4>
+                  </div>
+                </div>
+              ))}
+
+              {(activeDropdown !== 'home' && activeDropdown !== 'Trending' && activeDropdown !== 'Categories') && menuData[activeDropdown]?.slice(0, displayLimit[activeDropdown]).map((item, index) => (
                 <div
                   key={index}
                   className="header-dropdown-card"
                   onClick={() => {
                     // Handle navigation based on dropdown type
-                    if (activeDropdown === 'Categories') {
-                      navigate(`/?category=${item}`);
-                    } else if (activeDropdown === 'Trending' || activeDropdown === 'Pornstars') {
+                    if (activeDropdown === 'Pornstars') {
                       navigate(`/?tag=${item?.name || item}`);
                     } else if (activeDropdown === 'Recommended') {
                       navigate(`/?category=${item}`);
@@ -1016,7 +1033,7 @@ const MainLayout = () => {
         style={{
           padding: 0,
           margin: "5px 60px 60px 60px",
-          minHeight: "100vh",
+          minHeight: "20vh",
           background: "transparent",
         }}
       >
@@ -1339,12 +1356,26 @@ const MainLayout = () => {
                 >
                   Partnership Program
                 </Link>
-                <Link to="/upload-video" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
+                <a
+                  className="footer-link"
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProtectedAction(() => navigate("/upload-video"));
+                  }}
+                >
                   Upload Videos
-                </Link>
-                <Link to="/profile" className="footer-link" style={{ margin: "5px 0", color: "#FF1493" }}>
+                </a>
+                <a
+                  className="footer-link"
+                  style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleProtectedAction(() => navigate("/profile"));
+                  }}
+                >
                   Manage Profile
-                </Link>
+                </a>
               </div>
             </Col>
           </Row>

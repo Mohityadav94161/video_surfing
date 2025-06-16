@@ -17,7 +17,7 @@ import {
   Tooltip
 } from 'antd';
 import { 
-  SaveOutlined,
+  FolderAddOutlined,
   RollbackOutlined,
   InfoCircleOutlined,
   TagsOutlined
@@ -327,7 +327,7 @@ const EditVideo = () => {
                 type="primary" 
                 htmlType="submit" 
                 loading={submitting}
-                icon={<SaveOutlined />}
+                icon={<FolderAddOutlined />}
                 size="large"
               >
                 Save Changes

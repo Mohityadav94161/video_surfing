@@ -1,34 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './Video.css';
-import {
-  Typography,
-  Row,
-  Col,
-  Button,
-  Tag,
-  Divider,
-  Spin,
-  Alert,
-  Card,
-  Space,
-  Breadcrumb,
-  Descriptions,
-  Image,
-  Tooltip,
-  Modal,
-  Input,
-  message,
-} from 'antd';
-import {
-  ArrowLeftOutlined,
-  EyeOutlined,
-  CalendarOutlined,
-  GlobalOutlined,
-  LinkOutlined,
-  ShareAltOutlined,
-  CopyOutlined,
-} from '@ant-design/icons';
+import {Typography,Row,Col,Button,Tag,Divider,Spin,Alert,Card,Space,Breadcrumb,Descriptions,Image,Tooltip,Modal,Input,message,} from 'antd';
+import {ArrowLeftOutlined,EyeOutlined,CalendarOutlined,GlobalOutlined,ShareAltOutlined,CopyOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import VideoComments from '../components/VideoComments';
 import VideoReactions from '../components/VideoReactions';
@@ -170,14 +144,45 @@ const Video = () => {
       <Row gutter={[24, 24]}>
         <Col xs={24} md={16}>
           <Card>
-            <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <Image
-                src={video.thumbnailUrl}
-                alt={video.title}
-                style={{ maxWidth: '100%', maxHeight: '400px' }}
-                fallback="https://via.placeholder.com/640x360?text=No+Thumbnail"
-              />
-            </div>
+          <div style={{ position: 'relative', textAlign: 'center', marginBottom: 20 }}>
+  <Image
+    src={video.thumbnailUrl}
+    alt={video.title}
+    style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }}
+    fallback="https://via.placeholder.com/640x360?text=No+Thumbnail"
+    preview={false}
+  />
+  <div
+    onClick={handleRedirect}
+    style={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: '72px',
+      height: '72px',
+      backgroundColor: 'rgba(255, 20, 147, 0.8)',
+      backdropFilter: 'blur(6px)',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      boxShadow: '0 0 8px rgba(0,0,0,0.5)',
+    }}
+  >
+    <div
+      style={{
+        width: 0,
+        height: 0,
+        borderLeft: '18px solid white',
+        borderTop: '12px solid transparent',
+        borderBottom: '12px solid transparent',
+        marginLeft: '4px',
+      }}
+    />
+  </div>
+</div>
 
             <Title level={2}>{video.title}</Title>
 
@@ -231,20 +236,12 @@ const Video = () => {
             </Paragraph>
 
             <div className="video-actions-container">
+              
               <Button
                 type="primary"
                 size="large"
-                icon={<LinkOutlined />}
-                onClick={handleRedirect}
-                style={{ flex: '1 1 auto' }}
-              >
-                Watch Video
-              </Button>
-              
-              <Button
-                type="default"
-                size="large"
                 icon={<ShareAltOutlined />}
+                style={{ flex: '1 1 auto' }}
                 onClick={() => setShareModalVisible(true)}
               >
                 Share

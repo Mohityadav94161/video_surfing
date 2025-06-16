@@ -13,7 +13,7 @@ import {
   Spin,
   Empty
 } from 'antd';
-import { PlusOutlined, FolderAddOutlined, SaveOutlined } from '@ant-design/icons';
+import { PlusOutlined, FolderAddOutlined } from '@ant-design/icons';
 import { useCollections } from '../contexts/CollectionContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -105,7 +105,7 @@ const AddToCollection = ({ video, compact = false }) => {
           key: collection._id,
           label: (
             <>
-              <SaveOutlined /> {collection.name}
+              <FolderAddOutlined /> {collection.name}
               <Text type="secondary" style={{ marginLeft: 8 }}>
                 ({(collection.videos || []).length} videos)
               </Text>

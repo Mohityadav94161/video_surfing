@@ -160,6 +160,11 @@ export const AuthProvider = ({ children }) => {
     message.success('Logged out successfully');
   };
 
+  // Update user data
+  const updateUser = (userData) => {
+    setUser(prevUser => ({ ...prevUser, ...userData }));
+  };
+
   // Get the authentication status
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'admin';
@@ -172,7 +177,8 @@ export const AuthProvider = ({ children }) => {
     isAdmin,
     login,
     register,
-    logout
+    logout,
+    updateUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
