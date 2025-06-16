@@ -4,7 +4,6 @@ import {
   Row,
   Col,
   Typography,
-  Input,
   Divider,
   Select,
   Pagination,
@@ -14,12 +13,10 @@ import {
   Card,
   Button
 } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import axiosInstance from '../utils/axiosConfig';
 import VideoCard from '../components/VideoCard';
 
 const { Title, Text } = Typography;
-const { Search } = Input;
 const { Option } = Select;
 const useQuery = () => new URLSearchParams(useLocation().search);
 
@@ -27,9 +24,6 @@ const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const query = useQuery();
-
-  const [inputValue, setInputValue] = useState(query.get("q") || "");
-
 
   // Initialize state from URL
   const [searchQuery, setSearchQuery] = useState(query.get("q") || "");
@@ -56,7 +50,7 @@ const SearchPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("/api/videos/categories");
+        const response = await axiosInstance.get("/videos/categories");
         setCategories(response.data.data.categories || []);
       } catch (err) {
         console.error("Error fetching categories:", err);
@@ -65,6 +59,14 @@ const SearchPage = () => {
 
     fetchCategories();
   }, []);
+
+  // Update searchQuery when URL query parameter changes
+  useEffect(() => {
+    const queryParam = query.get("q");
+    if (queryParam && queryParam !== searchQuery) {
+      setSearchQuery(queryParam);
+    }
+  }, [location.search]);
 
   // Fetch videos on query/filter/pagination change
   useEffect(() => {
@@ -81,7 +83,7 @@ const SearchPage = () => {
       try {
         const { current, pageSize } = pagination;
 
-        const res = await axios.get("/api/videos", {
+        const res = await axiosInstance.get("/videos", {
           params: {
             search: searchQuery,
             category: filters.category,
@@ -123,12 +125,7 @@ const SearchPage = () => {
     navigate(`/search?${params.toString()}`, { replace: true });
   }, [searchQuery, filters, pagination.current, pagination.pageSize]);
 
-  // Handlers
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    setPagination((prev) => ({ ...prev, current: 1 }));
-  };
-
+  // Handle filter changes
   const handleCategoryChange = (value) => {
     setFilters((prev) => ({ ...prev, category: value }));
     setPagination((prev) => ({ ...prev, current: 1 }));
@@ -149,24 +146,8 @@ const SearchPage = () => {
   };
 
   return (
-    <div >
-      <Title level={2}>Search Videos</Title>
-
-      <Search
-        placeholder="Search for videos..."
-        allowClear
-        enterButton={
-          <Button type="primary" icon={<SearchOutlined />}>
-            Search
-          </Button>
-        }
-        size="large"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onSearch={handleSearch}
-        style={{ marginBottom: 20 }}
-      />
-
+    <div>
+      <Title level={2}>Search Results for "{searchQuery}"</Title>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col xs={24} sm={12}>

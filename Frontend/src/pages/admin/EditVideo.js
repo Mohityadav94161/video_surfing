@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Typography, 
   Form, 
@@ -20,10 +20,16 @@ import {
   FolderAddOutlined,
   RollbackOutlined,
   InfoCircleOutlined,
-  TagsOutlined
+  TagsOutlined,
+  UploadOutlined,
+  ClockCircleOutlined,
+  PlusOutlined,
+  MinusCircleOutlined,
+  DeleteOutlined
 } from '@ant-design/icons';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosConfig';
+
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -45,7 +51,7 @@ const EditVideo = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('/api/videos/categories');
+        const response = await axiosInstance.get('/videos/categories');
         setCategories(response.data.data.categories || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -63,7 +69,7 @@ const EditVideo = () => {
       setError(null);
       
       try {
-        const response = await axios.get(`/api/videos/${id}`);
+        const response = await axiosInstance.get(`/videos/${id}`);
         const videoData = response.data.data.video;
         setVideo(videoData);
         
@@ -119,7 +125,7 @@ const EditVideo = () => {
       };
       
       // Call the API to update the video
-      await axios.patch(`/api/videos/${id}`, payload);
+      await axiosInstance.patch(`/videos/${id}`, payload);
       
       setSuccess(true);
       message.success('Video updated successfully!');

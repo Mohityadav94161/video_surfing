@@ -1,9 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './Video.css';
-import {Typography,Row,Col,Button,Tag,Divider,Spin,Alert,Card,Space,Breadcrumb,Descriptions,Image,Tooltip,Modal,Input,message,} from 'antd';
-import {ArrowLeftOutlined,EyeOutlined,CalendarOutlined,GlobalOutlined,ShareAltOutlined,CopyOutlined} from '@ant-design/icons';
-import axios from 'axios';
+import {
+  Typography,
+  Row,
+  Col,
+  Button,
+  Tag,
+  Divider,
+  Spin,
+  Alert,
+  Card,
+  Space,
+  Breadcrumb,
+  Descriptions,
+  Image,
+  Tooltip,
+  Modal,
+  Input,
+  message,
+} from 'antd';
+import {
+  ArrowLeftOutlined,
+  EyeOutlined,
+  CalendarOutlined,
+  GlobalOutlined,
+  LinkOutlined,
+  ShareAltOutlined,
+  CopyOutlined,
+} from '@ant-design/icons';
+import axios from '../utils/axiosConfig';
 import VideoComments from '../components/VideoComments';
 import VideoReactions from '../components/VideoReactions';
 import AddToCollection from '../components/AddToCollection';

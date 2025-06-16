@@ -13,7 +13,7 @@ import {
   DislikeFilled 
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import './VideoReactions.css';
 
 const { Text } = Typography;

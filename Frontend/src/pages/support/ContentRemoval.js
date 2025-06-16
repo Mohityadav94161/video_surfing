@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, Card, Steps, Form, Input, Button, Divider, Alert, Upload, Select, message, Spin } from 'antd';
 import { DeleteOutlined, UploadOutlined, InfoCircleOutlined, LinkOutlined, MailOutlined, UserOutlined, SendOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;

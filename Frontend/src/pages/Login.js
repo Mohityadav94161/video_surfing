@@ -19,7 +19,7 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import Captcha from '../components/Captcha';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 
 const { Title, Text } = Typography;
 

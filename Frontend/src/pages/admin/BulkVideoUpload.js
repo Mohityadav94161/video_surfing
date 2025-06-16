@@ -47,7 +47,7 @@ import {
   AppleOutlined,
   MobileOutlined
 } from '@ant-design/icons';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;

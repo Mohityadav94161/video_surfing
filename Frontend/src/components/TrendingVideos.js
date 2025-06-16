@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Card, Row, Col, Spin, Empty } from 'antd';
 import { FireOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import './TrendingVideos.css';
 
 const TrendingVideos = () => {

@@ -42,6 +42,8 @@ import { useAuth } from "../../contexts/AuthContext"
 import "./MainLayout.css"
 import "../../components/ModalStyles.css"
 import api from "../../utils/api"
+import LoginForm from "../../components/LoginForm"
+import RegisterForm from "../../components/RegisterForm"
 
 const { Header, Content, Footer } = Layout
 const { Search } = Input
@@ -216,10 +218,15 @@ const MainLayout = () => {
 
   const handleSearch = (value) => {
     if (value.trim()) {
-      navigate(`/search?q=${encodeURIComponent(value.trim())}`)
+      // First save the search term to avoid race conditions
+      const searchValue = value.trim();
+      setSearchTerm(searchValue);
+      
+      // Navigate to search page with the query
+      navigate(`/search?q=${encodeURIComponent(searchValue)}`)
+      
+      // Close search overlay on mobile
       setSearchVisible(false)
-      // Reset searchTerm after navigation
-      setTimeout(() => setSearchTerm(""), 100)
     }
   }
 
@@ -493,9 +500,7 @@ const MainLayout = () => {
                 placeholder="Search videos..."
                 allowClear
                 enterButton
-                onSearch={(value) => {
-                  handleSearch(value)
-                }}
+                onSearch={handleSearch}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="mobile-search-input"
@@ -1049,63 +1054,19 @@ const MainLayout = () => {
         centered
         className="auth-modal custom-login-modal"
       >
-        <Form
-          onFinish={async (values) => {
-            try {
-              const { username, password } = values
-              const result = await login(username, password)
-              if (result.success) {
-                setLoginVisible(false)
-                message.success("Logged in successfully!")
-              }
-            } catch (error) {
-              console.error("Login error:", error)
-              message.error("Login failed. Please try again.")
-            }
+        <LoginForm 
+          onLoginSuccess={(user) => {
+            console.log('MainLayout: Login success callback triggered with user:', user);
+            setLoginVisible(false);
+            message.success("Logged in successfully!");
+            console.log('MainLayout: Reloading page to refresh auth state');
+            window.location.reload(); // Ensure the page refreshes with the new auth state
           }}
-        >
-          <Form.Item name="username" rules={[{ required: true, message: "Please input your username!" }]}>
-            <Input prefix={<UserOutlined />} placeholder="Username" />
-          </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, message: "Please input your password!" }]}>
-            <Input.Password placeholder="Password" />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{
-                backgroundColor: "#FF1493",
-                color: "white",
-                border: "none",
-                transition: "transform 0.2s, box-shadow 0.2s",
-              }}
-              block
-              loading={loading}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.02)"
-                e.currentTarget.style.boxShadow = "0 4px 10px rgba(255, 20, 147, 0.3)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)"
-                e.currentTarget.style.boxShadow = "none"
-              }}
-            >
-              Login
-            </Button>
-          </Form.Item>
-          <div style={{ textAlign: "center" }}>
-            <Button
-              type="link"
-              onClick={() => {
-                setLoginVisible(false)
-                setRegisterVisible(true)
-              }}
-            >
-              Don't have an account? Register now
-            </Button>
-          </div>
-        </Form>
+          onSwitchToRegister={() => {
+            setLoginVisible(false);
+            setRegisterVisible(true);
+          }}
+        />
       </Modal>
 
       {/* Register Modal */}
@@ -1117,80 +1078,17 @@ const MainLayout = () => {
         centered
         className="auth-modal custom-register-modal"
       >
-        <Form
-          onFinish={async (values) => {
-            try {
-              const { username, password } = values
-              const result = await register(username, password)
-              if (result.success) {
-                setRegisterVisible(false)
-                message.success("Registered successfully!")
-              }
-            } catch (error) {
-              console.error("Registration error:", error)
-              message.error("Registration failed. Please try again.")
-            }
+        <RegisterForm 
+          onRegisterSuccess={() => {
+            setRegisterVisible(false);
+            message.success("Registered successfully!");
+            window.location.reload(); // Ensure the page refreshes with the new auth state
           }}
-        >
-          <Form.Item name="username" rules={[{ required: true, message: "Please input your username!" }]}>
-            <Input prefix={<UserOutlined />} placeholder="Username" />
-          </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, message: "Please input your password!" }]}>
-            <Input.Password placeholder="Password" />
-          </Form.Item>
-          <Form.Item
-            name="confirmPassword"
-            dependencies={["password"]}
-            rules={[
-              { required: true, message: "Please confirm your password!" },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue("password") === value) {
-                    return Promise.resolve()
-                  }
-                  return Promise.reject(new Error("The two passwords do not match!"))
-                },
-              }),
-            ]}
-          >
-            <Input.Password placeholder="Confirm Password" />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{
-                backgroundColor: "#FF1493",
-                color: "white",
-                border: "none",
-                transition: "transform 0.2s, box-shadow 0.2s",
-              }}
-              block
-              loading={loading}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.02)"
-                e.currentTarget.style.boxShadow = "0 4px 10px rgba(255, 20, 147, 0.3)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)"
-                e.currentTarget.style.boxShadow = "none"
-              }}
-            >
-              Register
-            </Button>
-          </Form.Item>
-          <div style={{ textAlign: "center" }}>
-            <Button
-              type="link"
-              onClick={() => {
-                setRegisterVisible(false)
-                setLoginVisible(true)
-              }}
-            >
-              Already have an account? Login
-            </Button>
-          </div>
-        </Form>
+          onSwitchToLogin={() => {
+            setRegisterVisible(false);
+            setLoginVisible(true);
+          }}
+        />
       </Modal>
 
       <Footer

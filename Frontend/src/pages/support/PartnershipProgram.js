@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, Card, Row, Col, Button, List, Divider, Tag, Form, Input, Select, message, Spin, Upload } from 'antd';
 import { TeamOutlined, TrophyOutlined, DollarOutlined, RocketOutlined, CheckCircleOutlined, UploadOutlined, SendOutlined, LinkOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;

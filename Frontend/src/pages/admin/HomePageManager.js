@@ -45,7 +45,7 @@ import {
   CaretRightOutlined,
   CheckCircleOutlined
 } from '@ant-design/icons';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosConfig';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -140,7 +140,7 @@ const HomePageManager = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/home-sections');
+      const response = await axiosInstance.get('/home-sections');
       setSections(response.data.data.sections || []);
     } catch (err) {
       console.error('Error fetching home sections:', err);
@@ -155,7 +155,7 @@ const HomePageManager = () => {
   const fetchCategories = async () => {
     setCategoriesLoading(true);
     try {
-      const response = await axios.get('/api/videos/categories');
+      const response = await axiosInstance.get('/videos/categories');
       setCategories(response.data.data.categories || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -175,7 +175,7 @@ const HomePageManager = () => {
       }
       params.append('limit', '50');
       
-      const response = await axios.get(`/api/videos?${params.toString()}`);
+      const response = await axiosInstance.get(`/videos?${params.toString()}`);
       setVideos(response.data.data.videos || []);
       setTotalVideos(response.data.data.total);
       return response.data.data.videos || [];
@@ -236,7 +236,7 @@ const HomePageManager = () => {
     }
     
     try {
-      await axios.post(`/api/home-sections/${selectedSectionForVideos._id}/add-videos`, {
+      await axiosInstance.post(`/home-sections/${selectedSectionForVideos._id}/add-videos`, {
         videos: selectedVideos
       });
       
@@ -259,7 +259,7 @@ const HomePageManager = () => {
       cancelText: 'No',
       onOk: async () => {
         try {
-          await axios.post(`/api/home-sections/${sectionId}/remove-videos`, {
+          await axiosInstance.post(`/home-sections/${sectionId}/remove-videos`, {
             videos: [videoId]
           });
           
@@ -291,7 +291,7 @@ const HomePageManager = () => {
       
       // Save order to backend
       try {
-        await axios.post('/api/home-sections/reorder', {
+        await axiosInstance.post('/home-sections/reorder', {
           sectionIds: reorderedSections.map(s => s._id)
         });
         
@@ -359,11 +359,11 @@ const HomePageManager = () => {
       
       if (editingSection) {
         // Update existing section
-        await axios.patch(`/api/home-sections/${editingSection._id}`, values);
+        await axiosInstance.patch(`/home-sections/${editingSection._id}`, values);
         message.success('Section updated successfully');
       } else {
         // Create new section
-        await axios.post('/api/home-sections', values);
+        await axiosInstance.post('/home-sections', values);
         message.success('Section created successfully');
       }
       
@@ -386,7 +386,7 @@ const HomePageManager = () => {
       cancelText: 'No',
       onOk: async () => {
         try {
-          await axios.delete(`/api/home-sections/${sectionId}`);
+          await axiosInstance.delete(`/home-sections/${sectionId}`);
           message.success('Section deleted successfully');
           fetchSections(); // Refresh data
         } catch (err) {
@@ -400,7 +400,7 @@ const HomePageManager = () => {
   // Handle toggling section active state
   const handleToggleActive = async (section) => {
     try {
-      await axios.patch(`/api/home-sections/${section._id}`, {
+      await axiosInstance.patch(`/home-sections/${section._id}`, {
         isActive: !section.isActive
       });
       

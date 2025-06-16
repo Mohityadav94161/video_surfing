@@ -23,7 +23,7 @@ import {
   CheckCircleTwoTone,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 

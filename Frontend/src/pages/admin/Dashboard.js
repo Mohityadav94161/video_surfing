@@ -31,13 +31,15 @@ import {
   CloudUploadOutlined
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosConfig';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { loadUser, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [videos, setVideos] = useState([]);
   const [stats, setStats] = useState({
@@ -59,11 +61,31 @@ const Dashboard = () => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
 
+  // Verify admin token on mount
+  useEffect(() => {
+    const verifyAdminToken = async () => {
+      try {
+        // Verify token is valid and user is admin
+        const result = await loadUser(true);
+        if (!result.success || !result.user || result.user.role !== 'admin') {
+          console.log('Admin verification failed:', result);
+          message.error('Authentication failed. Please login again.');
+          navigate('/');
+        }
+      } catch (err) {
+        console.error('Admin verification error:', err);
+      }
+    };
+    
+    verifyAdminToken();
+  }, []);
+
   // Fetch categories on mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('/api/videos/categories');
+        console.log('Fetching categories with auth token');
+        const response = await axiosInstance.get('/api/videos/categories');
         setCategories(response.data.data.categories || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -104,12 +126,14 @@ const Dashboard = () => {
         // Sort by newest first
         params.set('sort', '-createdAt');
         
+        console.log('Fetching videos list with auth token');
         // Get videos with filters and pagination
-        const videosResponse = await axios.get(`/api/videos?${params.toString()}`);
+        const videosResponse = await axiosInstance.get(`/api/videos?${params.toString()}`);
         
         // Get stats data - for admin, we show all videos including inactive ones
-        const statsPromise = axios.get('/api/videos/stats');
-        const tagsPromise = axios.get('/api/videos/tags');
+        console.log('Fetching video stats with auth token');
+        const statsPromise = axiosInstance.get('/api/videos/stats');
+        const tagsPromise = axiosInstance.get('/api/videos/tags');
         
         // Wait for all promises to resolve
         const [statsResponse, tagsResponse] = await Promise.all([statsPromise, tagsPromise]);
@@ -174,7 +198,7 @@ const Dashboard = () => {
 
   const handleToggleStatus = async (videoId, currentStatus) => {
     try {
-      await axios.patch(`/api/videos/${videoId}`, { active: !currentStatus });
+      await axiosInstance.patch(`/api/videos/${videoId}`, { active: !currentStatus });
       
       // Update the UI
       setVideos(prevVideos => 
@@ -192,7 +216,7 @@ const Dashboard = () => {
 
   const handleDeleteVideo = async (videoId) => {
     try {
-      await axios.delete(`/api/videos/${videoId}`);
+      await axiosInstance.delete(`/api/videos/${videoId}`);
       
       // Update the UI
       setVideos(prevVideos => prevVideos.filter(video => video._id !== videoId));

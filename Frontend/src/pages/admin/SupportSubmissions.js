@@ -36,10 +36,16 @@ import {
   ClockCircleOutlined,
   FileSearchOutlined,
   MessageOutlined,
-  UserOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  CloseCircleOutlined,
+  EyeOutlined,
+  FileTextOutlined,
+  SendOutlined,
+  SyncOutlined,
+  WarningOutlined
 } from '@ant-design/icons';
-import axios from 'axios';
+import axiosInstance from '../../utils/axiosConfig';
+import { useAuth } from '../../contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 
 const { Title, Text, Paragraph } = Typography;
@@ -101,10 +107,10 @@ const SupportSubmissions = () => {
         params.set('limit', pagination.pageSize);
         
         // Get submissions with filters and pagination
-        const submissionsResponse = await axios.get(`/api/support/submissions?${params.toString()}`);
+        const submissionsResponse = await axiosInstance.get(`/api/support/submissions?${params.toString()}`);
         
         // Get stats data
-        const statsResponse = await axios.get('/api/support/stats');
+        const statsResponse = await axiosInstance.get('/api/support/stats');
         
         // Process submissions data
         const submissionsData = submissionsResponse.data.data.submissions;
@@ -178,7 +184,7 @@ const SupportSubmissions = () => {
 
   const handleDeleteSubmission = async (submissionId) => {
     try {
-      await axios.delete(`/api/support/submissions/${submissionId}`);
+      await axiosInstance.delete(`/api/support/submissions/${submissionId}`);
       
       // Update the UI
       setSubmissions(prevSubmissions => prevSubmissions.filter(submission => submission._id !== submissionId));
@@ -202,7 +208,7 @@ const SupportSubmissions = () => {
       
       if (!currentSubmission) return;
       
-      const response = await axios.patch(`/api/support/submissions/${currentSubmission._id}`, {
+      const response = await axiosInstance.patch(`/api/support/submissions/${currentSubmission._id}`, {
         status: values.status,
         adminNotes: values.adminNotes
       });

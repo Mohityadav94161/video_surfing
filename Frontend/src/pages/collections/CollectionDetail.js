@@ -21,7 +21,7 @@ import {
   PlayCircleOutlined
 } from '@ant-design/icons';
 import { useCollections } from '../../contexts/CollectionContext';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig';
 
 const { Title, Text, Paragraph } = Typography;
 const { confirm } = Modal;

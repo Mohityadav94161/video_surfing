@@ -21,7 +21,7 @@ import {
   PlusOutlined,
   FolderOutlined
 } from '@ant-design/icons';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCollections } from '../../contexts/CollectionContext';
 import { useNavigate } from 'react-router-dom';

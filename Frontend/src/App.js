@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider, theme } from 'antd';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { ConfigProvider, theme, message } from 'antd';
 
 // Auth context
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -45,6 +45,7 @@ import GlobalCaptchaModal from './components/GlobalCaptchaModal';
 // Protected route component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { isAuthenticated, user, loading, initializing } = useAuth();
+  const navigate = useNavigate();
   
   // Show nothing while initializing to prevent flashing of login page
   if (initializing) {
@@ -52,11 +53,14 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   }
   
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    console.log('Not authenticated, redirecting to login');
+    return <Navigate to="/" replace />;
   }
   
-  if (adminOnly && user?.role !== 'admin') {
-    return <Navigate to="/" />;
+  if (adminOnly && (!user || user.role !== 'admin')) {
+    console.log('Admin access required but user is not admin, redirecting to home');
+    message.error('You do not have admin privileges.');
+    return <Navigate to="/" replace />;
   }
   
   return children;

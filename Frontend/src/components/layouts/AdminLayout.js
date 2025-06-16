@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, theme, Typography, Avatar, Dropdown, Space, Spin } from 'antd';
+import { Layout, Menu, theme, Typography, Avatar, Dropdown, Space, Spin, message } from 'antd';
 import {
   DashboardOutlined,
   VideoCameraAddOutlined,
@@ -22,14 +22,61 @@ const { Title } = Typography;
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, loading, initializing } = useAuth();
+  const { user, logout, loading, initializing, isAdmin, loadUser } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [verifyingAuth, setVerifyingAuth] = useState(true);
   
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
   const currentPath = location.pathname;
+
+  // Verify admin authentication only once on component mount
+  useEffect(() => {
+    const verifyAdminAuth = async () => {
+      console.log('Verifying admin authentication...');
+      setVerifyingAuth(true);
+      
+      // Check if user is already loaded and is admin
+      if (user && user.role === 'admin') {
+        console.log('User already authenticated as admin');
+        setVerifyingAuth(false);
+        return;
+      }
+      
+      try {
+        // Try to load the user only if we need to
+        const result = await loadUser(true);
+        console.log('Load user result:', result);
+        
+        if (!result.success) {
+          console.log('Authentication failed:', result.reason);
+          message.error('Authentication failed. Please login again.');
+          navigate('/');
+          return;
+        }
+        
+        if (!result.user || result.user.role !== 'admin') {
+          console.log('Not an admin user:', result.user);
+          message.error('You do not have admin privileges.');
+          navigate('/');
+          return;
+        }
+        
+        console.log('Admin authentication successful');
+      } catch (err) {
+        console.error('Verification error:', err);
+        message.error('Authentication error. Please login again.');
+        navigate('/');
+      } finally {
+        setVerifyingAuth(false);
+      }
+    };
+    
+    verifyAdminAuth();
+    // Only run this effect once on mount
+  }, []);
 
   const userMenuItems = [
     {
@@ -50,12 +97,20 @@ const AdminLayout = () => {
   ];
 
   // Show a loading indicator while checking authentication
-  if (initializing) {
+  if (initializing || verifyingAuth) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Spin size="large" tip="Loading admin panel..." />
       </div>
     );
+  }
+
+  // If not admin after verification, we shouldn't get here due to the redirect,
+  // but this is an extra safety check
+  if (!isAdmin) {
+    console.log('User is not admin, redirecting');
+    navigate('/');
+    return null;
   }
 
   return (
