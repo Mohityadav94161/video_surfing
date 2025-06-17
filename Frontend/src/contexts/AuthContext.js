@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Fetching user data from API');
       // Token is valid, load user data
-      const res = await axiosInstance.get('/api/auth/me');
+      const res = await axiosInstance.get('/auth/me');
       console.log('User data response:', res.data);
       
       // Check for user data in the nested response
@@ -150,7 +150,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('tokenExpiry');
       delete axiosInstance.defaults.headers.common['Authorization'];
       
-      const res = await axiosInstance.post('/api/auth/login', { username, password });
+      const res = await axiosInstance.post('/auth/login', { username, password });
       
       console.log('Login response:', res.data);
       
@@ -194,7 +194,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (username, password) => {
     try {
       setLoading(true);
-      const res = await axiosInstance.post('/api/auth/signup', { username, password });
+      const res = await axiosInstance.post('/auth/signup', { username, password });
       
       // Check for token in the nested data structure
       if (!res.data || !res.data.data || !res.data.data.token) {
@@ -259,7 +259,8 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    loadUser // Expose the loadUser function
+    loadUser, // Expose the loadUser function
+    updateUser // Expose the updateUser function
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

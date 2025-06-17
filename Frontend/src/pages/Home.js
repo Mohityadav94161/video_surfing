@@ -132,7 +132,7 @@ const Home = () => {
       setTagError(null)
 
       try {
-        const response = await api.get("/api/videos/tags")
+        const response = await api.get("/videos/tags")
         const tags = response.data.data.tags
         setPoppularTags(tags || [])
       } catch (err) {
@@ -154,7 +154,7 @@ const Home = () => {
 
       try {
         // 1. Fetch Tags First
-        const tagResponse = await api.get("/api/videos/tags")
+        const tagResponse = await api.get("/videos/tags")
         const tags = tagResponse.data.data.tags || []
         setPoppularTags(tags)
 
@@ -178,7 +178,7 @@ const Home = () => {
         console.log("Selected tag:", matchedTag)
 
         // 3. Fetch Videos based on tag/category + currentPage
-        const videoResponse = await api.get("/api/videos", {
+        const videoResponse = await api.get("/videos", {
           params: {
             page: currentPage,
             limit: 12, // Use a sensible page size
@@ -379,7 +379,7 @@ const Home = () => {
         if (token) {
           // Verify token with server
           try {
-            const response = await api.get("/api/auth/verify", {
+            const response = await api.get("/auth/verify", {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -427,7 +427,7 @@ const Home = () => {
   const handleVideoClick = async (video) => {
     try {
       // Record the view
-      await api.post(`/api/videos/${video._id || video.id}/view`)
+      await api.post(`/videos/${video._id || video.id}/view`)
 
       // Navigate to the video page or open external URL
       if (video.originalUrl) {
@@ -516,7 +516,7 @@ const Home = () => {
     if (!showRecommended) {
       setLoading(true)
       api
-        .get("/api/videos/trending", {
+        .get("/videos/trending", {
           params: {
             limit: 20,
           },
@@ -602,7 +602,7 @@ const Home = () => {
   const handleVideoThumbnailClick = async (video) => {
     try {
       // Record the view
-      await api.post(`/api/videos/${video._id || video.id}/view`)
+      await api.post(`/videos/${video._id || video.id}/view`)
 
       // Navigate to the original URL or open external URL
       if (video.originalUrl) {
@@ -625,7 +625,7 @@ const Home = () => {
   const handleVideoInfoClick = async (video) => {
     try {
       // Record the view
-      await api.post(`/api/videos/${video._id || video.id}/view`)
+      await api.post(`/videos/${video._id || video.id}/view`)
 
       // Navigate to the video details page
       navigate(`/video/${video._id || video.id}`)
@@ -641,7 +641,7 @@ const Home = () => {
     const fetchTrendingVideos = async () => {
       setTrendingLoading(true)
       try {
-        const response = await api.get("/api/videos/trending")
+        const response = await api.get("/videos/trending")
         const fetchedVideos = response.data.data.videos
         setTrendingVideos(fetchedVideos)
       } catch (err) {

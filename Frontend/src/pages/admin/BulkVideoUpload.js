@@ -176,7 +176,7 @@ const BulkVideoUpload = () => {
     
     try {
       // Call the API to extract videos from the URL with all options
-      const response = await axios.post('/api/videos/extract-from-page', { 
+      const response = await axios.post('/videos/extract-from-page', { 
         url,
         customSelectors: customSelectors.map(s => s.selector),
         fileExtensions,
@@ -284,7 +284,7 @@ const BulkVideoUpload = () => {
       
       for (const video of selectedVideoObjects) {
         try {
-          await axios.post('/api/videos', {
+          await axios.post('/videos', {
             originalUrl: video.url,
             title: video.title,
             description: video.description || '',

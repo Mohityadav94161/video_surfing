@@ -85,7 +85,7 @@ const Dashboard = () => {
     const fetchCategories = async () => {
       try {
         console.log('Fetching categories with auth token');
-        const response = await axiosInstance.get('/api/videos/categories');
+        const response = await axiosInstance.get('/videos/categories');
         setCategories(response.data.data.categories || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -128,12 +128,12 @@ const Dashboard = () => {
         
         console.log('Fetching videos list with auth token');
         // Get videos with filters and pagination
-        const videosResponse = await axiosInstance.get(`/api/videos?${params.toString()}`);
+        const videosResponse = await axiosInstance.get(`/videos?${params.toString()}`);
         
         // Get stats data - for admin, we show all videos including inactive ones
         console.log('Fetching video stats with auth token');
-        const statsPromise = axiosInstance.get('/api/videos/stats');
-        const tagsPromise = axiosInstance.get('/api/videos/tags');
+        const statsPromise = axiosInstance.get('/videos/stats');
+        const tagsPromise = axiosInstance.get('/videos/tags');
         
         // Wait for all promises to resolve
         const [statsResponse, tagsResponse] = await Promise.all([statsPromise, tagsPromise]);
@@ -198,7 +198,7 @@ const Dashboard = () => {
 
   const handleToggleStatus = async (videoId, currentStatus) => {
     try {
-      await axiosInstance.patch(`/api/videos/${videoId}`, { active: !currentStatus });
+      await axiosInstance.patch(`/videos/${videoId}`, { active: !currentStatus });
       
       // Update the UI
       setVideos(prevVideos => 
@@ -216,7 +216,7 @@ const Dashboard = () => {
 
   const handleDeleteVideo = async (videoId) => {
     try {
-      await axiosInstance.delete(`/api/videos/${videoId}`);
+      await axiosInstance.delete(`/videos/${videoId}`);
       
       // Update the UI
       setVideos(prevVideos => prevVideos.filter(video => video._id !== videoId));

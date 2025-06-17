@@ -2,6 +2,7 @@
 
 .comments-section {
   padding: 0 15px;
+  overflow: visible;
 }
 
 .comments-title {
@@ -47,19 +48,39 @@
 
 .comment-list {
   margin-top: 10px;
+  overflow: visible;
+  padding: 0;
 }
 
 .comment-list .ant-list-item {
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 10px;
-  border: 1px solid var(--border-color);
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin-bottom: 12px !important;
+  border: 1px solid #374151 !important;
   transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  position: relative;
 }
 
-.comment-list .ant-list-item:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transform: translateY(-2px);
+.comment-list .ant-list-item:first-child {
+  margin-top: 12px !important;
+}
+
+.comment-list .ant-list-item:last-child {
+  margin-bottom: 12px !important;
+}
+
+/* Override Ant Design List default styling completely */
+.comment-list.ant-list {
+  border: none !important;
+  padding: 0 !important;
+}
+
+.comment-list.ant-list .ant-list-item {
+  border-bottom: none !important;
+  border-top: none !important;
+  border-left: 1px solid #374151 !important;
+  border-right: 1px solid #374151 !important;
 }
 
 .comment-avatar {
@@ -73,7 +94,7 @@
 
 .comment-username {
   margin-right: 8px;
-  color: #333;
+  color: #ffffff;
 }
 
 .comment-date {

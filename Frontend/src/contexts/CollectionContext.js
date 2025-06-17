@@ -62,7 +62,7 @@ export const CollectionProvider = ({ children }) => {
         await new Promise(resolve => setTimeout(resolve, 500));
         setCollections(MOCK_COLLECTIONS);
       } else {
-        const response = await axios.get('/api/collections');
+        const response = await axios.get('/collections');
         const collectionsData = response.data.data.collections;
         setCollections(collectionsData);
       }
@@ -109,7 +109,7 @@ export const CollectionProvider = ({ children }) => {
         message.success('Collection created successfully');
         return { success: true, collection: newCollection };
       } else {
-        const response = await axios.post('/api/collections', { name, description });
+        const response = await axios.post('/collections', { name, description });
         const newCollection = response.data.data.collection;
         
         setCollections(prev => [...prev, newCollection]);
@@ -181,7 +181,7 @@ export const CollectionProvider = ({ children }) => {
         message.success('Video added to collection successfully');
         return { success: true };
       } else {
-        const response = await axios.post(`/api/collections/${collectionId}/videos`, { videoId });
+        const response = await axios.post(`/collections/${collectionId}/videos`, { videoId });
         
         // Get the updated collection from the response
         const updatedCollection = response.data.data.collection;
@@ -269,7 +269,7 @@ export const CollectionProvider = ({ children }) => {
         message.success('Video removed from collection');
         return { success: true };
       } else {
-        await axios.delete(`/api/collections/${collectionId}/videos/${videoId}`);
+        await axios.delete(`/collections/${collectionId}/videos/${videoId}`);
         
         // Update the collection in state
         setCollections(prev => 
@@ -344,7 +344,7 @@ export const CollectionProvider = ({ children }) => {
         message.success('Collection deleted successfully');
         return { success: true };
       } else {
-        await axios.delete(`/api/collections/${collectionId}`);
+        await axios.delete(`/collections/${collectionId}`);
         
         // Remove the collection from state
         setCollections(prev => prev.filter(collection => 

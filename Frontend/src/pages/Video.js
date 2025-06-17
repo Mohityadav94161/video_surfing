@@ -24,7 +24,6 @@ import {
   EyeOutlined,
   CalendarOutlined,
   GlobalOutlined,
-  LinkOutlined,
   ShareAltOutlined,
   CopyOutlined,
 } from '@ant-design/icons';
@@ -43,12 +42,11 @@ const Video = () => {
   const [error, setError] = useState(null);
   const [shareModalVisible, setShareModalVisible] = useState(false);
 
-  // Fetch video details
   useEffect(() => {
     const fetchVideo = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`/api/videos/${id}`);
+        const res = await axios.get(`/videos/${id}`);
         setVideo(res.data.data.video);
       } catch (err) {
         console.error('Error fetching video:', err);
@@ -63,7 +61,6 @@ const Video = () => {
     }
   }, [id]);
 
-  // Get category color
   const getCategoryColor = (category) => {
     const categoryColors = {
       Education: 'blue',
@@ -79,7 +76,6 @@ const Video = () => {
     return categoryColors[category] || 'default';
   };
 
-  // Format date
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -88,14 +84,12 @@ const Video = () => {
     });
   };
 
-  // Handle redirect to original video
   const handleRedirect = () => {
     if (video?.originalUrl) {
       window.open(video.originalUrl, '_blank');
     }
   };
 
-  // Function to copy text to clipboard
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text)
       .then(() => {
@@ -148,7 +142,6 @@ const Video = () => {
 
   return (
     <div>
-      {/* Breadcrumb navigation */}
       <Breadcrumb
         items={[
           { title: <a href="/">Home</a> },
@@ -169,45 +162,45 @@ const Video = () => {
       <Row gutter={[24, 24]}>
         <Col xs={24} md={16}>
           <Card>
-          <div style={{ position: 'relative', textAlign: 'center', marginBottom: 20 }}>
-  <Image
-    src={video.thumbnailUrl}
-    alt={video.title}
-    style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }}
-    fallback="https://via.placeholder.com/640x360?text=No+Thumbnail"
-    preview={false}
-  />
-  <div
-    onClick={handleRedirect}
-    style={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: '72px',
-      height: '72px',
-      backgroundColor: 'rgba(255, 20, 147, 0.8)',
-      backdropFilter: 'blur(6px)',
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: 'pointer',
-      boxShadow: '0 0 8px rgba(0,0,0,0.5)',
-    }}
-  >
-    <div
-      style={{
-        width: 0,
-        height: 0,
-        borderLeft: '18px solid white',
-        borderTop: '12px solid transparent',
-        borderBottom: '12px solid transparent',
-        marginLeft: '4px',
-      }}
-    />
-  </div>
-</div>
+            <div style={{ position: 'relative', textAlign: 'center', marginBottom: 20 }}>
+              <Image
+                src={video.thumbnailUrl}
+                alt={video.title}
+                style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }}
+                fallback="https://via.placeholder.com/640x360?text=No+Thumbnail"
+                preview={false}
+              />
+              <div
+                onClick={handleRedirect}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '72px',
+                  height: '72px',
+                  backgroundColor: 'rgba(255, 20, 147, 0.8)',
+                  backdropFilter: 'blur(6px)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 8px rgba(0,0,0,0.5)',
+                }}
+              >
+                <div
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderLeft: '18px solid white',
+                    borderTop: '12px solid transparent',
+                    borderBottom: '12px solid transparent',
+                    marginLeft: '4px',
+                  }}
+                />
+              </div>
+            </div>
 
             <Title level={2}>{video.title}</Title>
 
@@ -260,19 +253,18 @@ const Video = () => {
               {video.description || 'No description available.'}
             </Paragraph>
 
-            <div className="video-actions-container">
-              
+            <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
               <Button
                 type="primary"
                 size="large"
                 icon={<ShareAltOutlined />}
-                style={{ flex: '1 1 auto' }}
+                style={{ flex: 1, minWidth: '200px' }}
                 onClick={() => setShareModalVisible(true)}
               >
                 Share
               </Button>
               
-              <div>
+              <div style={{ flex: 1, minWidth: '200px' }}>
                 <AddToCollection video={video} />
               </div>
             </div>
@@ -314,7 +306,6 @@ const Video = () => {
         </Col>
       </Row>
       
-      {/* Share Modal */}
       <Modal
         title="Share Video"
         open={shareModalVisible}
@@ -385,4 +376,4 @@ const Video = () => {
   );
 };
 
-export default Video; 
+export default Video;

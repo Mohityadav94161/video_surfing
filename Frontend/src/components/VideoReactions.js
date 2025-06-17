@@ -33,7 +33,7 @@ const VideoReactions = ({ videoId }) => {
       if (!videoId) return;
       
       try {
-        const response = await axios.get(`/api/videos/${videoId}/reactions`);
+        const response = await axios.get(`/videos/${videoId}/reactions`);
         setReactions(response.data.data);
       } catch (error) {
         console.error('Error fetching reactions:', error);
@@ -51,7 +51,7 @@ const VideoReactions = ({ videoId }) => {
     
     setLoading(true);
     try {
-      const response = await axios.post(`/api/videos/${videoId}/reactions`, {
+      const response = await axios.post(`/videos/${videoId}/reactions`, {
         type
       });
       

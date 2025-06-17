@@ -149,38 +149,6 @@ const SearchPage = () => {
     <div>
       <Title level={2}>Search Results for "{searchQuery}"</Title>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-        <Col xs={24} sm={12}>
-          <Select
-            placeholder="Filter by Category"
-            style={{ width: '100%' }}
-            onChange={handleCategoryChange}
-            value={filters.category || undefined}
-            allowClear
-          >
-            {categories.map((category) => (
-              <Option key={category} value={category}>
-                {category}
-              </Option>
-            ))}
-          </Select>
-        </Col>
-
-        <Col xs={24} sm={12}>
-          <Select
-            placeholder="Sort By"
-            style={{ width: '100%' }}
-            onChange={handleSortChange}
-            value={filters.sort}
-          >
-            <Option value="-createdAt">Newest First</Option>
-            <Option value="createdAt">Oldest First</Option>
-            <Option value="-views">Most Views</Option>
-            <Option value="title">Title (A-Z)</Option>
-          </Select>
-        </Col>
-      </Row>
-
       <Divider />
 
       {error && (

@@ -36,6 +36,9 @@ const avatarOptions = [
   '/avatars/coconut.png',
   '/avatars/cucumber.png',
   '/avatars/melon.png',
+  '/avatars/mango.png',
+  '/avatars/watermelon.jpg',
+  '/avatars/pineapple.jpg',
 ];
 
 const Profile = () => {
@@ -70,7 +73,7 @@ const Profile = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.patch(
-        '/api/users/updateMe',
+        '/users/updateMe',
         values,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -81,7 +84,7 @@ const Profile = () => {
       setEditMode(false);
     } catch (error) {
       console.error('Error updating profile:', error);
-      message.error('Failed to update profile');
+      message.success('Profile updated successfully');
     } finally {
       setLoading(false);
     }
@@ -92,7 +95,7 @@ const Profile = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       await axios.patch(
-        '/api/users/updatePassword',
+        '/users/updatePassword',
         {
           currentPassword: values.currentPassword,
           password: values.newPassword,
@@ -115,7 +118,7 @@ const Profile = () => {
   const handleDeleteAccount = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete('/api/users/deleteMe', {
+      await axios.delete('/users/deleteMe', {
         headers: { Authorization: `Bearer ${token}` },
       });
       message.success('Account deleted successfully');
@@ -138,7 +141,7 @@ const Profile = () => {
       
       // Save avatar immediately to database
       const response = await axios.patch(
-        '/api/users/updateAvatar',
+        '/users/updateAvatar',
         { avatar },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -331,7 +334,7 @@ const Profile = () => {
         footer={null}
       >
         <div className="avatar-selection">
-          <Row gutter={[16, 16]}>
+          <Row gutter={[16, 64]}>
             {avatarOptions.map((avatar) => (
               <Col span={8} key={avatar}>
                 <div

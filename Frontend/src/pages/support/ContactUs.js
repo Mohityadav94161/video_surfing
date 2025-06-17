@@ -116,7 +116,7 @@ const ContactUs = ({ username = 'guest' }) => {
             htmlType="submit"
             className="submit-button"
               loading={loading}
-              icon={<SendOutlined />}
+              icon={<SendOutlined style={{color:'white'}}/>}
           >
             <Text style={{color:'white'}}>Send Message</Text>
           </Button>

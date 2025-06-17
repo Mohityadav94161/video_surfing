@@ -21,7 +21,7 @@ const TrendingPage = () => {
     const fetchTrendingVideos = async () => {
       setLoading(true);
       try {
-        const response = await api.get('/api/videos/trending', {
+        const response = await api.get('/videos/trending', {
           params: {
             page: currentPage,
             limit: pageSize

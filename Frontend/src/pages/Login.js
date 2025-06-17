@@ -41,7 +41,7 @@ const Login = () => {
   // Check if captcha is required
   const checkCaptchaRequired = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/captcha/check-required`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/captcha/check-required`);
       if (response.data.status === 'success') {
         setCaptchaRequired(response.data.data.captchaRequired);
       }

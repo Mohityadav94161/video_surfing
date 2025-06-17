@@ -17,7 +17,7 @@ const Captcha = ({ onVerify, onError }) => {
       setLoading(true);
       setError('');
       
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/captcha/generate`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/captcha/generate`);
       
       if (response.data.status === 'success') {
         setCaptchaId(response.data.data.captchaId);
@@ -46,7 +46,7 @@ const Captcha = ({ onVerify, onError }) => {
       
       setLoading(true);
       
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/captcha/verify`, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/captcha/verify`, {
         captchaId,
         captchaValue
       });

@@ -41,7 +41,7 @@ const VideoComments = ({ videoId }) => {
       
       setLoading(true);
       try {
-        const response = await axios.get(`/api/videos/${videoId}/comments`);
+        const response = await axios.get(`/videos/${videoId}/comments`);
         setComments(response.data.data.comments || []);
       } catch (error) {
         console.error('Error fetching comments:', error);
@@ -61,7 +61,7 @@ const VideoComments = ({ videoId }) => {
 
     setSubmitting(true);
     try {
-      const response = await axios.post(`/api/videos/${videoId}/comments`, {
+      const response = await axios.post(`/videos/${videoId}/comments`, {
         text: values.comment
       });
       
@@ -81,7 +81,7 @@ const VideoComments = ({ videoId }) => {
 
   const handleDeleteComment = async (commentId) => {
     try {
-      await axios.delete(`/api/videos/comments/${commentId}`);
+      await axios.delete(`/videos/comments/${commentId}`);
       
       // Remove deleted comment from list
       setComments(comments.filter(comment => comment._id !== commentId));
@@ -177,7 +177,11 @@ const VideoComments = ({ videoId }) => {
               }
             >
               <List.Item.Meta
-                avatar={<Avatar icon={<UserOutlined />} className="comment-avatar" />}
+                avatar={<Avatar 
+                  className="comment-avatar" 
+                  src={comment.user?.avatar || '/avatars/banana.png'}
+                  icon={!comment.user?.avatar && <UserOutlined />}
+                />}
                 title={
                   <div className="comment-meta">
                     <Text strong className="comment-username">{comment.user.username}</Text>

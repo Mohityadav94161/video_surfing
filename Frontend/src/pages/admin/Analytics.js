@@ -75,10 +75,10 @@ const Analytics = () => {
       
       // Fetch real data from API endpoints
       const [trafficResponse, visitorsResponse, locationResponse, performanceResponse] = await Promise.all([
-        axios.get('/api/analytics/traffic', { params }),
-        axios.get('/api/analytics/visitors', { params }),
-        axios.get('/api/analytics/location', { params }),
-        axios.get('/api/analytics/performance', { params })
+        axios.get('/analytics/traffic', { params }),
+        axios.get('/analytics/visitors', { params }),
+        axios.get('/analytics/location', { params }),
+        axios.get('/analytics/performance', { params })
       ]);
       
       // Process traffic data

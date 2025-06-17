@@ -91,7 +91,7 @@ const UploadVideo = () => {
     
     try {
       // Call the metadata extraction API endpoint
-      const response = await axios.post('/api/videos/extract-metadata', { url });
+      const response = await axios.post('/videos/extract-metadata', { url });
       const metadata = response.data.data.metadata;
       
       setVideoInfo(metadata);
@@ -191,7 +191,7 @@ const UploadVideo = () => {
       };
       
       // Call the API endpoint
-      const response = await axios.post('/api/videos', payload);
+      const response = await axios.post('/videos', payload);
       const videoId = response.data.data.video._id || response.data.data.video.id;
       setAddedVideoId(videoId);
       

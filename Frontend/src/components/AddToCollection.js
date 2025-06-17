@@ -207,17 +207,14 @@ const AddToCollection = ({ video, compact = false }) => {
         onVisibleChange={handleMenuVisibleChange}
         open={menuVisible}
       >
-        <Button 
-          icon={<FolderAddOutlined />} 
-          onClick={(e) => e.preventDefault()}
-          style={{ 
-            width: '100%',
-            minWidth: '150px'
-          }}
-          size="large"
-        >
-          Add to Collection
-        </Button>
+        <Button
+  className="add-to-collection-button"
+  type="default"
+  block
+>
+  Add to Collection
+</Button>
+
       </Dropdown>
 
       <Modal

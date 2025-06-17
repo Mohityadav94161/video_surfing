@@ -125,11 +125,11 @@ const MainLayout = () => {
      const fetchMenuData = async () => {
       try {
         // Fetch categories
-        const categoryResponse = await api.get("/api/videos/categories");
+        const categoryResponse = await api.get("/videos/categories");
         const categories = categoryResponse.data.data.categories || [];
         
         // Fetch tags for trending and pornstars
-        const tagsResponse = await api.get("/api/videos/tags");
+        const tagsResponse = await api.get("/videos/tags");
         const tags = tagsResponse.data.data.tags || [];
         
         // Make sure tags are properly formatted
@@ -147,7 +147,7 @@ const MainLayout = () => {
         });
         
         // For trending videos, find actual videos with isTrending flag
-        const trendingResponse = await api.get("/api/videos", {
+        const trendingResponse = await api.get("/videos", {
           params: {
             isTrending: true,
             limit: 12
@@ -182,7 +182,7 @@ const MainLayout = () => {
         ).slice(0, 12);
         
         // For recommended, we'll fetch most popular videos
-        const videosResponse = await api.get("/api/videos", {
+        const videosResponse = await api.get("/videos", {
           params: {
             sort: "-views",
             limit: 12
@@ -459,7 +459,11 @@ const MainLayout = () => {
                   <Avatar className="desktop-avatar" icon={<UserOutlined />} />
                 ) : (
                   <Badge dot={isAdmin} color="green">
-                    <Avatar className="desktop-avatar" icon={<UserOutlined />} />
+                    <Avatar 
+                      className="desktop-avatar" 
+                      src={user?.avatar || '/avatars/banana.png'}
+                      icon={!user?.avatar && <UserOutlined />}
+                    />
                   </Badge>
                 )}
               </Button>
@@ -490,7 +494,11 @@ const MainLayout = () => {
           />
 
           <Button type="text" onClick={() => setAvatarMenuOpen(true)} className="mobile-avatar-button">
-            <Avatar className="mobile-avatar" icon={<UserOutlined />} />
+            <Avatar 
+              className="mobile-avatar" 
+              src={isAuthenticated ? (user?.avatar || '/avatars/banana.png') : undefined}
+              icon={<UserOutlined />}
+            />
           </Button>
         </div>
 

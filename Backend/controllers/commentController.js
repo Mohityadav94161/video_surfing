@@ -29,7 +29,7 @@ exports.getComments = async (req, res, next) => {
       .sort('-createdAt')
       .populate({
         path: 'user',
-        select: 'username'
+        select: 'username avatar'
       });
     
     res.status(200).json({
@@ -88,7 +88,7 @@ exports.addComment = async (req, res, next) => {
     // 3. Populate the user field
     await newComment.populate({
       path: 'user',
-      select: 'username'
+      select: 'username avatar'
     });
 
     res.status(201).json({
