@@ -345,9 +345,7 @@ const Profile = () => {
                   style={{ textAlign: 'center', cursor: 'pointer' }}
                 >
                   <Avatar src={avatar} size={64} />
-                  {selectedAvatar === avatar && (
-                    <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginTop: 8 }} />
-                  )}
+                  {selectedAvatar === avatar}
                 </div>
               </Col>
             ))}

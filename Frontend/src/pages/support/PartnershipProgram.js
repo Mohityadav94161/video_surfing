@@ -253,7 +253,7 @@ const PartnershipProgram = ({ username = 'guest' }) => {
       
       <Paragraph className="support-paragraph">
         Join our exclusive partnership program and take your content to the next level. 
-        As a Video Surfing partner, you'll gain access to premium features, revenue sharing, 
+        As a XFansTube partner, you'll gain access to premium features, revenue sharing, 
         and a dedicated support team to help grow your audience.
       </Paragraph>
       

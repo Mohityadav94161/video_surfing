@@ -19,7 +19,6 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/Dashboard';
 import AddVideo from './pages/admin/AddVideo';
 import BulkVideoUpload from './pages/admin/BulkVideoUpload';
-import HomePageManager from './pages/admin/HomePageManager';
 import Analytics from './pages/admin/Analytics';
 import SupportSubmissions from './pages/admin/SupportSubmissions';
 import TestComponent from './pages/admin/TestComponent';
@@ -182,7 +181,6 @@ function App() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="add-video" element={<AddVideo />} />
                 <Route path="bulk-upload" element={<BulkVideoUpload />} />
-                <Route path="home-manager" element={<HomePageManager />} />
                 <Route path="analytics" element={<Analytics />} />
                     <Route path="support-submissions" element={<SupportSubmissions />} />
                 <Route path="edit-video/:id" element={<EditVideo/>}/>

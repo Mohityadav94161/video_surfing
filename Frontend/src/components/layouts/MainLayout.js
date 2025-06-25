@@ -425,9 +425,9 @@ const MainLayout = () => {
             />
 
             <div className="desktop-logo-container">
-              <Link to="/" className="logo" aria-label="Video Surfing Home" onClick={handleLogoClick}>
+              <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
                 <VideoCameraOutlined className="logo-icon" />
-                <span className="logo-text">Video Surfing</span>
+                <span className="logo-text"><span>XFans</span><span style={{color:'#fff'}}>Tube</span></span>
               </Link>
             </div>
           </div>
@@ -481,7 +481,7 @@ const MainLayout = () => {
           />
 
           <div className="mobile-logo-container">
-            <Link to="/" className="logo" aria-label="Video Surfing Home" onClick={handleLogoClick}>
+            <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
               <VideoCameraOutlined className="logo-icon" />
             </Link>
           </div>
@@ -720,12 +720,12 @@ const MainLayout = () => {
             <Link
               to="/"
               className="logo"
-              aria-label="Video Surfing Home"
+              aria-label="XFansTube Home"
               style={{ fontSize: "18px" }}
               onClick={handleLogoClick}
             >
               <VideoCameraOutlined style={{ fontSize: "20px", marginRight: 8 }} />
-              <span>Video Surfing</span>
+              <span>XFansTube</span>
             </Link>
           </div>
         }
@@ -818,12 +818,12 @@ const MainLayout = () => {
             <Link
               to="/"
               className="logo"
-              aria-label="Video Surfing Home"
+              aria-label="XFansTube Home"
               style={{ fontSize: "18px" }}
               onClick={handleLogoClick}
             >
               <VideoCameraOutlined style={{ fontSize: "20px", marginRight: 8 }} />
-              <span>Video Surfing</span>
+              <span>XFansTube</span>
             </Link>
           </div>
         }
@@ -1297,7 +1297,7 @@ const MainLayout = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <Text style={{ color: "rgba(255, 255, 255, 0.80)" }}>
-                Video Surfing ©{new Date().getFullYear()} - Your curated video directory
+                XFansTube ©{new Date().getFullYear()} - Your curated video directory
               </Text>
             </div>
               <a href="https://www.rtalabel.org/" target="_blank" rel="noopener noreferrer">

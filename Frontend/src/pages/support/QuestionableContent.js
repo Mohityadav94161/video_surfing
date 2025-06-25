@@ -22,7 +22,7 @@ const QuestionableContent = () => {
       
       <Alert
         message={<Text style={{color:'white'}}>Content Standards</Text>}
-        description={<Text style={{color:'white'}}>Video Surfing is committed to maintaining a platform that balances creative freedom with responsibility. This policy outlines our approach to content that may be questionable but does not necessarily violate our terms of service or applicable laws.</Text>}
+        description={<Text style={{color:'white'}}>XFansTube is committed to maintaining a platform that balances creative freedom with responsibility. This policy outlines our approach to content that may be questionable but does not necessarily violate our terms of service or applicable laws.</Text>}
         type="info"
         showIcon
         icon={<QuestionCircleOutlined style={{ color: '#FF1493' }} />}
@@ -34,7 +34,7 @@ const QuestionableContent = () => {
       />
       
       <Paragraph className="support-paragraph">
-        At Video Surfing, we recognize that content standards can be subjective and vary across different cultures, contexts, and individuals. This policy aims to provide clear guidelines on how we approach content that may be considered questionable by some users while still respecting creative expression and diverse perspectives.
+        At XFansTube, we recognize that content standards can be subjective and vary across different cultures, contexts, and individuals. This policy aims to provide clear guidelines on how we approach content that may be considered questionable by some users while still respecting creative expression and diverse perspectives.
       </Paragraph>
       
       <Divider style={{ borderColor: 'rgba(255, 20, 147, 0.2)', margin: '30px 0' }} />

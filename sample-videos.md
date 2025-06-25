@@ -1,6 +1,6 @@
 # Sample Videos for Testing
 
-This document contains a list of sample videos from various sources that you can add to test the video surfing website's functionality. These videos cover different categories to help test filtering and search capabilities.
+This document contains a list of sample videos from various sources that you can add to test the XFansTube website's functionality. These videos cover different categories to help test filtering and search capabilities.
 
 ## YouTube Videos
 

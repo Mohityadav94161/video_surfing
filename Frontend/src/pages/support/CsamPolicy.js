@@ -22,7 +22,7 @@ const CsamPolicy = () => {
       
       <Alert
         message={<Text style={{color:'white'}}>Zero Tolerance Policy</Text>}
-        description={<Text style={{color:'white'}}>Video Surfing has a zero-tolerance policy for child sexual abuse material (CSAM). We are committed to preventing, detecting, and removing any such content from our platform and reporting it to the appropriate authorities.</Text>}
+        description={<Text style={{color:'white'}}>XFansTube has a zero-tolerance policy for child sexual abuse material (CSAM). We are committed to preventing, detecting, and removing any such content from our platform and reporting it to the appropriate authorities.</Text>}
         type="error"
         showIcon
         icon={<ExclamationCircleOutlined style={{ color: '#FF1493' }} />}
@@ -34,7 +34,7 @@ const CsamPolicy = () => {
       />
       
       <Paragraph className="support-paragraph">
-        Video Surfing is committed to providing a safe platform for all users and takes a proactive approach to preventing the upload, distribution, or access of child sexual abuse material (CSAM). We work diligently to detect and remove any such content and cooperate fully with law enforcement agencies to report and investigate these serious crimes.
+        XFansTube is committed to providing a safe platform for all users and takes a proactive approach to preventing the upload, distribution, or access of child sexual abuse material (CSAM). We work diligently to detect and remove any such content and cooperate fully with law enforcement agencies to report and investigate these serious crimes.
       </Paragraph>
       
       <Divider style={{ borderColor: 'rgba(255, 20, 147, 0.2)', margin: '30px 0' }} />
@@ -87,7 +87,7 @@ const CsamPolicy = () => {
       </Title>
       
       <Paragraph className="support-paragraph">
-        If you encounter content on Video Surfing that you believe contains or depicts child sexual abuse material, please report it immediately using one of the following methods:
+        If you encounter content on XFansTube that you believe contains or depicts child sexual abuse material, please report it immediately using one of the following methods:
       </Paragraph>
       
       <List
@@ -128,7 +128,7 @@ const CsamPolicy = () => {
       </Title>
       
       <Paragraph className="support-paragraph">
-        Video Surfing is committed to:
+        XFansTube is committed to:
       </Paragraph>
       
       <List

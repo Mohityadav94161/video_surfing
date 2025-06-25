@@ -165,11 +165,6 @@ const AdminLayout = () => {
               label: <Link to="/admin/bulk-upload">Bulk Upload</Link>,
             },
             {
-              key: 'home-manager',
-              icon: <LayoutOutlined />,
-              label: <Link to="/admin/home-manager">Home Page Manager</Link>,
-            },
-            {
               key: 'analytics',
               icon: <BarChartOutlined />,
               label: <Link to="/admin/analytics">Analytics & Tracking</Link>,

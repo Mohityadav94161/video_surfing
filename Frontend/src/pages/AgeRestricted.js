@@ -22,7 +22,7 @@ const AgeRestricted = () => {
     >
       <VideoCameraOutlined style={{ fontSize: "80px", color: "#ff1493", marginBottom: "30px" }} />
 
-      <h1 style={{ color: "#ff1493", fontSize: "32px", marginBottom: "20px", fontWeight: "bold" }}>Video Surfing</h1>
+      <h1 style={{ color: "#ff1493", fontSize: "32px", marginBottom: "20px", fontWeight: "bold" }}>XFansTube</h1>
 
       <p style={{ color: "white", fontSize: "18px", maxWidth: "500px", lineHeight: "1.6" }}>
         This website is only intended for users over the age of 18

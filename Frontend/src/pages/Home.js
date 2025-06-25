@@ -67,7 +67,7 @@ const Home = () => {
   // useEffect(() => {
   //   if (showPopup) {
   //     Modal.info({
-  //       title: 'Welcome to Video Surfing',
+  //       title: 'Welcome to XFansTube',
   //       content: 'This is a popup that will be displayed when the component mounts.',
   //       onOk: () => setShowPopup(false),
   //     });
@@ -791,7 +791,7 @@ const Home = () => {
       >
         <div style={{ textAlign: "center" }}>
           <VideoCameraOutlined style={{ fontSize: "48px", color: "#ff1493", marginBottom: "20px" }} />
-          <h2 style={{ color: "#ff1493", marginBottom: "20px" }}>Video Surfing</h2>
+          <h1 style={{ color: "#ff1493", marginBottom: "20px" }}>XFansTube</h1>
           <p style={{ color: "white", marginBottom: "30px", lineHeight: "1.6" }}>
             This website contains adult content and is intended for users who are 18 years of age or older. By entering
             this site, you confirm that you are of legal age to view adult content in your jurisdiction.

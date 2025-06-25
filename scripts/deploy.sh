@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Video Surfing Deployment Script
+# XFansTube Deployment Script
 set -e
 
-echo "🚀 Starting Video Surfing deployment..."
+echo "🚀 Starting XFansTube deployment..."
 
 # Colors for output
 RED='\033[0;31m'

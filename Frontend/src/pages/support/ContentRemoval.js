@@ -83,7 +83,7 @@ const ContentRemoval = ({ username = 'guest' }) => {
       
       <Alert
         message={<Text style={{ color: 'white' }}>Important Notice</Text>}
-        description={<Text style={{ color: 'white' }}>Video Surfing respects the intellectual property rights of others and expects its users to do the same. If you believe that your copyrighted work has been copied in a way that constitutes copyright infringement, please follow the instructions below to file a DMCA notice.</Text>}
+        description={<Text style={{ color: 'white' }}>XFansTube respects the intellectual property rights of others and expects its users to do the same. If you believe that your copyrighted work has been copied in a way that constitutes copyright infringement, please follow the instructions below to file a DMCA notice.</Text>}
         type="info"
         showIcon
         icon={<InfoCircleOutlined style={{ color: '#FF1493' }} />}

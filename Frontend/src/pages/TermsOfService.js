@@ -15,26 +15,26 @@ const TermsOfService = ({ inSupportPage = false }) => {
       <Card style={{ marginBottom: '30px' }}>
         <Title level={3} style={{color: 'white'}}>1. Acceptance of Terms</Title>
         <Paragraph style={{color: 'white'}}>
-          By accessing or using Video Surfing, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.
+          By accessing or using XFansTube, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.
         </Paragraph>
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
         <Title level={3} style={{color: 'white'}}>2. Use License</Title>
         <Paragraph style={{color: 'white'}}>
-          Permission is granted to temporarily download one copy of the materials on Video Surfing for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
+          Permission is granted to temporarily download one copy of the materials on XFansTube for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
         </Paragraph>
         <Paragraph style={{color: 'white'}}>
           <ul>
             <li>Modify or copy the materials;</li>
             <li>Use the materials for any commercial purpose or for any public display;</li>
-            <li>Attempt to reverse engineer any software contained on Video Surfing;</li>
+            <li>Attempt to reverse engineer any software contained on XFansTube;</li>
             <li>Remove any copyright or other proprietary notations from the materials; or</li>
             <li>Transfer the materials to another person or "mirror" the materials on any other server.</li>
           </ul>
         </Paragraph>
         <Paragraph style={{color: 'white'}}>
-          This license shall automatically terminate if you violate any of these restrictions and may be terminated by Video Surfing at any time. Upon terminating your viewing of these materials or upon the termination of this license, you must destroy any downloaded materials in your possession whether in electronic or printed format.
+          This license shall automatically terminate if you violate any of these restrictions and may be terminated by XFansTube at any time. Upon terminating your viewing of these materials or upon the termination of this license, you must destroy any downloaded materials in your possession whether in electronic or printed format.
         </Paragraph>
       </Card>
       
@@ -51,10 +51,10 @@ const TermsOfService = ({ inSupportPage = false }) => {
       <Card style={{ marginBottom: '30px' }}>
         <Title level={3} style={{color: 'white'}}>4. User Content</Title>
         <Paragraph style={{color: 'white'}}>
-          By uploading or sharing content on our platform, you grant Video Surfing a worldwide, non-exclusive, royalty-free license to use, reproduce, adapt, publish, translate, and distribute your content in any existing or future media. You also grant Video Surfing the right to sub-license these rights and the right to bring an action for infringement of these rights.
+          By uploading or sharing content on our platform, you grant XFansTube a worldwide, non-exclusive, royalty-free license to use, reproduce, adapt, publish, translate, and distribute your content in any existing or future media. You also grant XFansTube the right to sub-license these rights and the right to bring an action for infringement of these rights.
         </Paragraph>
         <Paragraph style={{color: 'white'}}>
-          Your content must not be illegal or unlawful, must not infringe any third party's legal rights, and must not be capable of giving rise to legal action whether against you or Video Surfing or a third party.
+          Your content must not be illegal or unlawful, must not infringe any third party's legal rights, and must not be capable of giving rise to legal action whether against you or XFansTube or a third party.
         </Paragraph>
       </Card>
       
@@ -67,8 +67,8 @@ const TermsOfService = ({ inSupportPage = false }) => {
           <ul>
             <li>In any way that violates any applicable federal, state, local, or international law or regulation;</li>
             <li>To transmit, or procure the sending of, any advertising or promotional material, including any "junk mail," "chain letter," "spam," or any other similar solicitation;</li>
-            <li>To impersonate or attempt to impersonate Video Surfing, a Video Surfing employee, another user, or any other person or entity;</li>
-            <li>To engage in any other conduct that restricts or inhibits anyone's use or enjoyment of the platform, or which may harm Video Surfing or users of the platform or expose them to liability.</li>
+            <li>To impersonate or attempt to impersonate XFansTube, a XFansTube employee, another user, or any other person or entity;</li>
+            <li>To engage in any other conduct that restricts or inhibits anyone's use or enjoyment of the platform, or which may harm XFansTube or users of the platform or expose them to liability.</li>
           </ul>
         </Paragraph>
       </Card>
@@ -76,24 +76,24 @@ const TermsOfService = ({ inSupportPage = false }) => {
       <Card style={{ marginBottom: '30px' }}>
         <Title level={3} style={{color: 'white'}}>6. Disclaimer</Title>
         <Paragraph style={{color: 'white'}}>
-          The materials on Video Surfing are provided on an 'as is' basis. Video Surfing makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+          The materials on XFansTube are provided on an 'as is' basis. XFansTube makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
         </Paragraph>
         <Paragraph style={{color: 'white'}}>
-          Further, Video Surfing does not warrant or make any representations concerning the accuracy, likely results, or reliability of the use of the materials on its website or otherwise relating to such materials or on any sites linked to this site.
+          Further, XFansTube does not warrant or make any representations concerning the accuracy, likely results, or reliability of the use of the materials on its website or otherwise relating to such materials or on any sites linked to this site.
         </Paragraph>
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
         <Title level={3} style={{color: 'white'}}>7. Limitations</Title>
         <Paragraph style={{color: 'white'}}>
-          In no event shall Video Surfing or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Video Surfing, even if Video Surfing or a Video Surfing authorized representative has been notified orally or in writing of the possibility of such damage.
+          In no event shall XFansTube or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on XFansTube, even if XFansTube or a XFansTube authorized representative has been notified orally or in writing of the possibility of such damage.
         </Paragraph>
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
         <Title level={3} style={{color: 'white'}}>8. Revisions and Errata</Title>
         <Paragraph style={{color: 'white'}}>
-          The materials appearing on Video Surfing could include technical, typographical, or photographic errors. Video Surfing does not warrant that any of the materials on its website are accurate, complete or current. Video Surfing may make changes to the materials contained on its website at any time without notice. Video Surfing does not, however, make any commitment to update the materials.
+          The materials appearing on XFansTube could include technical, typographical, or photographic errors. XFansTube does not warrant that any of the materials on its website are accurate, complete or current. XFansTube may make changes to the materials contained on its website at any time without notice. XFansTube does not, however, make any commitment to update the materials.
         </Paragraph>
       </Card>
       
@@ -107,7 +107,7 @@ const TermsOfService = ({ inSupportPage = false }) => {
       <Card style={{ marginBottom: '30px' }}>
         <Title level={3} style={{color: 'white'}}>10. Changes to Terms</Title>
         <Paragraph style={{color: 'white'}}>
-          Video Surfing reserves the right, at its sole discretion, to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
+          XFansTube reserves the right, at its sole discretion, to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
         </Paragraph>
         <Paragraph style={{color: 'white'}}>
           By continuing to access or use our platform after any revisions become effective, you agree to be bound by the revised terms. If you do not agree to the new terms, you are no longer authorized to use the platform.

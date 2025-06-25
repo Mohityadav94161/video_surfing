@@ -15,7 +15,7 @@ const PrivacyPolicy = ({ inSupportPage = false }) => {
       <Card style={{ marginBottom: '30px', color: 'white' }}>
         <Title level={3} style={{color: 'white'}}>1. Introduction</Title>
         <Paragraph style={{color: 'white'}}>
-          At Video Surfing, we respect your privacy and are committed to protecting your personal data. This privacy policy will inform you about how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.
+          At XFansTube, we respect your privacy and are committed to protecting your personal data. This privacy policy will inform you about how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.
         </Paragraph>
         <Paragraph style={{color: 'white'}}>
           This privacy policy applies to all users of our platform, including visitors, registered users, content creators, and administrators.
@@ -88,7 +88,7 @@ const PrivacyPolicy = ({ inSupportPage = false }) => {
             <li><Text strong style={{color: 'white'}}>Service Providers:</Text> We may share your information with third-party vendors, service providers, contractors, or agents who perform services for us or on our behalf.</li>
             <li><Text strong style={{color: 'white'}}>Business Transfers:</Text> If we are involved in a merger, acquisition, or sale of all or a portion of our assets, your information may be transferred as part of that transaction.</li>
             <li><Text strong style={{color: 'white'}}>Legal Requirements:</Text> We may disclose your information if required to do so by law or in response to valid requests by public authorities.</li>
-            <li><Text strong style={{color: 'white'}}>Protection of Rights:</Text> We may disclose your information to protect the rights, property, or safety of Video Surfing, our users, or others.</li>
+            <li><Text strong style={{color: 'white'}}>Protection of Rights:</Text> We may disclose your information to protect the rights, property, or safety of XFansTube, our users, or others.</li>
           </ul>
         </Paragraph>
       </Card>

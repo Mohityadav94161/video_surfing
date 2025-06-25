@@ -52,7 +52,7 @@ const Feedback = () => {
         </Title>
         
         <Paragraph style={{ textAlign: 'center', marginBottom: '30px', color: 'white' }}>
-          Your feedback helps us improve Video Surfing. Please share your thoughts, suggestions, or report any issues you've encountered.
+          Your feedback helps us improve XFansTube. Please share your thoughts, suggestions, or report any issues you've encountered.
         </Paragraph>
 
         {!isAuthenticated ? (

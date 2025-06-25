@@ -23,7 +23,7 @@ const ContentProtection = () => {
       </Title>
       
       <Paragraph className="support-paragraph">
-        At Video Surfing, we take content protection seriously. We've implemented multiple layers of security 
+        At XFansTube, we take content protection seriously. We've implemented multiple layers of security 
         to ensure that your content is protected from unauthorized use, distribution, and piracy.
       </Paragraph>
       

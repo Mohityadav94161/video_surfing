@@ -89,7 +89,7 @@ const FAQ = () => {
           answer: 'Click on the settings icon (gear) in the video player, select "Quality", and choose your preferred resolution. The player will automatically select the best quality based on your internet connection by default.'
         },
         {
-          question: 'Does Video Surfing support 4K playback?',
+          question: 'Does XFansTube support 4K playback?',
           answer: 'Yes, we support 4K (2160p) video playback on compatible devices with sufficient internet bandwidth. You can select the quality in the video player settings.'
         }
       ]
@@ -131,7 +131,7 @@ const FAQ = () => {
     <div className="footer-page-container" style={{ maxWidth: '1900px', margin: '0 auto', padding: '40px 20px' }}>
       <Title level={1} style={{ textAlign: 'center', marginBottom: '20px', color:'white' }}>Frequently Asked Questions</Title>
       <Paragraph style={{ textAlign: 'center', marginBottom: '40px', color:'white' }}>
-        Find answers to the most common questions about Video Surfing
+        Find answers to the most common questions about XFansTube
       </Paragraph>
       
       <Card style={{ marginBottom: '40px' }}>

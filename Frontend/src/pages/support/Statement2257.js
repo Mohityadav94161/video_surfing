@@ -26,7 +26,7 @@ const Statement2257 = () => {
       />
       
       <Paragraph className="support-paragraph">
-        In compliance with the Federal Labeling and Record-Keeping Law (also known as 18 U.S.C. 2257), all content uploaded to Video Surfing is subject to the following requirements and policies:
+        In compliance with the Federal Labeling and Record-Keeping Law (also known as 18 U.S.C. 2257), all content uploaded to XFansTube is subject to the following requirements and policies:
       </Paragraph>
       
       <Divider style={{ borderColor: 'rgba(255, 20, 147, 0.2)', margin: '30px 0' }} />
@@ -40,11 +40,11 @@ const Statement2257 = () => {
       </Paragraph>
       
       <Paragraph className="support-paragraph">
-        Video Surfing requires all content uploaders to verify that they maintain the records required by 18 U.S.C. 2257 for all uploaded content, and that these records contain individually identifiable information for all models or performers in their content. These records must include the legal name, date of birth, and any aliases used by the model or performer.
+        XFansTube requires all content uploaders to verify that they maintain the records required by 18 U.S.C. 2257 for all uploaded content, and that these records contain individually identifiable information for all models or performers in their content. These records must include the legal name, date of birth, and any aliases used by the model or performer.
       </Paragraph>
       
       <Paragraph className="support-paragraph">
-        The content uploader is the primary producer as defined in 18 U.S.C. 2257 and is responsible for maintaining all records required by federal law. Video Surfing, as a secondary producer, maintains copies of the compliance documentation provided by the content uploaders.
+        The content uploader is the primary producer as defined in 18 U.S.C. 2257 and is responsible for maintaining all records required by federal law. XFansTube, as a secondary producer, maintains copies of the compliance documentation provided by the content uploaders.
       </Paragraph>
       
       <Divider style={{ borderColor: 'rgba(255, 20, 147, 0.2)', margin: '30px 0' }} />
@@ -54,7 +54,7 @@ const Statement2257 = () => {
       </Title>
       
       <Paragraph className="support-paragraph">
-        The records required by 18 U.S.C. 2257 for materials contained on this website are kept by the individual content uploaders. Video Surfing maintains records of compliance documentation at:
+        The records required by 18 U.S.C. 2257 for materials contained on this website are kept by the individual content uploaders. XFansTube maintains records of compliance documentation at:
       </Paragraph>
       
       <div style={{ 
@@ -66,7 +66,7 @@ const Statement2257 = () => {
         marginBottom: '30px'
       }}>
         <Text style={{ color: 'white', display: 'block' }}>
-          <strong>Video Surfing, LLC</strong>
+          <strong>XFansTube, LLC</strong>
         </Text>
         <Text style={{ color: 'white', display: 'block' }}>
           Attn: Records Custodian
@@ -93,7 +93,7 @@ const Statement2257 = () => {
       </Title>
       
       <Paragraph className="support-paragraph">
-        All content uploaders to Video Surfing must:
+        All content uploaders to XFansTube must:
       </Paragraph>
       
       <ul style={{ color: '#d1d5db', marginBottom: '30px' }}>
@@ -104,7 +104,7 @@ const Statement2257 = () => {
           Maintain records of this verification as required by 18 U.S.C. 2257
         </li>
         <li style={{ marginBottom: '10px' }}>
-          Provide Video Surfing with a signed statement confirming compliance with these requirements
+          Provide XFansTube with a signed statement confirming compliance with these requirements
         </li>
         <li style={{ marginBottom: '10px' }}>
           Include appropriate 2257 statements on all content
@@ -125,7 +125,7 @@ const Statement2257 = () => {
       </Title>
       
       <Paragraph className="support-paragraph">
-        Content that does not contain visual depictions of actual or simulated sexually explicit conduct as defined in 18 U.S.C. 2256 may be exempt from the record-keeping requirements of 18 U.S.C. 2257. However, Video Surfing still requires age verification for all performers in any content uploaded to our platform, regardless of whether it contains sexually explicit conduct.
+        Content that does not contain visual depictions of actual or simulated sexually explicit conduct as defined in 18 U.S.C. 2256 may be exempt from the record-keeping requirements of 18 U.S.C. 2257. However, XFansTube still requires age verification for all performers in any content uploaded to our platform, regardless of whether it contains sexually explicit conduct.
       </Paragraph>
       
       <Divider style={{ borderColor: 'rgba(255, 20, 147, 0.2)', margin: '30px 0' }} />
@@ -135,7 +135,7 @@ const Statement2257 = () => {
       </Title>
       
       <Paragraph className="support-paragraph">
-        If you believe that any content on Video Surfing violates the requirements of 18 U.S.C. 2257 or involves individuals under the age of 18, please report it immediately using our content reporting tools or by contacting our support team at <a href="mailto:legal@videosurfing.com" className="support-link">legal@videosurfing.com</a>.
+        If you believe that any content on XFansTube violates the requirements of 18 U.S.C. 2257 or involves individuals under the age of 18, please report it immediately using our content reporting tools or by contacting our support team at <a href="mailto:legal@videosurfing.com" className="support-link">legal@videosurfing.com</a>.
       </Paragraph>
       
       <Paragraph className="support-paragraph">

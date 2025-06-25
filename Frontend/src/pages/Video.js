@@ -573,26 +573,9 @@ const Video = () => {
               </Tooltip>
             </Input.Group>
           </div>
-          
-          <div style={{ marginTop: 16 }}>
-            <Text strong>Video ID only</Text>
-            <Input.Group compact>
-              <Input
-                value={video.videoId || ''}
-                readOnly
-                style={{ width: 'calc(100% - 32px)' }}
-              />
-              <Tooltip title="Copy">
-                <Button
-                  icon={<CopyOutlined />}
-                  onClick={() => copyToClipboard(video.videoId || '')}
-                />
-              </Tooltip>
-            </Input.Group>
             <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
               Users can search for this video directly using this ID in the search bar.
             </Text>
-          </div>
         </Space>
       </Modal>
     </div>

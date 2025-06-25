@@ -23,7 +23,7 @@ const EuDsa = () => {
       
       <Alert
         message={<Text style={{color:'white'}}>EU Digital Services Act Compliance</Text>}
-        description={<Text style={{color:'white'}}>"Video Surfing is committed to complying with the EU Digital Services Act (DSA) which aims to create a safer digital space where the fundamental rights of users are protected and to establish a level playing field for businesses.</Text>}
+        description={<Text style={{color:'white'}}>"XFansTube is committed to complying with the EU Digital Services Act (DSA) which aims to create a safer digital space where the fundamental rights of users are protected and to establish a level playing field for businesses.</Text>}
         type="info"
         showIcon
         icon={<InfoCircleOutlined style={{ color: '#FF1493' }} />}
@@ -35,7 +35,7 @@ const EuDsa = () => {
       />
       
       <Paragraph className="support-paragraph">
-        The Digital Services Act (DSA) is a European Union regulation that sets new standards for accountability of online platforms regarding illegal and harmful content. As a platform that serves EU users, Video Surfing is committed to meeting these standards and providing transparency about our content moderation practices.
+        The Digital Services Act (DSA) is a European Union regulation that sets new standards for accountability of online platforms regarding illegal and harmful content. As a platform that serves EU users, XFansTube is committed to meeting these standards and providing transparency about our content moderation practices.
       </Paragraph>
       
       <Divider style={{ borderColor: 'rgba(255, 20, 147, 0.2)', margin: '30px 0' }} />
@@ -170,7 +170,7 @@ const EuDsa = () => {
       </Title>
       
       <Paragraph className="support-paragraph">
-        The DSA provides several important rights for users of online platforms. As a Video Surfing user, you have the right to:
+        The DSA provides several important rights for users of online platforms. As a XFansTube user, you have the right to:
       </Paragraph>
       
       <List
