@@ -5,32 +5,33 @@ import {
   Row,
   Col,
   Button,
-  Tag,
-  Divider,
   Spin,
   Alert,
   Card,
   Space,
-  Breadcrumb,
-  Descriptions,
   Image,
   Tooltip,
   Modal,
   Input,
   message,
+  Popover,
 } from 'antd';
 import {
-  ArrowLeftOutlined,
   EyeOutlined,
   CalendarOutlined,
   GlobalOutlined,
   ShareAltOutlined,
   CopyOutlined,
+  FolderAddOutlined,
+  HeartOutlined,
 } from '@ant-design/icons';
 import axios from '../utils/axiosConfig';
 import VideoComments from '../components/VideoComments';
 import VideoReactions from '../components/VideoReactions';
 import AddToCollection from '../components/AddToCollection';
+import api from '../utils/api';
+import { formatDistanceToNow } from 'date-fns';
+import './Video.css';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -41,6 +42,10 @@ const Video = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [shareModalVisible, setShareModalVisible] = useState(false);
+  const [collectionModalVisible, setCollectionModalVisible] = useState(false);
+  const [relatedVideos, setRelatedVideos] = useState([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -60,6 +65,167 @@ const Video = () => {
       fetchVideo();
     }
   }, [id]);
+
+  // Fetch related videos when main video is loaded
+  useEffect(() => {
+    const fetchRelatedVideos = async () => {
+      if (!video) return;
+      
+      setRelatedLoading(true);
+      try {
+        // Try to fetch videos from the same category first
+        let params = {
+          limit: 8,
+          page: 1
+        };
+
+        // If video has category, use it for related videos
+        if (video.category) {
+          params.category = video.category;
+        }
+        // If video has tags, use the first tag
+        else if (video.tags && video.tags.length > 0) {
+          params.tag = video.tags[0];
+        }
+
+        const res = await axios.get('/videos', { params });
+        const fetchedVideos = res.data.data.videos || [];
+        
+        // Filter out the current video from related videos
+        const filteredVideos = fetchedVideos.filter(v => v._id !== video._id);
+        setRelatedVideos(filteredVideos.slice(0, 8)); // Limit to 8 videos
+      } catch (err) {
+        console.error('Error fetching related videos:', err);
+        // If category/tag search fails, try to get recent videos
+        try {
+          const res = await axios.get('/videos', { 
+            params: { limit: 8, page: 1, sort: 'recent' } 
+          });
+          const fetchedVideos = res.data.data.videos || [];
+          const filteredVideos = fetchedVideos.filter(v => v._id !== video._id);
+          setRelatedVideos(filteredVideos.slice(0, 8));
+        } catch (fallbackErr) {
+          console.error('Error fetching fallback videos:', fallbackErr);
+          setRelatedVideos([]);
+        }
+      } finally {
+        setRelatedLoading(false);
+      }
+    };
+
+    fetchRelatedVideos();
+  }, [video]);
+
+  // Helper functions from Home.js
+  const formatViewCount = (count) => {
+    if (count >= 1000000) {
+      return (count / 1000000).toFixed(1) + "M"
+    } else if (count >= 1000) {
+      return (count / 1000).toFixed(1) + "K"
+    }
+    return count.toString()
+  }
+
+  // Format duration intelligently, handling missing values
+  const formatDuration = (duration, videoId) => {
+    if (duration) {
+      // If we have an actual duration, format it as MM:SS
+      const minutes = Math.floor(duration / 60)
+      const seconds = duration % 60
+      return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
+    }
+
+    // Generate a pseudo-random duration based on video ID
+    if (videoId) {
+      const hash = videoId.split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0)
+        return a & a
+      }, 0)
+      const minutes = Math.abs(hash) % 15 + 5 // 5-19 minutes
+      const seconds = Math.abs(hash >> 8) % 60 // 0-59 seconds
+      return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
+    }
+
+    // Fallback for no ID or duration
+    return "5:30"
+  }
+
+  // Handle thumbnail click - Go to original URL or external site
+  const handleVideoThumbnailClick = async (video) => {
+    try {
+      // Record the view
+      await api.post(`/videos/${video._id || video.id}/view`)
+
+      // Navigate to the original URL or open external URL
+      if (video.originalUrl) {
+        window.open(video.originalUrl, '_blank')
+      } else {
+        // Fallback: construct URL based on source
+        const fallbackUrl = `https://${video.sourceWebsite}`
+        window.open(fallbackUrl, '_blank')
+      }
+    } catch (error) {
+      console.error('Error recording view or opening video:', error)
+      // Still try to open the video even if view recording fails
+      if (video.originalUrl) {
+        window.open(video.originalUrl, '_blank')
+      }
+    }
+  }
+
+  // Handle video info click - Go to video details page
+  const handleVideoInfoClick = async (video) => {
+    try {
+      // Record the view
+      await api.post(`/videos/${video._id || video.id}/view`)
+
+      // Navigate to the video details page
+      navigate(`/video/${video._id || video.id}`)
+    } catch (error) {
+      console.error('Error recording view:', error)
+      // Still navigate even if view recording fails
+      navigate(`/video/${video._id || video.id}`)
+    }
+  }
+
+  // Handle save to collection click
+  const handleSaveToCollectionClick = async (video, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      message.info("Please log in to save videos to collections");
+      return;
+    }
+
+    // You can implement collection saving logic here
+    message.info("Collection feature not implemented in video page");
+  }
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+        if (token) {
+          try {
+            const response = await api.get("/auth/verify", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (response.data.success) {
+              setIsAuthenticated(true);
+            }
+          } catch (err) {
+            setIsAuthenticated(false);
+          }
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
 
   const getCategoryColor = (category) => {
     const categoryColors = {
@@ -142,22 +308,6 @@ const Video = () => {
 
   return (
     <div>
-      <Breadcrumb
-        items={[
-          { title: <a href="/">Home</a> },
-          { title: video.category },
-          { title: video.title }
-        ]}
-        style={{ marginBottom: 16 }}
-      />
-
-      <Button
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate(-1)}
-        style={{ marginBottom: 16 }}
-      >
-        Back
-      </Button>
 
       <Row gutter={[24, 24]}>
         <Col xs={24} md={16}>
@@ -202,49 +352,68 @@ const Video = () => {
               </div>
             </div>
 
-            <Title level={2}>{video.title}</Title>
-
-            <Space size={[0, 8]} wrap style={{ marginBottom: 16 }}>
-              <Tag color={getCategoryColor(video.category)} style={{ fontSize: '14px' }}>
-                {video.category}
-              </Tag>
-
-              {video.tags && video.tags.map((tag, index) => (
-                <Tag key={index}>{tag}</Tag>
-              ))}
-            </Space>
-
-            <Divider />
+            <Title level={4}>{video.title}</Title>
 
             <Space align="center" size={[24, 8]} wrap style={{ marginBottom: 16 }}>
-              <Tooltip title="Views">
-                <Text type="secondary">
-                  <Space>
-                    <EyeOutlined /> {video.views}
-                  </Space>
-                </Text>
-              </Tooltip>
+  {/* Views */}
+  <Text type="secondary">
+    <Space>
+      <EyeOutlined /> {video.views.toLocaleString()} Views
+    </Space>
+  </Text>
+  
+  {/* Separator */}
+  <Text type="secondary">|</Text>
+  
+  {/* Date Added */}
+  <Text type="secondary">
+    {formatDistanceToNow(new Date(video.createdAt), { addSuffix: true })}
+  </Text>
+  
 
-              <Tooltip title="Date Added">
-                <Text type="secondary">
-                  <Space>
-                    <CalendarOutlined /> {formatDate(video.createdAt)}
-                  </Space>
-                </Text>
-              </Tooltip>
+  <Text type="secondary">|</Text>
+  
+  <VideoReactions videoId={id} />
 
-              <Tooltip title="Source Website">
-                <Text type="secondary">
-                  <Space>
-                    <GlobalOutlined /> {video.sourceWebsite}
-                  </Space>
-                </Text>
-              </Tooltip>
-              
-              <VideoReactions videoId={id} />
-            </Space>
+  <Popover
+    content={<AddToCollection video={video} />}
+    trigger="click"
+    placement="bottomRight"
+    overlayClassName="add-to-collection-popover"
+  >
+    <Button 
+      type="text" 
+      size="small"
+      icon={<FolderAddOutlined />}
+      style={{ padding: '0 8px' }}
+    >
+      Add to
+    </Button>
+  </Popover>
+  
+  {/* Share Button */}
+  <Button 
+    type="text" 
+    size="small"
+    icon={<ShareAltOutlined />}
+    style={{ padding: '0 8px' }}
+    onClick={() => setShareModalVisible(true)}
+  >
+    Share
+  </Button>
+  
+  {/* Report Button */}
+  <Button 
+    type="text" 
+    size="small"
+    danger
+    style={{ padding: '0 8px' }}
+  >
+    Report
+  </Button>
+</Space>
 
-            <Divider />
+            {/* <Divider />
 
             <Paragraph
               ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
@@ -267,16 +436,14 @@ const Video = () => {
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <AddToCollection video={video} />
               </div>
-            </div>
+            </div> */}
           </Card>
           
-          <Card style={{ marginTop: 24 }}>
-            <VideoComments videoId={id} />
-          </Card>
+          
         </Col>
 
         <Col xs={24} md={8}>
-          <Card title="Video Information">
+          {/* <Card title="Video Information">
             <Descriptions column={1}>
               <Descriptions.Item label="Added By">
                 {video.addedBy?.username || 'Admin'}
@@ -294,17 +461,73 @@ const Video = () => {
                 {video.videoId || 'N/A'}
               </Descriptions.Item>
             </Descriptions>
-          </Card>
+          </Card> */}
 
-          <Card title="Disclaimer" style={{ marginTop: 16 }}>
+          {/* <Card title="Disclaimer" style={{ marginTop: 16 }}>
             <Paragraph>
               This platform aggregates videos from various sources across the web. 
               When you click "Watch Video," you will be redirected to the original 
               source website. We do not host or store any video content on our servers.
             </Paragraph>
-          </Card>
+          </Card> */}
         </Col>
       </Row>
+      
+      {/* Related Videos Section - Full Width */}
+      <div style={{ marginTop: 24 }}>
+        <Title level={3} style={{ marginBottom: 16 }}>Related Videos</Title>
+        {relatedLoading ? (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <Spin size="large" />
+          </div>
+        ) : relatedVideos.length > 0 ? (
+          <div className="video-grid">
+            {relatedVideos.map((video) => (
+              <div key={video._id || video.id} className="video-card">
+                <div className="video-thumbnail" onClick={() => handleVideoThumbnailClick(video)}>
+                  <img
+                    src={video.thumbnailUrl || "/home.jpg"}
+                    alt={video.title}
+                    onError={(e) => {
+                      e.target.onerror = null
+                      e.target.src = "/home.jpg"
+                    }}
+                  />
+                  <div className="video-overlay">
+                    <div className="play-button"></div>
+                  </div>
+                  <div
+                    className="save-to-collections-icon"
+                    onClick={(e) => handleSaveToCollectionClick(video, e)}
+                  >
+                    <FolderAddOutlined />
+                  </div>
+                  <div className="video-duration">
+                    {formatDuration(video.duration, video._id || video.id)}
+                  </div>
+                </div>
+                <div className="video-info" onClick={() => handleVideoInfoClick(video)}>
+                  <h3 className="video-title">{video.title}</h3>
+                  <div className="video-stats-row">
+                    <div className="video-views">
+                      <EyeOutlined />
+                      <span>{formatViewCount(video.views || 0)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '20px 0' }}>
+            <Text type="secondary">No related videos found</Text>
+          </div>
+        )}
+      </div>
+
+      <Card style={{ marginTop: 24 }}>
+            <VideoComments videoId={id} />
+          </Card>
       
       <Modal
         title="Share Video"
