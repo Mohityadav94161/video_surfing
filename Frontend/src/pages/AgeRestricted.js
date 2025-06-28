@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "antd"
-import { VideoCameraOutlined } from "@ant-design/icons"
 import { useNavigate } from "react-router-dom"
 
 const AgeRestricted = () => {
@@ -20,7 +19,9 @@ const AgeRestricted = () => {
         textAlign: "center",
       }}
     >
-      <VideoCameraOutlined style={{ fontSize: "80px", color: "#ff1493", marginBottom: "30px" }} />
+      <div style={{ fontSize: "80px", marginBottom: "30px" }}>
+        <span className="logo-text"><span>XFans</span><span style={{color:'#fff'}}>Tube</span></span>
+      </div>
 
       <h1 style={{ color: "#ff1493", fontSize: "32px", marginBottom: "20px", fontWeight: "bold" }}>XFansTube</h1>
 

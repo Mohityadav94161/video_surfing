@@ -36,7 +36,6 @@ import {
   PlayCircleOutlined,
   PlusOutlined,
   SettingOutlined,
-  VideoCameraOutlined,
   DeleteOutlined,
   FileOutlined,
   LinkOutlined as LinkIcon,
@@ -945,7 +944,7 @@ const BulkVideoUpload = () => {
                         gap: '2px'
                       }}
                     >
-                      <VideoCameraOutlined style={{ fontSize: '10px' }} />
+                      <span className="logo-text"><span>XFans</span><span style={{color:'#fff'}}>Tube</span></span> View
                     </a>
                     {video.quality && video.quality !== 'unknown' && (
                       <div style={{ 

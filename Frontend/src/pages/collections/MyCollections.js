@@ -18,8 +18,7 @@ import {
   FolderOutlined, 
   DeleteOutlined, 
   EditOutlined,
-  ExclamationCircleOutlined,
-  VideoCameraOutlined
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { useCollections } from '../../contexts/CollectionContext';
 
@@ -141,7 +140,7 @@ const MyCollections = () => {
                         padding: '4px 8px',
                         borderTopLeftRadius: 4
                       }}>
-                        <VideoCameraOutlined /> {collection.videos.length}
+                        <span className="logo-text"><span>XFans</span><span style={{color:'#fff'}}>Tube</span></span> {collection.videos.length}
                       </div>
                     </div>
                   ) : (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Pagination, Spin, Button, Select, Tag, Modal, Input, message, List, Checkbox } from "antd"
-import {EyeOutlined,AppstoreOutlined,UnorderedListOutlined,VideoCameraOutlined,FolderAddOutlined,PlusOutlined,FolderOutlined,} from "@ant-design/icons"
+import {EyeOutlined,AppstoreOutlined,UnorderedListOutlined,FolderAddOutlined,PlusOutlined,FolderOutlined,} from "@ant-design/icons"
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom"
 import api from "../utils/axiosConfig"
 import "./Home.css"
@@ -790,7 +790,9 @@ const Home = () => {
         className="age-verification-modal"
       >
         <div style={{ textAlign: "center" }}>
-          <VideoCameraOutlined style={{ fontSize: "48px", color: "#ff1493", marginBottom: "20px" }} />
+          <div style={{ fontSize: "48px", marginBottom: "20px" }}>
+            <span className="logo-text"><span>XFans</span><span style={{color:'#fff'}}>Tube</span></span>
+          </div>
           <h1 style={{ color: "#ff1493", marginBottom: "20px" }}>XFansTube</h1>
           <p style={{ color: "white", marginBottom: "30px", lineHeight: "1.6" }}>
             This website contains adult content and is intended for users who are 18 years of age or older. By entering

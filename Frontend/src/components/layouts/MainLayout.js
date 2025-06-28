@@ -26,7 +26,6 @@ import {
   LoginOutlined,
   UserAddOutlined,
   DashboardOutlined,
-  VideoCameraOutlined,
   MenuOutlined,
   FolderOutlined,
   UploadOutlined,
@@ -197,6 +196,21 @@ const MainLayout = () => {
           .filter((value, index, self) => self.indexOf(value) === index)
           .slice(0, 12);
         
+        // Fallback categories if none found
+        const fallbackCategories = ["Amateur", "Anal", "Asian", "BBW", "Big Ass", "Big Tits", "Blonde", "Blowjob", "Brunette", "Cumshot", "Ebony", "MILF"];
+        const finalCategories = categories.length > 0 ? categories : fallbackCategories;
+        
+        // Fallback recommended if none found
+        const finalRecommended = recommendedCategories.length > 0 ? recommendedCategories : fallbackCategories.slice(0, 8);
+        
+        // Enhanced pornstar tags with more variety
+        const enhancedPornstarTags = [
+          ...pornstarTags,
+          ...formattedTags.filter(tag => 
+            ["Teen", "MILF", "Mature", "Young", "Petite", "Curvy"].includes(tag?.name)
+          ).slice(0, 12 - pornstarTags.length)
+        ];
+        
         // Add home menu with recent items
         const homeMenu = videosResponse.data.data.videos
           .slice(0, 6)
@@ -208,10 +222,10 @@ const MainLayout = () => {
         
         setMenuData({
           'home': homeMenu,
-          'Categories': categories,
+          'Categories': finalCategories,
           'Trending': trendingTags,
-          'Pornstars': pornstarTags,
-          'Recommended': recommendedCategories
+          'Pornstars': enhancedPornstarTags,
+          'Recommended': finalRecommended
         });
       } catch (err) {
         console.error("Error fetching menu data:", err);
@@ -420,15 +434,14 @@ const MainLayout = () => {
           <div className="desktop-left">
             <Button
               type="text"
-              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "20px" }} />}
+              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
               onClick={() => setDesktopMenuOpen(!desktopMenuOpen)}
               className="desktop-menu-button"
             />
 
             <div className="desktop-logo-container">
               <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
-                <VideoCameraOutlined className="logo-icon" />
-                <span className="logo-text"><span>XFans</span><span style={{color:'#fff'}}>Tube</span></span>
+                <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "36px", width: "auto" }} />
               </Link>
             </div>
           </div>
@@ -476,20 +489,20 @@ const MainLayout = () => {
         <div className="mobile-nav">
           <Button
             type="text"
-            icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "20px" }} />}
+            icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
             onClick={() => setMobileMenuOpen(true)}
             className="mobile-menu-button"
           />
 
           <div className="mobile-logo-container">
-            <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
-              <VideoCameraOutlined className="logo-icon" />
-            </Link>
+          <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
+                <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "24px", width: "auto" }} />
+              </Link>
           </div>
 
           <Button
             type="text"
-            icon={<SearchOutlined style={{ color: "#FF1493", fontSize: "20px" }} />}
+            icon={<SearchOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
             onClick={() => setSearchVisible(!searchVisible)}
             className="mobile-search-button"
           />
@@ -714,26 +727,24 @@ const MainLayout = () => {
           <div style={{ display: "flex", alignItems: "center", color: "white" }}>
             <Button
               type="text"
-              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "20px", marginRight: 8 }} />}
+              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "36px" }} />}
               onClick={() => setDesktopMenuOpen(false)}
-              style={{ padding: 0, marginRight: 8 }}
+              style={{ padding: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", height: "36px" }}
             />
             <Link
               to="/"
               className="logo"
               aria-label="XFansTube Home"
-              style={{ fontSize: "18px" }}
               onClick={handleLogoClick}
             >
-              <VideoCameraOutlined style={{ fontSize: "20px", marginRight: 8 }} />
-              <span>XFansTube</span>
+              <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "36px", width: "auto" }} />
             </Link>
           </div>
         }
         placement="left"
         onClose={() => setDesktopMenuOpen(false)}
         open={desktopMenuOpen}
-        width={280}
+        width={360}
         styles={{
           header: { backgroundColor: "black", color: "white" },
           body: { backgroundColor: "black", padding: 0 },
@@ -743,7 +754,7 @@ const MainLayout = () => {
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "0", padding: "0" }}>
           {/* Footer Links Section */}
-          <div style={{ padding: "20px" }}>
+          <div style={{ padding: "40px" }}>
             <div style={{ marginBottom: "15px", color: "#FF1493", fontWeight: "bold", fontSize: "14px" }}>About</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <Button
@@ -812,19 +823,17 @@ const MainLayout = () => {
           <div style={{ display: "flex", alignItems: "center", color: "white" }}>
             <Button
               type="text"
-              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "20px", marginRight: 8 }} />}
+              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
               onClick={() => setMobileMenuOpen(false)}
-              style={{ padding: 0, marginRight: 8 }}
+              style={{ padding: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", height: "24px" }}
             />
             <Link
               to="/"
               className="logo"
               aria-label="XFansTube Home"
-              style={{ fontSize: "18px" }}
               onClick={handleLogoClick}
             >
-              <VideoCameraOutlined style={{ fontSize: "20px", marginRight: 8 }} />
-              <span>XFansTube</span>
+              <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "24px", width: "auto" }} />
             </Link>
           </div>
         }
@@ -1298,7 +1307,7 @@ const MainLayout = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <Text style={{ color: "rgba(255, 255, 255, 0.80)" }}>
-                XFansTube ©{new Date().getFullYear()} - Your curated video directory
+              <span className="logo-text"><span>XFans</span><span style={{color:'#fff'}}>Tube</span></span> ©{new Date().getFullYear()} - All rights reserved
               </Text>
             </div>
               <a href="https://www.rtalabel.org/" target="_blank" rel="noopener noreferrer">

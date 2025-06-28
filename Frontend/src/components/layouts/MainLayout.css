@@ -16,15 +16,11 @@
 .logo {
   display: flex;
   align-items: center;
-  color: #ff1493; /* Deep pink color */
   text-decoration: none;
-  font-size: 22px;
-  font-weight: bold;
   transition: all 0.3s ease;
 }
 
 .logo:hover {
-  color: #ff69b4; /* Hot pink color for hover */
   transform: scale(1.02);
 }
 
@@ -37,6 +33,15 @@
   display: inline-block;
   animation: fadeIn 0.5s;
   letter-spacing: 0.5px;
+  font-weight: bold;
+}
+
+.logo-text span:first-child {
+  color: #ff1493;
+}
+
+.logo-text span:last-child {
+  color: #fff;
 }
 
 /* Desktop navigation */
@@ -80,15 +85,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 52px;
+  height: 52px;
   transition: all 0.3s ease;
-}
-
-.desktop-menu-button:hover {
-  background: rgba(255, 20, 147, 0.1);
-  transform: scale(1.1);
 }
 
 .desktop-logo-container {
@@ -328,7 +327,11 @@
 }
 
 .mobile-logo-container .logo {
-  font-size: 18px;
+  text-decoration: none;
+}
+
+.mobile-logo-container .logo:hover {
+  text-decoration: none;
 }
 
 .mobile-logo-container .logo-icon {
@@ -341,8 +344,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   transition: all 0.3s ease;
 }
@@ -651,9 +654,9 @@
 .header-main-menu-inner {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 180px;
   max-width: 1400px;
-  width: 100%;
+  width: 90%;
 }
 
 /* Header dropdown - Fix jittering */
@@ -804,10 +807,10 @@
   }
 }
 
+
+
 @media (max-width: 768px) {
-  .logo-text {
-    display: none !important;
-  }
+  /* Logo styles are now handled by SVG images */
 
   .desktop-nav-new {
     display: none;

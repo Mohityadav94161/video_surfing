@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Button, Typography, Row, Col, Select } from 'antd';
 import {
   MailOutlined,
-  MenuOutlined,
-  CloseOutlined,
   TeamOutlined,
   DeleteOutlined,
   SafetyOutlined,
