@@ -15,7 +15,12 @@ import {
   Input,
   Select,
   Spin,
-  Alert
+  Alert,
+  Modal,
+  Form,
+  Checkbox,
+  Dropdown,
+  Divider
 } from 'antd';
 import { 
   PlaySquareOutlined, 
@@ -28,7 +33,12 @@ import {
   PlusOutlined,
   ReloadOutlined,
   FilterOutlined,
-  CloudUploadOutlined
+  CloudUploadOutlined,
+  DownOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  FireOutlined,
+  FolderOutlined
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
@@ -36,6 +46,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -60,6 +71,18 @@ const Dashboard = () => {
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
+  
+  // Bulk selection and actions state
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [bulkActionModalVisible, setBulkActionModalVisible] = useState(false);
+  const [bulkActionType, setBulkActionType] = useState('');
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [bulkActionForm] = Form.useForm();
+  
+  // New category creation state
+  const [newCategoryModalVisible, setNewCategoryModalVisible] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [addingNewCategory, setAddingNewCategory] = useState(false);
 
   // Verify admin token on mount
   useEffect(() => {
@@ -244,6 +267,250 @@ const Dashboard = () => {
       ...pagination,
       current: 1
     });
+  };
+
+  // Bulk selection handlers
+  const onSelectChange = (newSelectedRowKeys) => {
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onSelectAll = (selected, selectedRows, changeRows) => {
+    if (selected) {
+      setSelectedRowKeys(videos.map(video => video._id));
+    } else {
+      setSelectedRowKeys([]);
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+    onSelectAll: onSelectAll,
+    getCheckboxProps: (record) => ({
+      name: record.title,
+    }),
+  };
+
+  // Bulk action handlers
+  const handleBulkAction = (actionType) => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Please select at least one video');
+      return;
+    }
+    setBulkActionType(actionType);
+    setBulkActionModalVisible(true);
+    
+    // Set initial form values based on action type
+    if (actionType === 'category') {
+      bulkActionForm.setFieldsValue({ category: '' });
+    } else if (actionType === 'tags') {
+      bulkActionForm.setFieldsValue({ tags: '' });
+    }
+  };
+
+  const executeBulkAction = async (values) => {
+    setBulkActionLoading(true);
+    
+    try {
+      let updateData = {};
+      
+      switch (bulkActionType) {
+        case 'activate':
+          updateData = { active: true };
+          break;
+        case 'deactivate':
+          updateData = { active: false };
+          break;
+        case 'trending_on':
+          updateData = { isTrending: true };
+          break;
+        case 'trending_off':
+          updateData = { isTrending: false };
+          break;
+        case 'category':
+          updateData = { category: values.category };
+          break;
+        case 'tags':
+          const newTags = values.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+          updateData = { tags: newTags };
+          break;
+        case 'delete':
+          // Handle delete separately
+          break;
+      }
+      
+      if (bulkActionType === 'delete') {
+        // Delete videos
+        await Promise.all(
+          selectedRowKeys.map(videoId => 
+            axiosInstance.delete(`/videos/${videoId}`)
+          )
+        );
+        
+        // Update UI
+        setVideos(prevVideos => 
+          prevVideos.filter(video => !selectedRowKeys.includes(video._id))
+        );
+        setStats(prev => ({ 
+          ...prev, 
+          totalVideos: prev.totalVideos - selectedRowKeys.length 
+        }));
+        
+        message.success(`Successfully deleted ${selectedRowKeys.length} videos`);
+      } else {
+        // Update videos
+        await Promise.all(
+          selectedRowKeys.map(videoId => 
+            axiosInstance.patch(`/videos/${videoId}`, updateData)
+          )
+        );
+        
+        // Update UI
+        setVideos(prevVideos => 
+          prevVideos.map(video => 
+            selectedRowKeys.includes(video._id) 
+              ? { ...video, ...updateData }
+              : video
+          )
+        );
+        
+        const actionNames = {
+          activate: 'activated',
+          deactivate: 'deactivated',
+          trending_on: 'marked as trending',
+          trending_off: 'unmarked as trending',
+          category: 'category updated',
+          tags: 'tags updated'
+        };
+        
+        message.success(`Successfully ${actionNames[bulkActionType]} ${selectedRowKeys.length} videos`);
+      }
+      
+      // Reset selection and close modal
+      setSelectedRowKeys([]);
+      setBulkActionModalVisible(false);
+      bulkActionForm.resetFields();
+      
+    } catch (err) {
+      console.error('Error executing bulk action:', err);
+      message.error(`Failed to execute bulk action: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const bulkActionItems = [
+    {
+      key: 'activate',
+      label: (
+        <Space>
+          <CheckOutlined style={{ color: '#52c41a' }} />
+          Activate Selected
+        </Space>
+      ),
+    },
+    {
+      key: 'deactivate',
+      label: (
+        <Space>
+          <CloseOutlined style={{ color: '#ff4d4f' }} />
+          Deactivate Selected
+        </Space>
+      ),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'trending_on',
+      label: (
+        <Space>
+          <FireOutlined style={{ color: '#fa8c16' }} />
+          Mark as Trending
+        </Space>
+      ),
+    },
+    {
+      key: 'trending_off',
+      label: (
+        <Space>
+          <FireOutlined style={{ color: '#8c8c8c' }} />
+          Remove from Trending
+        </Space>
+      ),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'category',
+      label: (
+        <Space>
+          <FolderOutlined style={{ color: '#1890ff' }} />
+          Change Category
+        </Space>
+      ),
+    },
+    {
+      key: 'tags',
+      label: (
+        <Space>
+          <TagsOutlined style={{ color: '#722ed1' }} />
+          Update Tags
+        </Space>
+      ),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'delete',
+      label: (
+        <Space>
+          <DeleteOutlined style={{ color: '#ff4d4f' }} />
+          Delete Selected
+        </Space>
+      ),
+      danger: true,
+    },
+  ];
+
+  // Add new category function
+  const handleAddNewCategory = async () => {
+    if (!newCategoryName.trim()) {
+      message.warning('Please enter a category name');
+      return;
+    }
+    
+    const trimmedName = newCategoryName.trim();
+    
+    // Check if category already exists
+    if (categories.includes(trimmedName)) {
+      message.warning('This category already exists');
+      return;
+    }
+    
+    setAddingNewCategory(true);
+    
+    try {
+      // Add to categories array
+      setCategories(prevCategories => [...prevCategories, trimmedName]);
+      
+      // Set the new category as selected in the bulk action form
+      bulkActionForm.setFieldsValue({ category: trimmedName });
+      
+      // Close modal and reset
+      setNewCategoryModalVisible(false);
+      setNewCategoryName('');
+      
+      message.success(`Category "${trimmedName}" added successfully`);
+      
+    } catch (err) {
+      console.error('Error adding category:', err);
+      message.error('Failed to add category. Please try again.');
+    } finally {
+      setAddingNewCategory(false);
+    }
   };
 
   const columns = [
@@ -520,10 +787,52 @@ const Dashboard = () => {
           </Row>
         </div>
         
+        {/* Bulk Actions Toolbar */}
+        {selectedRowKeys.length > 0 && (
+          <div style={{ 
+            marginBottom: 16, 
+            padding: '12px 16px', 
+            backgroundColor: '#e6f7ff', 
+            borderRadius: '6px',
+            border: '1px solid #91d5ff'
+          }}>
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Space>
+                  <Text strong style={{ color: '#1890ff' }}>
+                    {selectedRowKeys.length} video{selectedRowKeys.length !== 1 ? 's' : ''} selected
+                  </Text>
+                  <Button 
+                    size="small" 
+                    type="link" 
+                    onClick={() => setSelectedRowKeys([])}
+                  >
+                    Clear Selection
+                  </Button>
+                </Space>
+              </Col>
+              <Col>
+                <Dropdown
+                  menu={{
+                    items: bulkActionItems,
+                    onClick: ({ key }) => handleBulkAction(key),
+                  }}
+                  trigger={['click']}
+                >
+                  <Button type="primary">
+                    Bulk Actions <DownOutlined />
+                  </Button>
+                </Dropdown>
+              </Col>
+            </Row>
+          </div>
+        )}
+        
         <Table
           columns={columns}
           dataSource={videos}
           rowKey="_id"
+          rowSelection={rowSelection}
           pagination={pagination}
           loading={loading}
           onChange={handleTableChange}
@@ -533,6 +842,170 @@ const Dashboard = () => {
           }}
         />
       </Card>
+      
+      {/* Bulk Action Modal */}
+      <Modal
+        title={`Bulk Action: ${bulkActionType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`}
+        open={bulkActionModalVisible}
+        onCancel={() => {
+          setBulkActionModalVisible(false);
+          bulkActionForm.resetFields();
+          setNewCategoryModalVisible(false);
+          setNewCategoryName('');
+        }}
+        footer={null}
+        width={600}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <Text type="secondary">
+            This action will be applied to {selectedRowKeys.length} selected video{selectedRowKeys.length !== 1 ? 's' : ''}.
+          </Text>
+        </div>
+        
+        <Form
+          form={bulkActionForm}
+          layout="vertical"
+          onFinish={executeBulkAction}
+        >
+          {bulkActionType === 'category' && (
+            <Form.Item
+              name="category"
+              label="New Category"
+              rules={[{ required: true, message: 'Please select a category' }]}
+            >
+              <Select 
+                placeholder="Select category"
+                dropdownRender={(menu) => (
+                  <div>
+                    {menu}
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div
+                      style={{
+                        padding: '8px',
+                        cursor: 'pointer',
+                        color: '#1890ff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                      onClick={() => setNewCategoryModalVisible(true)}
+                    >
+                      <PlusOutlined />
+                      Add New Category
+                    </div>
+                  </div>
+                )}
+              >
+                {categories.map(category => (
+                  <Option key={category} value={category}>
+                    {category}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          )}
+          
+          {bulkActionType === 'tags' && (
+            <Form.Item
+              name="tags"
+              label="New Tags"
+              rules={[{ required: true, message: 'Please enter tags' }]}
+              extra="Comma-separated list of tags. This will replace existing tags."
+            >
+              <TextArea 
+                rows={3} 
+                placeholder="tag1, tag2, tag3"
+              />
+            </Form.Item>
+          )}
+          
+          {bulkActionType === 'delete' && (
+            <Alert
+              message="Warning"
+              description="This action will permanently delete the selected videos. This cannot be undone."
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+          
+          {['activate', 'deactivate', 'trending_on', 'trending_off'].includes(bulkActionType) && (
+            <Alert
+              message="Confirmation"
+              description={`Are you sure you want to ${bulkActionType.replace('_', ' ')} ${selectedRowKeys.length} video${selectedRowKeys.length !== 1 ? 's' : ''}?`}
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+          
+          <div style={{ textAlign: 'right', marginTop: 24 }}>
+            <Space>
+              <Button 
+                onClick={() => {
+                  setBulkActionModalVisible(false);
+                  bulkActionForm.resetFields();
+                  setNewCategoryModalVisible(false);
+                  setNewCategoryName('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="primary" 
+                htmlType="submit"
+                loading={bulkActionLoading}
+                danger={bulkActionType === 'delete'}
+              >
+                {bulkActionType === 'delete' ? 'Delete Videos' : 'Apply Changes'}
+              </Button>
+            </Space>
+          </div>
+        </Form>
+      </Modal>
+      
+      {/* Add New Category Modal */}
+      <Modal
+        title="Add New Category"
+        open={newCategoryModalVisible}
+        onCancel={() => {
+          setNewCategoryModalVisible(false);
+          setNewCategoryName('');
+        }}
+        onOk={handleAddNewCategory}
+        confirmLoading={addingNewCategory}
+        okText="Add Category"
+        cancelText="Cancel"
+      >
+        <Form layout="vertical">
+          <Form.Item
+            label="Category Name"
+            required
+            rules={[
+              { required: true, message: 'Please enter a category name' },
+              { min: 2, message: 'Category name must be at least 2 characters' },
+              { max: 50, message: 'Category name must be less than 50 characters' }
+            ]}
+          >
+            <Input
+              placeholder="Enter category name (e.g., Comedy, Documentary, Tutorial)"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              onPressEnter={handleAddNewCategory}
+              maxLength={50}
+              showCount
+            />
+          </Form.Item>
+          
+          <Alert
+            message="Note"
+            description="This category will be added to the list and can be used for future bulk actions and uploads."
+            type="info"
+            showIcon
+            style={{ marginTop: 16 }}
+          />
+        </Form>
+      </Modal>
     </div>
   );
 };

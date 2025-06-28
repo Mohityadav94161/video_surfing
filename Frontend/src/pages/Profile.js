@@ -21,6 +21,7 @@ import {
   FolderAddOutlined,
   CloseOutlined,
   CheckCircleTwoTone,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from '../utils/axiosConfig';
@@ -51,6 +52,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || '/avatars/avatar1.png');
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -117,6 +120,7 @@ const Profile = () => {
 
   const handleDeleteAccount = async () => {
     try {
+      setDeleteLoading(true);
       const token = localStorage.getItem('token');
       await axios.delete('/users/deleteMe', {
         headers: { Authorization: `Bearer ${token}` },
@@ -127,7 +131,14 @@ const Profile = () => {
     } catch (error) {
       console.error('Error deleting account:', error);
       message.error('Failed to delete account');
+    } finally {
+      setDeleteLoading(false);
+      setDeleteModalVisible(false);
     }
+  };
+
+  const showDeleteConfirmation = () => {
+    setDeleteModalVisible(true);
   };
 
   const handleAvatarClick = () => {
@@ -318,7 +329,7 @@ const Profile = () => {
             <div className="profile-section danger-zone">
               <Title level={4}>Danger Zone</Title>
               <p>Once you delete your account, there is no going back. Please be certain.</p>
-              <Button danger onClick={handleDeleteAccount}>
+              <Button danger onClick={showDeleteConfirmation}>
                 Delete Account
               </Button>
             </div>
@@ -350,6 +361,50 @@ const Profile = () => {
               </Col>
             ))}
           </Row>
+        </div>
+      </Modal>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ExclamationCircleOutlined style={{ color: '#ff4d4f', fontSize: '20px' }} />
+            <span>Delete Account</span>
+          </div>
+        }
+        open={deleteModalVisible}
+        onCancel={() => setDeleteModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setDeleteModalVisible(false)}>
+            Cancel
+          </Button>,
+          <Button 
+            key="delete" 
+            danger 
+            loading={deleteLoading}
+            onClick={handleDeleteAccount}
+          >
+            Delete Account
+          </Button>,
+        ]}
+        centered
+      >
+        <div style={{ padding: '16px 0' }}>
+          <p style={{ fontSize: '16px', marginBottom: '16px' }}>
+            Are you sure you want to delete your account?
+          </p>
+          <p style={{ color: '#666', marginBottom: '16px' }}>
+            This action cannot be undone. All your data, including:
+          </p>
+          <ul style={{ color: '#666', marginBottom: '16px', paddingLeft: '20px' }}>
+            <li>Profile information</li>
+            <li>Collections and bookmarks</li>
+            <li>Comments and reactions</li>
+            <li>Uploaded videos</li>
+          </ul>
+          <p style={{ color: '#ff4d4f', fontWeight: 'bold' }}>
+            Will be permanently deleted.
+          </p>
         </div>
       </Modal>
     </div>

@@ -15,6 +15,7 @@ import {
   Input,
   message,
   Popover,
+  Tag,
 } from 'antd';
 import {
   EyeOutlined,
@@ -25,7 +26,7 @@ import {
   FolderAddOutlined,
   HeartOutlined,
   ExceptionOutlined,
-  
+
 } from '@ant-design/icons';
 import axios from '../utils/axiosConfig';
 import VideoComments from '../components/VideoComments';
@@ -75,14 +76,14 @@ const Video = () => {
   useEffect(() => {
     const fetchRelatedVideos = async () => {
       if (!video) return;
-      
+
       setRelatedLoading(true);
       try {
         // Use the new enhanced related videos API
         const res = await axios.get(`/videos/${video._id}/related`, {
           params: { limit: 8 }
         });
-        
+
         const data = res.data.data;
         setRelatedVideos(data.videos || []);
         setRelatedType(res.data.relationType || 'category');
@@ -358,93 +359,190 @@ const Video = () => {
             <Title level={4}>{video.title}</Title>
 
             <Space align="center" size={[24, 8]} wrap style={{ marginBottom: 16 }}>
-  {/* Views */}
-  <Text type="secondary">
-    <Space>
-      <EyeOutlined /> {video.views.toLocaleString()} Views
-    </Space>
-  </Text>
-  
-  {/* Separator */}
-  <Text type="secondary">|</Text>
-  
-  {/* Date Added */}
-  <Text type="secondary">
-    {formatDistanceToNow(new Date(video.createdAt), { addSuffix: true })}
-  </Text>
-  
+              {/* Views */}
+              <Text type="secondary">
+                <Space>
+                  <EyeOutlined /> {video.views.toLocaleString()} Views
+                </Space>
+              </Text>
 
-  <Text type="secondary">|</Text>
-  
-  <VideoReactions videoId={id} />
+              {/* Separator */}
+              <Text type="secondary">|</Text>
 
-  <Popover
-    content={<AddToCollection video={video} />}
-    trigger="click"
-    placement="bottomRight"
-    overlayClassName="add-to-collection-popover"
-  >
-    <Button 
-      type="text" 
-      size="small"
-      icon={<FolderAddOutlined />}
-      style={{ padding: '0 8px' }}
-    >
-      Add to
-    </Button>
-  </Popover>
-  
-  {/* Share Button */}
-  <Button 
-    type="text" 
-    size="small"
-    icon={<ShareAltOutlined />}
-    style={{ padding: '0 8px' }}
-    onClick={() => setShareModalVisible(true)}
-  >
-    Share
-  </Button>
-  
-  {/* Report Button */}
-  <Button 
-    type="text" 
-    size="small"
-    danger
-    icon={<ExceptionOutlined />}
-    style={{ padding: '0 8px' }}
-    onClick={() => setReportModalVisible(true)}
-  >
-    Report
-  </Button>
-</Space>
+              {/* Date Added */}
+              <Text type="secondary">
+                {formatDistanceToNow(new Date(video.createdAt), { addSuffix: true })}
+              </Text>
 
-            {/* <Divider />
 
-            <Paragraph
-              ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
-              style={{ fontSize: '16px' }}
-            >
-              {video.description || 'No description available.'}
-            </Paragraph>
+              <Text type="secondary">|</Text>
 
-            <div style={{ display: 'flex', gap: '16px', marginTop: '16px', flexWrap: 'wrap' }}>
+              <VideoReactions videoId={id} />
+
+              <Popover
+                content={<AddToCollection video={video} />}
+                trigger="click"
+                placement="bottomRight"
+                overlayClassName="add-to-collection-popover"
+              >
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<FolderAddOutlined />}
+                  style={{ padding: '0 8px' }}
+                >
+                  Add to
+                </Button>
+              </Popover>
+
+              {/* Share Button */}
               <Button
-                type="primary"
-                size="large"
+                type="text"
+                size="small"
                 icon={<ShareAltOutlined />}
-                style={{ flex: 1, minWidth: '200px' }}
+                style={{ padding: '0 8px' }}
                 onClick={() => setShareModalVisible(true)}
               >
                 Share
               </Button>
-              
-              <div style={{ flex: 1, minWidth: '200px' }}>
-                <AddToCollection video={video} />
+
+              {/* Report Button */}
+              <Button
+                type="text"
+                size="small"
+                danger
+                icon={<ExceptionOutlined />}
+                style={{ padding: '0 8px' }}
+                onClick={() => setReportModalVisible(true)}
+              >
+                Report
+              </Button>
+            </Space>
+
+            {/* Video Information Section */}
+            <div style={{
+
+              // padding: '16px', 
+              borderRadius: '8px',
+              // marginBottom: '16px',
+              // border: '1px solid #e8e8e8'
+            }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
+                {/* Video ID */}
+                {video.videoId && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Text strong style={{ color: '#1890ff' }}>Video ID:</Text>
+                    <Text code style={{ fontSize: '14px', padding: '4px 8px', borderRadius: '4px' }}>
+                      {video.videoId}
+                    </Text>
+                    <Tooltip title="Copy Video ID">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() => copyToClipboard(video.videoId)}
+                        style={{ padding: '4px' }}
+                      />
+                    </Tooltip>
+                  </div>
+                )}
+
+                {/* Source Website */}
+                {video.sourceWebsite && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Text strong style={{ color: '#52c41a' }}>Source:</Text>
+                    <Text>{video.sourceWebsite}</Text>
+                  </div>
+                )}
+
+                {/* Category */}
+                {video.category && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Text strong style={{ color: '#722ed1' }}>Category:</Text>
+                    <Text>{video.category}</Text>
+                  </div>
+                )}
+
+
+
+                {/* Duration */}
+                {video.duration && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Text strong style={{ color: '#eb2f96' }}>Duration:</Text>
+                    <Text>{formatDuration(video.duration, video._id)}</Text>
+                  </div>
+                )}
+
+                {/* Added By */}
+                {video.addedBy?.username && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Text strong style={{ color: '#fa8c16' }}>Added by:</Text>
+                    <Text>{video.addedBy.username}</Text>
+                  </div>
+                )}
               </div>
-            </div> */}
+              {/* Tags */}
+              {video.tags && video.tags.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <Text strong style={{ color: '#13c2c2', marginTop: '2px', minWidth: '35px' }}>Tags:</Text>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', flex: 1, marginTop: '4px' }}>
+                    {video.tags.slice(0, 8).map((tag, index) => (
+                      <Tag
+                        key={index}
+                        color="cyan"
+                        style={{
+                          margin: 0,
+                          fontSize: '11px',
+                          padding: '1px 6px',
+                          height: '20px',
+                          lineHeight: '18px',
+                          borderRadius: '10px',
+                          border: 'none'
+                        }}
+                      >
+                        {tag.length > 12 ? `${tag.substring(0, 12)}...` : tag}
+                      </Tag>
+                    ))}
+                    {video.tags.length > 8 && (
+                      <Tag
+                        color="default"
+                        style={{
+                          margin: 0,
+                          fontSize: '11px',
+                          padding: '1px 6px',
+                          height: '20px',
+                          lineHeight: '18px',
+                          borderRadius: '10px',
+                          border: '1px dashed #d9d9d9',
+                          background: 'transparent'
+                        }}
+                      >
+                        +{video.tags.length - 8} more
+                      </Tag>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {video.description && (
+                <div style={{ marginTop: '12px' }}>
+                  <Text strong style={{}}>Description:</Text>
+                  <Paragraph
+                    style={{
+                      margin: '8px 0 0 0',
+                      fontSize: '14px',
+                      color: '#595959'
+                    }}
+                  >
+                    {video.description}
+                  </Paragraph>
+                </div>
+              )}
+            </div>
           </Card>
-          
-          
+
+
         </Col>
 
         <Col xs={24} md={8}>
@@ -477,7 +575,7 @@ const Video = () => {
           </Card> */}
         </Col>
       </Row>
-      
+
       {/* Related Videos Section - Full Width */}
       <div style={{ marginTop: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -543,9 +641,9 @@ const Video = () => {
       </div>
 
       <Card style={{ marginTop: 24 }}>
-            <VideoComments videoId={id} />
-          </Card>
-      
+        <VideoComments videoId={id} />
+      </Card>
+
       <Modal
         title="Share Video"
         open={shareModalVisible}
@@ -573,7 +671,7 @@ const Video = () => {
               </Tooltip>
             </Input.Group>
           </div>
-          
+
           <div style={{ marginTop: 16 }}>
             <Text strong>Share using Video ID</Text>
             <Input.Group compact>
@@ -590,12 +688,12 @@ const Video = () => {
               </Tooltip>
             </Input.Group>
           </div>
-            <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-              Users can search for this video directly using this ID in the search bar.
-            </Text>
+          <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+            Users can search for this video directly using this ID in the search bar.
+          </Text>
         </Space>
       </Modal>
-      
+
       {/* Video Report Modal */}
       <VideoReportModal
         visible={reportModalVisible}

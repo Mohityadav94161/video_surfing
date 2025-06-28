@@ -44,10 +44,13 @@ import {
   FirefoxOutlined,
   IeOutlined,
   AppleOutlined,
-  MobileOutlined
+  MobileOutlined,
+  EyeOutlined,
+  TagsOutlined
 } from '@ant-design/icons';
 import axios, { longRunningAxios } from '../../utils/axiosConfig';
 import { useBackgroundTask } from '../../contexts/BackgroundTaskContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -66,7 +69,32 @@ const BulkVideoUpload = () => {
   const [error, setError] = useState(null);
   const [extractionStats, setExtractionStats] = useState(null);
   const [extractionProgress, setExtractionProgress] = useState(null);
+  const [lastExtractedVideos, setLastExtractedVideos] = useState(null);
   const { startVideoExtraction } = useBackgroundTask();
+  const { user, token, loading: authLoading } = useAuth();
+  const [bulkActionForm] = Form.useForm();
+  const [bulkUploadForm] = Form.useForm();
+  
+  // Bulk upload options
+  const [bulkCategory, setBulkCategory] = useState('');
+  const [bulkTags, setBulkTags] = useState('');
+  const [showBulkOptions, setShowBulkOptions] = useState(false);
+  const [newCategoryModalVisible, setNewCategoryModalVisible] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [addingNewCategory, setAddingNewCategory] = useState(false);
+
+  // Categories for bulk upload
+  const [categories, setCategories] = useState([
+    'Education',
+    'Entertainment', 
+    'Gaming',
+    'Music',
+    'News',
+    'Sports',
+    'Technology',
+    'Travel',
+    'Other'
+  ]);
 
   // Check for extraction results from background task on component mount
   React.useEffect(() => {
@@ -105,6 +133,20 @@ const BulkVideoUpload = () => {
         
         setVideos(videosWithSelection);
         setSelectedVideos(videosWithSelection.map(v => v.url));
+        
+        // Store for later viewing
+        setLastExtractedVideos({
+          videos: videosWithSelection,
+          stats: {
+            url: results.url || 'Background extraction',
+            pageTitle: results.pageTitle || 'Unknown Page',
+            domain: results.domain || 'Unknown Domain',
+            isAdultContent: results.isAdultContent || false,
+            count: results.videos.length,
+            extractionMethods: results.extractionMethods || [],
+            pagination: results.pagination || null,
+          }
+        });
         
         // Clear the stored results immediately
         sessionStorage.removeItem('extractionResults');
@@ -324,6 +366,20 @@ const BulkVideoUpload = () => {
         selected: true
       }));
       
+      // Store for later viewing
+      setLastExtractedVideos({
+        videos: videosWithSelection,
+        stats: {
+          url,
+          pageTitle,
+          domain,
+          isAdultContent,
+          count,
+          extractionMethods,
+          pagination
+        }
+      });
+      
       setVideos(videosWithSelection);
       setSelectedVideos(videosWithSelection.map(v => v.url));
       setModalVisible(true);
@@ -382,12 +438,97 @@ const BulkVideoUpload = () => {
     setSelectedVideos([]);
   };
 
+  // Test authentication
+  const testAuthentication = async () => {
+    try {
+      console.log('Testing authentication...');
+      console.log('Current axios headers:', axios.defaults.headers.common);
+      const response = await axios.get('/auth/me');
+      console.log('Auth test successful:', response.data);
+      message.success('Authentication test successful!');
+    } catch (error) {
+      console.error('Auth test failed:', error);
+      message.error(`Authentication test failed: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  // View last extracted videos
+  const viewLastExtractedVideos = () => {
+    if (!lastExtractedVideos) {
+      message.warning('No previously extracted videos found');
+      return;
+    }
+    
+    setVideos(lastExtractedVideos.videos);
+    setSelectedVideos(lastExtractedVideos.videos.filter(v => v.selected).map(v => v.url));
+    setExtractionStats(lastExtractedVideos.stats);
+    setModalVisible(true);
+    
+    message.info(`Showing ${lastExtractedVideos.videos.length} previously extracted videos`);
+  };
+
+  // Clear bulk options
+  const clearBulkOptions = () => {
+    setBulkCategory('');
+    setBulkTags('');
+    setShowBulkOptions(false);
+    setNewCategoryModalVisible(false);
+    setNewCategoryName('');
+  };
+
+  // Add new category
+  const handleAddNewCategory = async () => {
+    if (!newCategoryName.trim()) {
+      message.warning('Please enter a category name');
+      return;
+    }
+    
+    const trimmedName = newCategoryName.trim();
+    
+    // Check if category already exists
+    if (categories.includes(trimmedName)) {
+      message.warning('This category already exists');
+      return;
+    }
+    
+    setAddingNewCategory(true);
+    
+    try {
+      // Add to categories array
+      setCategories(prevCategories => [...prevCategories, trimmedName]);
+      
+      // Set the new category as selected
+      setBulkCategory(trimmedName);
+      
+      // Close modal and reset
+      setNewCategoryModalVisible(false);
+      setNewCategoryName('');
+      
+      message.success(`Category "${trimmedName}" added successfully`);
+      
+    } catch (err) {
+      console.error('Error adding category:', err);
+      message.error('Failed to add category. Please try again.');
+    } finally {
+      setAddingNewCategory(false);
+    }
+  };
+
   // Upload selected videos
   const uploadSelectedVideos = async () => {
     if (selectedVideos.length === 0) {
       message.warning('Please select at least one video to upload');
       return;
     }
+    
+    // Check authentication
+    if (!user) {
+      message.error('You must be logged in to upload videos. Please log in and try again.');
+      console.log('Authentication check failed:', { user: !!user, token: !!token });
+      return;
+    }
+    
+    console.log('User authenticated:', { userId: user.id, username: user.username, role: user.role, hasToken: !!token });
     
     setUploading(true);
     setUploadProgress(0);
@@ -396,38 +537,108 @@ const BulkVideoUpload = () => {
       const selectedVideoObjects = videos.filter(video => video.selected);
       const totalVideos = selectedVideoObjects.length;
       let uploaded = 0;
+      let failed = 0;
+      const failedVideos = [];
+      
+      console.log(`Starting upload of ${totalVideos} videos...`);
       
       for (const video of selectedVideoObjects) {
         try {
-          await axios.post('/videos', {
+          console.log(`Uploading video: ${video.title} from ${video.url}`);
+          
+          const uploadData = {
             originalUrl: video.url,
             title: video.title,
             description: video.description || '',
             thumbnailUrl: video.thumbnailUrl,
-            category: video.category || 'Other',
-            tags: video.tags || [],
+            category: bulkCategory || video.category || 'Other',
+            tags: bulkTags ? bulkTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : (video.tags || []),
             sourceWebsite: video.sourceWebsite || new URL(video.url).hostname,
+            duration: video.metadata?.duration || video.duration || null,
+            // Don't send videoId - let backend generate it automatically
+            // videoId: video.videoId || null,
             quality: video.quality
-          });
+          };
+          
+          console.log('Upload data:', uploadData);
+          
+          const response = await axios.post('/videos', uploadData);
+          console.log(`Successfully uploaded: ${video.title}`, response.data);
           
           uploaded++;
           setUploadProgress(Math.floor((uploaded / totalVideos) * 100));
           
         } catch (err) {
-          console.error(`Error uploading video ${video.url}:`, err);
+          console.error(`Error uploading video ${video.title} (${video.url}):`, err);
+          console.error('Error details:', {
+            status: err.response?.status,
+            statusText: err.response?.statusText,
+            data: err.response?.data,
+            message: err.message
+          });
+          
+          failed++;
+          failedVideos.push({
+            title: video.title,
+            url: video.url,
+            error: err.response?.data?.message || err.message
+          });
+          
           // Continue with other videos even if one fails
         }
       }
       
-      message.success(`Successfully uploaded ${uploaded} out of ${totalVideos} videos`);
+      console.log(`Upload completed. Uploaded: ${uploaded}, Failed: ${failed}`);
+      
+      if (uploaded > 0) {
+        if (failed === 0) {
+          message.success(`Successfully uploaded all ${uploaded} videos!`);
+        } else {
+          message.warning(`Uploaded ${uploaded} videos successfully, but ${failed} failed. Check console for details.`);
+          
+          // Log failed videos for debugging
+          if (failedVideos.length > 0) {
+            console.error('Failed video uploads:', failedVideos);
+          }
+        }
+             } else {
+         message.error(`Failed to upload any videos. Please check your authentication and try again.`);
+         
+         // Show first few error messages
+         if (failedVideos.length > 0) {
+           const firstError = failedVideos[0].error;
+           console.error('First upload error:', firstError);
+           
+           // Show more detailed error in a modal or notification
+           Modal.error({
+             title: 'Upload Failed',
+             content: (
+               <div>
+                 <p>Failed to upload videos. Common issues:</p>
+                 <ul>
+                   <li>Authentication expired - please refresh and log in again</li>
+                   <li>Network connection issues</li>
+                   <li>Server error</li>
+                 </ul>
+                 <p><strong>Error details:</strong> {firstError}</p>
+               </div>
+             ),
+           });
+         }
+       }
+      
+      // Reset selection and close modal
+      setSelectedVideos([]);
       setModalVisible(false);
-      form.resetFields();
+      bulkActionForm.resetFields();
+      clearBulkOptions();
       
     } catch (err) {
       console.error('Error during bulk upload:', err);
-      message.error('An error occurred during bulk upload');
+      message.error(`An error occurred during bulk upload: ${err.message}`);
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -437,6 +648,28 @@ const BulkVideoUpload = () => {
       <Text type="secondary">
         Extract and upload multiple videos from a webpage. Simply enter the URL of a page containing videos.
       </Text>
+      
+      {/* Authentication Status (for debugging) */}
+      <div style={{ marginTop: 8, marginBottom: 8, padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+        {user ? (
+          <Text type="success" style={{ fontSize: '12px' }}>
+            ✓ Logged in as: {user.username} ({user.role}) | Token: {token ? '✓' : '✗'}
+          </Text>
+        ) : (
+          <Text type="danger" style={{ fontSize: '12px' }}>
+            ⚠ Not logged in - Please log in to upload videos | Token: {token ? '✓' : '✗'}
+          </Text>
+        )}
+        <br />
+                          <Text style={{ fontSize: '10px', color: '#666' }}>
+           Debug: user={!!user}, token={!!token}, authLoading={authLoading}
+         </Text>
+         <div style={{ marginTop: '8px' }}>
+           <Button size="small" onClick={testAuthentication}>
+             Test Authentication
+           </Button>
+         </div>
+       </div>
       
       <Divider />
       
@@ -764,7 +997,7 @@ const BulkVideoUpload = () => {
             </Panel>
           </Collapse>
           
-          <Space>
+          <Space wrap>
           <Button 
             type="primary" 
               onClick={() => extractVideos(false)} 
@@ -782,6 +1015,16 @@ const BulkVideoUpload = () => {
             >
               Extract in Background
             </Button>
+            {lastExtractedVideos && (
+              <Button 
+                onClick={viewLastExtractedVideos}
+                icon={<EyeOutlined />}
+                size="large"
+                type="default"
+              >
+                View Last Extracted ({lastExtractedVideos.videos.length})
+              </Button>
+            )}
           </Space>
           
           {extractionProgress && (
@@ -854,11 +1097,17 @@ const BulkVideoUpload = () => {
       <Modal
         title="Videos Found"
         open={modalVisible}
-        onCancel={() => setModalVisible(false)}
+        onCancel={() => {
+          setModalVisible(false);
+          clearBulkOptions();
+        }}
         width="90%"
         style={{ top: 20 }}
         footer={[
-          <Button key="close" onClick={() => setModalVisible(false)}>
+          <Button key="close" onClick={() => {
+            setModalVisible(false);
+            clearBulkOptions();
+          }}>
             Cancel
           </Button>,
           <Button 
@@ -867,8 +1116,10 @@ const BulkVideoUpload = () => {
             onClick={uploadSelectedVideos}
             loading={uploading}
             disabled={selectedVideos.length === 0}
+            icon={bulkCategory || bulkTags ? <TagsOutlined /> : undefined}
           >
             Upload Selected ({selectedVideos.length})
+            {bulkCategory || bulkTags ? ' with Bulk Options' : ''}
           </Button>
         ]}
       >
@@ -890,6 +1141,105 @@ const BulkVideoUpload = () => {
             )}
           </Space>
         </div>
+        
+        {/* Bulk Upload Options */}
+        {selectedVideos.length > 0 && (
+          <Card 
+            title="Bulk Upload Options" 
+            size="small" 
+            style={{ marginBottom: 16 }}
+            extra={
+              <Button 
+                type="link" 
+                size="small"
+                onClick={() => setShowBulkOptions(!showBulkOptions)}
+              >
+                {showBulkOptions ? 'Hide' : 'Show'} Options
+              </Button>
+            }
+          >
+            {showBulkOptions && (
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item label="Category for all videos">
+                    <Select
+                      placeholder="Select category (optional)"
+                      value={bulkCategory}
+                      onChange={(value) => {
+                        if (value === 'add_new') {
+                          setNewCategoryModalVisible(true);
+                        } else {
+                          setBulkCategory(value);
+                        }
+                      }}
+                      allowClear
+                      style={{ width: '100%' }}
+                      dropdownRender={(menu) => (
+                        <div>
+                          {menu}
+                          <Divider style={{ margin: '8px 0' }} />
+                          <div
+                            style={{
+                              padding: '8px',
+                              cursor: 'pointer',
+                              color: '#1890ff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}
+                            onClick={() => setNewCategoryModalVisible(true)}
+                          >
+                            <PlusOutlined />
+                            Add New Category
+                          </div>
+                        </div>
+                      )}
+                    >
+                      {categories.map(category => (
+                        <Option key={category} value={category}>
+                          {category}
+                        </Option>
+                      ))}
+                    </Select>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      Leave empty to use extracted category
+                    </Text>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label="Tags for all videos">
+                    <Input
+                      placeholder="tag1, tag2, tag3 (optional)"
+                      value={bulkTags}
+                      onChange={(e) => setBulkTags(e.target.value)}
+                      allowClear
+                    />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      Comma-separated. Leave empty to use extracted tags
+                    </Text>
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+            {!showBulkOptions && (
+              <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                <Text type="secondary">
+                  {bulkCategory && `Category: ${bulkCategory}`}
+                  {bulkCategory && bulkTags && ' | '}
+                  {bulkTags && `Tags: ${bulkTags}`}
+                  {!bulkCategory && !bulkTags && 'Click "Show Options" to set category and tags for all videos'}
+                </Text>
+                {(bulkCategory || bulkTags) && (
+                  <div style={{ marginTop: '4px' }}>
+                    <Tag color="blue" size="small">
+                      Will be applied to {selectedVideos.length} selected video{selectedVideos.length !== 1 ? 's' : ''}
+                    </Tag>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        )}
         
         {uploading && (
           <div style={{ marginBottom: 16 }}>
@@ -1046,6 +1396,49 @@ const BulkVideoUpload = () => {
             </List.Item>
           )}
         />
+      </Modal>
+      
+      {/* Add New Category Modal */}
+      <Modal
+        title="Add New Category"
+        open={newCategoryModalVisible}
+        onCancel={() => {
+          setNewCategoryModalVisible(false);
+          setNewCategoryName('');
+        }}
+        onOk={handleAddNewCategory}
+        confirmLoading={addingNewCategory}
+        okText="Add Category"
+        cancelText="Cancel"
+      >
+        <Form layout="vertical">
+          <Form.Item
+            label="Category Name"
+            required
+            rules={[
+              { required: true, message: 'Please enter a category name' },
+              { min: 2, message: 'Category name must be at least 2 characters' },
+              { max: 50, message: 'Category name must be less than 50 characters' }
+            ]}
+          >
+            <Input
+              placeholder="Enter category name (e.g., Comedy, Documentary, Tutorial)"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              onPressEnter={handleAddNewCategory}
+              maxLength={50}
+              showCount
+            />
+          </Form.Item>
+          
+          <Alert
+            message="Note"
+            description="This category will be added to the list and can be used for future uploads."
+            type="info"
+            showIcon
+            style={{ marginTop: 16 }}
+          />
+        </Form>
       </Modal>
     </div>
   );
