@@ -310,7 +310,7 @@ const scrapePageForVideos = async (url, options = {}) => {
       additionalWaitTime: 3000,
       timeout: options.timeout || 30000,
       blockAds: true,
-      takeScreenshot: false,
+  
 
       // External links and performance
       followExternalLinks: options.followExternalLinks || false,
@@ -365,14 +365,45 @@ function getUserAgent(browser) {
 async function detectAdultContent(url) {
   const domain = new URL(url).hostname.toLowerCase();
   
-  // Known adult site patterns
+  // Comprehensive adult site patterns
   const adultPatterns = [
-    'porn', 'xxx', 'sex', 'adult', 'nude', 'nsfw', 'erotic',
-    'xvideo', 'pornhub', 'xhamster', 'redtube', 'youporn',
-    'spankbang', 'xnxx', 'tube8', 'brazzers'
+    // General adult terms
+    'porn', 'xxx', 'sex', 'adult', 'nude', 'nsfw', 'erotic', 'naked', 'cam',
+    'escort', 'milf', 'teen', 'mature', 'amateur', 'fetish', 'bdsm', 'anal',
+    
+    // Major adult platforms
+    'pornhub', 'xvideos', 'xnxx', 'xhamster', 'redtube', 'youporn', 'tube8',
+    'spankbang', 'brazzers', 'realitykings', 'bangbros', 'naughtyamerica',
+    'digitalplayground', 'wickedpictures', 'vivid', 'hustler', 'penthouse',
+    
+    // Cam sites
+    'chaturbate', 'myfreecams', 'stripchat', 'bongacams', 'livejasmin',
+    'flirt4free', 'camsoda', 'cam4', 'streamate', 'imlive',
+    
+    // Adult tubes and aggregators
+    'porntrex', 'eporner', 'thumbzilla', 'txxx', 'hqporner', 'upornia',
+    'xmoviesforyou', 'beeg', 'drtuber', 'gotporn', 'vjav', 'javhd',
+    
+    // Regional/language specific
+    'javmost', 'javhihi', 'javguru', 'jav247', 'r18', 'dmm',
+    'thisav', 'avgle', 'missav', 'supjav', 'javlibrary',
+    
+    // Alternative spellings and variations
+    'pr0n', 'p0rn', 'sexx', 'xxxx', 'adulto', 'sexo', 'porno',
+    'erotik', 'sexe', 'sesso', 'sexs', 'adulte', 'erotico'
   ];
   
-  return adultPatterns.some(pattern => domain.includes(pattern));
+  // Check domain patterns
+  const isDomainAdult = adultPatterns.some(pattern => domain.includes(pattern));
+  
+  // Additional checks for TLD patterns commonly used by adult sites
+  const adultTlds = ['.xxx', '.sex', '.porn', '.adult'];
+  const hasSuspiciousTld = adultTlds.some(tld => domain.endsWith(tld));
+  
+  // Check for numeric domains (often used to evade filters)
+  const hasNumericSubdomain = /^\d+\./.test(domain);
+  
+  return isDomainAdult || hasSuspiciousTld || (hasNumericSubdomain && isDomainAdult);
 }
 
 /**
@@ -753,11 +784,45 @@ async function extractFromStyleAttributes($, $content, results, config) {
 async function extractFromAdultSitePatterns($, $content, results, config) {
   console.log('🔞 Extracting from adult site patterns...');
   
-  // Common adult site video container patterns
+  // Comprehensive adult site video container patterns
   const adultSelectors = [
-    '.video-item', '.thumb-item', '.video-block', '.clip-item',
-    '[data-video-id]', '[data-preview]', '.preview-video',
-    '.player-container', '.video-player', '.media-player'
+    // Video containers
+    '.video-item', '.thumb-item', '.video-block', '.clip-item', '.scene-item',
+    '.video-card', '.content-item', '.movie-item', '.gallery-item',
+    
+    // Data attributes commonly used
+    '[data-video-id]', '[data-preview]', '[data-video-url]', '[data-src]',
+    '[data-video-src]', '[data-movie-id]', '[data-scene-id]', '[data-clip-id]',
+    
+    // Player containers
+    '.preview-video', '.player-container', '.video-player', '.media-player',
+    '.jwplayer-container', '.video-js-container', '.plyr-container',
+    
+    // Thumbnail containers that might have video data
+    '.thumb', '.thumbnail', '.preview', '.poster', '.cover',
+    
+    // Adult-specific patterns
+    '.pornstar-video', '.category-video', '.featured-video', '.recommended-video',
+    '.related-video', '.similar-video', '.trending-video', '.popular-video',
+    
+    // Mobile-specific patterns
+    '.mobile-video', '.touch-video', '.responsive-video',
+    
+    // Grid and list patterns
+    '.video-grid-item', '.video-list-item', '.video-row', '.video-column',
+    
+    // Advanced selectors for modern sites
+    '[class*="video"]', '[class*="thumb"]', '[class*="clip"]', '[class*="scene"]',
+    '[id*="video"]', '[id*="player"]', '[id*="thumb"]'
+  ];
+  
+  // Additional attributes to check for video URLs
+  const videoAttributes = [
+    'data-src', 'data-video', 'data-url', 'data-video-url', 'data-video-src',
+    'data-preview', 'data-preview-url', 'data-stream', 'data-stream-url',
+    'data-mp4', 'data-webm', 'data-hls', 'data-dash', 'data-m3u8',
+    'data-file', 'data-source', 'data-movie', 'data-clip', 'data-scene',
+    'href', 'src', 'data-href', 'data-link'
   ];
   
   adultSelectors.forEach(selector => {
@@ -765,21 +830,78 @@ async function extractFromAdultSitePatterns($, $content, results, config) {
       const $el = $(el);
       
       // Look for video URLs in various attributes
-      const videoUrl = $el.attr('data-src') || 
-                      $el.attr('data-video') || 
-                      $el.attr('data-url') ||
-                      $el.find('video').attr('src') ||
-                      $el.find('source').attr('src');
+      let videoUrl = null;
+      
+      // Check all possible video attributes
+      for (const attr of videoAttributes) {
+        const attrValue = $el.attr(attr);
+        if (attrValue && (isVideoLink(attrValue, config.fileExtensions) || 
+                         attrValue.includes('.m3u8') || 
+                         attrValue.includes('.mpd') ||
+                         attrValue.includes('stream'))) {
+          videoUrl = attrValue;
+          break;
+        }
+      }
+      
+      // Also check nested video/source elements
+      if (!videoUrl) {
+        const nestedVideo = $el.find('video').first();
+        if (nestedVideo.length) {
+          videoUrl = nestedVideo.attr('src') || nestedVideo.find('source').first().attr('src');
+        }
+      }
+      
+      // Check for iframe sources
+      if (!videoUrl) {
+        const iframe = $el.find('iframe').first();
+        if (iframe.length) {
+          const iframeSrc = iframe.attr('src');
+          if (iframeSrc && isVideoIframe(iframeSrc)) {
+            videoUrl = iframeSrc;
+          }
+        }
+      }
       
       if (videoUrl) {
+        // Extract additional metadata
+        const title = $el.attr('title') || 
+                     $el.find('.title, .video-title, .name').text().trim() ||
+                     $el.find('img').attr('alt') ||
+                     extractTitle($el, results.domain, 'Adult Content Video');
+        
+        const thumbnailUrl = $el.find('img').attr('src') || 
+                           $el.find('img').attr('data-src') ||
+                           $el.attr('data-thumb') || 
+                           $el.attr('data-thumbnail') ||
+                           $el.attr('data-poster') || '';
+        
+        // Extract duration if available
+        const duration = $el.find('.duration, .time, .length').text().trim() ||
+                        $el.attr('data-duration') || '';
+        
+        // Extract quality if available
+        const quality = $el.find('.quality, .resolution, .hd').text().trim() ||
+                       $el.attr('data-quality') || '';
+        
+        // Extract views if available
+        const views = $el.find('.views, .view-count').text().trim() ||
+                     $el.attr('data-views') || '';
+        
         const video = {
           url: resolveUrl(videoUrl, results.url),
-          title: extractTitle($el, results.domain, 'Adult Content Video'),
-          thumbnailUrl: $el.find('img').attr('src') || $el.attr('data-thumb') || '',
+          title: title,
+          thumbnailUrl: resolveUrl(thumbnailUrl, results.url),
           sourceWebsite: results.domain,
           foundBy: `adult-pattern:${selector}`,
-          type: 'direct',
-          isAdultContent: true
+          type: videoUrl.includes('iframe') ? 'embedded' : 'direct',
+          isAdultContent: true,
+          metadata: {
+            duration: duration,
+            quality: quality,
+            views: views,
+            extractedFrom: selector
+          }
         };
         
         if (isValidVideo(video, config)) {
@@ -790,6 +912,90 @@ async function extractFromAdultSitePatterns($, $content, results, config) {
   });
   
   results.metadata.extractionMethods.push('adult-site-patterns');
+}
+
+/**
+ * Extract streaming URLs (HLS, DASH, etc.) commonly used by adult sites
+ */
+async function extractFromStreamingProtocols($, $content, results, config) {
+  console.log('📡 Extracting from streaming protocols...');
+  
+  // Look for streaming manifest files in script content
+  $('script').each((i, el) => {
+    const scriptContent = $(el).html();
+    if (!scriptContent) return;
+    
+    // HLS (HTTP Live Streaming) patterns
+    const hlsPatterns = [
+      /["']([^"']*\.m3u8[^"']*?)["']/gi,
+      /hls['":\s]*['"]([^'"]+\.m3u8[^'"]*?)['"]?/gi,
+      /playlist['":\s]*['"]([^'"]+\.m3u8[^'"]*?)['"]?/gi,
+      /manifest['":\s]*['"]([^'"]+\.m3u8[^'"]*?)['"]?/gi
+    ];
+    
+    // DASH (Dynamic Adaptive Streaming) patterns
+    const dashPatterns = [
+      /["']([^"']*\.mpd[^"']*?)["']/gi,
+      /dash['":\s]*['"]([^'"]+\.mpd[^'"]*?)['"]?/gi,
+      /manifest['":\s]*['"]([^'"]+\.mpd[^'"]*?)['"]?/gi
+    ];
+    
+    // Progressive streaming patterns
+    const streamPatterns = [
+      /stream['":\s]*['"]([^'"]+)['"]?/gi,
+      /videoUrl['":\s]*['"]([^'"]+)['"]?/gi,
+      /mp4['":\s]*['"]([^'"]+\.mp4[^'"]*?)['"]?/gi,
+      /webm['":\s]*['"]([^'"]+\.webm[^'"]*?)['"]?/gi
+    ];
+    
+    // Check all patterns
+    const allPatterns = [...hlsPatterns, ...dashPatterns, ...streamPatterns];
+    
+    allPatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(scriptContent)) !== null) {
+        const streamUrl = match[1];
+        
+        if (streamUrl && (streamUrl.includes('.m3u8') || 
+                         streamUrl.includes('.mpd') ||
+                         streamUrl.includes('.mp4') ||
+                         streamUrl.includes('.webm') ||
+                         streamUrl.includes('stream'))) {
+          
+          try {
+            const fullUrl = resolveUrl(streamUrl, results.url);
+            
+            // Determine stream type
+            let streamType = 'direct';
+            if (streamUrl.includes('.m3u8')) streamType = 'hls';
+            else if (streamUrl.includes('.mpd')) streamType = 'dash';
+            
+            const video = {
+              url: fullUrl,
+              title: `Streaming Video from ${results.domain}`,
+              thumbnailUrl: '',
+              sourceWebsite: results.domain,
+              foundBy: 'streaming-protocol',
+              type: streamType,
+              isAdultContent: results.isAdultContent,
+              metadata: {
+                protocol: streamType,
+                extractedFromScript: true
+              }
+            };
+            
+            if (isValidVideo(video, config)) {
+              results.videos.push(video);
+            }
+          } catch (e) {
+            // Skip invalid URLs
+          }
+        }
+      }
+    });
+  });
+  
+  results.metadata.extractionMethods.push('streaming-protocols');
 }
 
 /**
@@ -1602,13 +1808,7 @@ async function extractVideosWithPlaywright(url, options = {}) {
     // Log extraction results
     console.log(`🎉 Total videos extracted: ${allResults.videos.length} from ${allResults.metadata.pagination.pagesScanned} pages`);
 
-    // Take screenshot for debugging if enabled
-    if (options.takeScreenshot) {
-      const screenshotPath = path.join(process.cwd(), 'screenshots', `${generateFilename(url)}.png`);
-      await fs.mkdir(path.dirname(screenshotPath), { recursive: true });
-      await page.screenshot({ path: screenshotPath, fullPage: true });
-      console.log(`📸 Screenshot saved to: ${screenshotPath}`);
-    }
+    
 
     return allResults;
   } catch (error) {
@@ -1665,7 +1865,12 @@ async function extractVideoSources(page, baseUrl, options) {
     // 7. Extract from media source extensions
     await extractFromMSE(page, results, options);
 
-    // 8. Post-process results (deduplicate, enhance metadata)
+    // 8. Extract using adult-specific patterns (if adult content detected)
+    if (results.isAdultContent) {
+      await extractFromAdultSitePatternsPlaywright(page, results, options);
+    }
+
+    // 9. Post-process results (deduplicate, enhance metadata)
     await postProcessResults(results, options);
 
     return results;
@@ -3133,6 +3338,205 @@ async function extractFromMediaElements(page, results, options) {
   }
 
   results.metadata.extractionMethods.push('media-elements');
+}
+
+/**
+ * Extract from adult sites using Playwright-specific methods
+ */
+async function extractFromAdultSitePatternsPlaywright(page, results, options) {
+  console.log('🔞 Extracting from adult sites using advanced patterns...');
+
+  try {
+    // 1. Extract from common adult site video containers
+    const adultVideos = await page.evaluate((domain) => {
+      const videos = [];
+      
+      // Adult-specific selectors
+      const adultSelectors = [
+        '.video-item', '.thumb-item', '.video-block', '.clip-item', '.scene-item',
+        '.video-card', '.content-item', '.movie-item', '.gallery-item',
+        '[data-video-id]', '[data-preview]', '[data-video-url]', '[data-src]',
+        '.preview-video', '.player-container', '.video-player', '.media-player',
+        '.thumb', '.thumbnail', '.preview', '.poster', '.cover',
+        '.pornstar-video', '.category-video', '.featured-video', '.recommended-video'
+      ];
+      
+      adultSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        
+        elements.forEach(el => {
+          // Look for video URLs in various attributes
+          const videoAttributes = [
+            'data-src', 'data-video', 'data-url', 'data-video-url', 'data-video-src',
+            'data-preview', 'data-preview-url', 'data-stream', 'data-stream-url',
+            'data-mp4', 'data-webm', 'data-hls', 'data-dash', 'data-m3u8',
+            'href', 'src'
+          ];
+          
+          let videoUrl = null;
+          for (const attr of videoAttributes) {
+            const value = el.getAttribute(attr);
+            if (value && (value.includes('.mp4') || value.includes('.webm') || 
+                         value.includes('.m3u8') || value.includes('.mpd') ||
+                         value.includes('stream'))) {
+              videoUrl = value;
+              break;
+            }
+          }
+          
+          // Also check nested elements
+          if (!videoUrl) {
+            const video = el.querySelector('video');
+            if (video) {
+              videoUrl = video.src || video.querySelector('source')?.src;
+            }
+          }
+          
+          if (videoUrl) {
+            // Extract metadata
+            const title = el.getAttribute('title') || 
+                         el.querySelector('.title, .video-title, .name')?.textContent?.trim() ||
+                         el.querySelector('img')?.alt ||
+                         `Adult Video from ${domain}`;
+            
+            const thumbnailUrl = el.querySelector('img')?.src || 
+                               el.querySelector('img')?.getAttribute('data-src') ||
+                               el.getAttribute('data-thumb') || '';
+            
+            const duration = el.querySelector('.duration, .time, .length')?.textContent?.trim() ||
+                           el.getAttribute('data-duration') || '';
+            
+            const quality = el.querySelector('.quality, .resolution, .hd')?.textContent?.trim() ||
+                          el.getAttribute('data-quality') || '';
+            
+            const views = el.querySelector('.views, .view-count')?.textContent?.trim() ||
+                        el.getAttribute('data-views') || '';
+            
+            videos.push({
+              url: videoUrl,
+              title: title,
+              thumbnailUrl: thumbnailUrl,
+              duration: duration,
+              quality: quality,
+              views: views,
+              foundBy: `adult-playwright:${selector}`,
+              extractedFrom: selector
+            });
+          }
+        });
+      });
+      
+      return videos;
+    }, results.domain);
+
+    // Process found videos
+    for (const video of adultVideos) {
+      try {
+        const fullUrl = new URL(video.url, results.url).toString();
+        const fullThumbnailUrl = video.thumbnailUrl ? 
+          new URL(video.thumbnailUrl, results.url).toString() : '';
+
+        results.videos.push({
+          url: fullUrl,
+          title: video.title,
+          thumbnailUrl: fullThumbnailUrl,
+          sourceWebsite: results.domain,
+          foundBy: video.foundBy,
+          type: 'direct',
+          isAdultContent: true,
+          metadata: {
+            duration: video.duration,
+            quality: video.quality,
+            views: video.views,
+            extractedFrom: video.extractedFrom
+          }
+        });
+      } catch (error) {
+        // Skip invalid URLs
+      }
+    }
+
+    // 2. Extract from JavaScript variables specific to adult sites
+    const jsVideos = await page.evaluate(() => {
+      const videos = [];
+      
+      // Common adult site JavaScript variable patterns
+      const patterns = [
+        /video_url['":\s]*['"]([^'"]+)['"]/gi,
+        /stream_url['":\s]*['"]([^'"]+)['"]/gi,
+        /mp4_url['":\s]*['"]([^'"]+)['"]/gi,
+        /hls_url['":\s]*['"]([^'"]+)['"]/gi,
+        /preview_url['":\s]*['"]([^'"]+)['"]/gi,
+        /file['":\s]*['"]([^'"]+\.(?:mp4|webm|m3u8|mpd))['"]/gi,
+        /sources?['":\s]*\[[^\]]*['"]([^'"]+\.(?:mp4|webm|m3u8|mpd))['"]/gi
+      ];
+      
+      // Check all script tags
+      const scripts = document.querySelectorAll('script:not([src])');
+      scripts.forEach(script => {
+        const content = script.textContent;
+        if (!content) return;
+        
+        patterns.forEach(pattern => {
+          let match;
+          while ((match = pattern.exec(content)) !== null) {
+            if (match[1] && (match[1].includes('.mp4') || match[1].includes('.webm') || 
+                           match[1].includes('.m3u8') || match[1].includes('.mpd'))) {
+              videos.push({
+                url: match[1],
+                foundBy: 'adult-javascript',
+                type: 'streaming'
+              });
+            }
+          }
+        });
+      });
+      
+      return videos;
+    });
+
+    // Process JavaScript-found videos
+    for (const video of jsVideos) {
+      try {
+        const fullUrl = new URL(video.url, results.url).toString();
+        
+        results.videos.push({
+          url: fullUrl,
+          title: `Streaming Video from ${results.domain}`,
+          thumbnailUrl: '',
+          sourceWebsite: results.domain,
+          foundBy: video.foundBy,
+          type: video.type,
+          isAdultContent: true
+        });
+      } catch (error) {
+        // Skip invalid URLs
+      }
+    }
+
+    // 3. Try to trigger lazy loading and extract more videos
+    await page.evaluate(() => {
+      // Scroll to trigger lazy loading
+      window.scrollTo(0, document.body.scrollHeight);
+      
+      // Click on "Load More" buttons if they exist
+      const loadMoreButtons = document.querySelectorAll(
+        '.load-more, .show-more, .more-videos, .next-page, [data-load-more]'
+      );
+      loadMoreButtons.forEach(button => {
+        if (button.offsetParent !== null) { // Check if visible
+          button.click();
+        }
+      });
+    });
+
+    // Wait a bit for content to load
+    await page.waitForTimeout(2000);
+
+    results.metadata.extractionMethods.push('adult-site-patterns-playwright');
+  } catch (error) {
+    console.error('Error in adult site Playwright extraction:', error);
+  }
 }
 
 /**

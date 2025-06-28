@@ -43,7 +43,7 @@ const CollectionDetail = () => {
     setError(null);
     
     try {
-      const response = await axios.get(`/api/collections/${id}`);
+      const response = await axios.get(`/collections/${id}`);
       setCollection(response.data.data.collection);
     } catch (err) {
       console.error('Error fetching collection details:', err);

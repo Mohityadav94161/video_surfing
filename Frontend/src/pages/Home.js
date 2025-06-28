@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Pagination, Spin, Button, Select, Tag, Modal, Input, message, List, Checkbox } from "antd"
 import {EyeOutlined,AppstoreOutlined,UnorderedListOutlined,VideoCameraOutlined,FolderAddOutlined,PlusOutlined,FolderOutlined,} from "@ant-design/icons"
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom"
-import api from "../utils/api"
+import api from "../utils/axiosConfig"
 import "./Home.css"
 import { useCollections } from '../contexts/CollectionContext'
 

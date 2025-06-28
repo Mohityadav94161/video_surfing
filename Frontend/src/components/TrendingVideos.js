@@ -14,7 +14,7 @@ const TrendingVideos = () => {
     const fetchTrendingVideos = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/videos/trending`, {
+        const response = await axios.get('/videos/trending', {
           params: { limit: 6 } // Limit to 6 videos for the homepage section
         });
         setVideos(response.data.data.videos);

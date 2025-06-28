@@ -35,8 +35,7 @@ const captchaSchema = new mongoose.Schema(
     },
     expiresAt: {
       type: Date,
-      required: [true, 'Expiration time is required'],
-      index: true
+      required: [true, 'Expiration time is required']
     },
     endpoint: {
       type: String,
@@ -81,7 +80,7 @@ captchaSchema.statics.hasUnusualActivity = async function(ipAddress) {
     createdAt: { $gt: oneMinuteAgo }
   });
   
-  if (requestCount > 20) return true;
+  if (requestCount > 40) return true;
   
   // Check for endpoint switching pattern (more than 10 different endpoints in a minute)
   const distinctEndpoints = await this.distinct('endpoint', {

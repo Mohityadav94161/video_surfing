@@ -174,13 +174,13 @@ exports.verifyCaptcha = async (req, res) => {
       if (captcha.failedAttempts >= 10) {
         captcha.isBlocked = true;
         // Block for 24 hours
-        captcha.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        captcha.expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000);
         
         await captcha.save();
         
         return res.status(403).json({
           status: 'error',
-          message: 'Too many failed attempts. Your IP has been blocked for 24 hours.'
+          message: 'Too many failed attempts. Your IP has been blocked for 12 hours.'
         });
       }
       

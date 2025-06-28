@@ -18,6 +18,7 @@ router.use('/stats', authMiddleware.restrictTo('admin'));
 router.get('/stats', videoController.getVideoStats);
 
 // Dynamic ID routes - must be placed after all specific routes
+router.get('/:id/related', videoController.getRelatedVideos);
 router.get('/:id', videoController.getVideo);
 
 // Comment routes (public GET, authenticated POST/DELETE)

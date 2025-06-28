@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Spin, Typography, Pagination, Empty } from 'antd';
 import { FireOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/api';
+import api from '../utils/axiosConfig';
 import VideoCard from '../components/VideoCard';
 
 const { Title } = Typography;

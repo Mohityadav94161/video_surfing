@@ -47,7 +47,8 @@ import {
   AppleOutlined,
   MobileOutlined
 } from '@ant-design/icons';
-import axios from '../../utils/axiosConfig';
+import axios, { longRunningAxios } from '../../utils/axiosConfig';
+import { useBackgroundTask } from '../../contexts/BackgroundTaskContext';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -65,6 +66,68 @@ const BulkVideoUpload = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [extractionStats, setExtractionStats] = useState(null);
+  const [extractionProgress, setExtractionProgress] = useState(null);
+  const { startVideoExtraction } = useBackgroundTask();
+
+  // Check for extraction results from background task on component mount
+  React.useEffect(() => {
+    console.log('BulkVideoUpload component mounted, checking for extraction results...');
+    const extractionResults = sessionStorage.getItem('extractionResults');
+    console.log('Extraction results from sessionStorage:', extractionResults ? 'Found' : 'Not found');
+    
+    if (extractionResults) {
+      try {
+        const results = JSON.parse(extractionResults);
+        
+        // Validate results structure
+        if (!results.videos || !Array.isArray(results.videos)) {
+          console.warn('Invalid extraction results structure:', results);
+          sessionStorage.removeItem('extractionResults');
+          return;
+        }
+        
+        // Set extraction stats
+        setExtractionStats({
+          url: results.url || 'Background extraction',
+          pageTitle: results.pageTitle || 'Unknown Page',
+          domain: results.domain || 'Unknown Domain',
+          isAdultContent: results.isAdultContent || false,
+          count: results.videos.length,
+          extractionMethods: results.extractionMethods || [],
+          pagination: results.pagination || null,
+
+        });
+        
+        // Initialize videos with selected state
+        const videosWithSelection = results.videos.map(video => ({
+          ...video,
+          selected: true
+        }));
+        
+        setVideos(videosWithSelection);
+        setSelectedVideos(videosWithSelection.map(v => v.url));
+        
+        // Clear the stored results immediately
+        sessionStorage.removeItem('extractionResults');
+        
+        // Show success message and open modal
+        message.success({
+          content: `Loaded ${results.videos.length} videos from background extraction. Select videos to upload.`,
+          duration: 4
+        });
+        
+        // Open modal after a short delay to ensure state is updated
+        setTimeout(() => {
+          setModalVisible(true);
+        }, 100);
+        
+      } catch (err) {
+        console.error('Error loading extraction results:', err);
+        sessionStorage.removeItem('extractionResults');
+        message.error('Failed to load extraction results. Please try extracting again.');
+      }
+    }
+  }, []);
   const [customSelectors, setCustomSelectors] = useState([
     { type: 'css', selector: 'video' },
     { type: 'css', selector: 'iframe[src*="youtube"], iframe[src*="vimeo"]' }
@@ -84,7 +147,11 @@ const BulkVideoUpload = () => {
     maxScanDepth: 1,
     browser: 'chrome',
     maxPages: 1,          // Number of pages to scan for pagination
-    maxVideos: 500        // Maximum number of videos to extract
+    maxVideos: 500,       // Maximum number of videos to extract
+    enableAdultOptimizations: true,  // Enable adult site specific optimizations
+    extractStreamingUrls: true,      // Extract HLS/DASH streaming URLs
+    triggerLazyLoading: true,        // Try to trigger lazy loading
+    clickLoadMore: true              // Try to click "Load More" buttons
   });
 
   // Function to add a custom selector
@@ -161,8 +228,8 @@ const BulkVideoUpload = () => {
     return '#d3d3d3';
   };
 
-  // Function to extract videos from a URL
-  const extractVideos = async () => {
+  // Function to extract videos from a URL (now with background processing option)
+  const extractVideos = async (runInBackground = false) => {
     const url = form.getFieldValue('url');
     
     if (!url) {
@@ -170,14 +237,8 @@ const BulkVideoUpload = () => {
       return;
     }
     
-    setLoading(true);
-    setError(null);
-    setExtractionStats(null);
-    
-    try {
-      // Call the API to extract videos from the URL with all options
-      const response = await axios.post('/videos/extract-from-page', { 
-        url,
+    // Prepare extraction options
+    const options = {
         customSelectors: customSelectors.map(s => s.selector),
         fileExtensions,
         scanScriptTags: advancedOptions.scanScriptTags,
@@ -189,8 +250,54 @@ const BulkVideoUpload = () => {
         maxScanDepth: advancedOptions.maxScanDepth,
         browser: advancedOptions.browser,
         maxPages: advancedOptions.maxPages,
-        maxVideos: advancedOptions.maxVideos
+      maxVideos: advancedOptions.maxVideos,
+      enableAdultOptimizations: advancedOptions.enableAdultOptimizations,
+      extractStreamingUrls: advancedOptions.extractStreamingUrls,
+      triggerLazyLoading: advancedOptions.triggerLazyLoading,
+      clickLoadMore: advancedOptions.clickLoadMore
+    };
+
+    if (runInBackground) {
+      // Start background extraction
+      const result = await startVideoExtraction(url, options);
+      if (result.success) {
+        message.success('Video extraction started in background. You can navigate to other pages while it processes.');
+        form.resetFields();
+      }
+      return;
+    }
+    
+    // Run extraction in foreground (existing behavior)
+    setLoading(true);
+    setError(null);
+    setExtractionStats(null);
+    setExtractionProgress('Initializing video extraction...');
+    
+    try {
+      // Show progress updates
+      const progressMessages = [
+        'Connecting to website...',
+        'Loading page content...',
+        'Scanning for videos...',
+        'Processing video metadata...',
+        'Finalizing results...'
+      ];
+      
+      let messageIndex = 0;
+      const progressInterval = setInterval(() => {
+        if (messageIndex < progressMessages.length - 1) {
+          setExtractionProgress(progressMessages[messageIndex]);
+          messageIndex++;
+        }
+      }, 10000); // Update every 10 seconds
+      
+      // Call the API to extract videos from the URL with all options using long-running axios
+      const response = await longRunningAxios.post('/videos/extract-from-page', { 
+        url,
+        ...options
       });
+      
+      clearInterval(progressInterval);
       
       // Extract video array and stats from response
       const { videos: extractedVideos, count, extractionMethods, pageTitle, domain, isAdultContent, pagination } = response.data.data;
@@ -224,13 +331,22 @@ const BulkVideoUpload = () => {
       
     } catch (err) {
       console.error('Error extracting videos:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to extract videos from the provided URL';
+      
+      let errorMessage = 'Failed to extract videos from the provided URL';
+      
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        errorMessage = 'The video extraction process is taking longer than expected. The server may still be processing your request. Please try again in a few minutes.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
       const errorDetails = err.response?.data?.details || {};
       
       setError(`${errorMessage}${errorDetails.url ? ` - URL: ${errorDetails.url}` : ''}`);
       message.error(errorMessage);
     } finally {
       setLoading(false);
+      setExtractionProgress(null);
     }
   };
 
@@ -495,6 +611,30 @@ const BulkVideoUpload = () => {
                         label: 'Scan only main content',
                         description: 'Try to detect and scan only the main content area, skipping navigation, footers, etc.',
                         value: advancedOptions.scanOnlyMainContent
+                      },
+                      {
+                        name: 'enableAdultOptimizations',
+                        label: 'Enable adult site optimizations',
+                        description: 'Use specialized patterns and methods for extracting videos from adult websites',
+                        value: advancedOptions.enableAdultOptimizations
+                      },
+                      {
+                        name: 'extractStreamingUrls',
+                        label: 'Extract streaming URLs',
+                        description: 'Look for HLS (.m3u8) and DASH (.mpd) streaming manifests commonly used by video sites',
+                        value: advancedOptions.extractStreamingUrls
+                      },
+                      {
+                        name: 'triggerLazyLoading',
+                        label: 'Trigger lazy loading',
+                        description: 'Scroll and interact with the page to trigger lazy-loaded content',
+                        value: advancedOptions.triggerLazyLoading
+                      },
+                      {
+                        name: 'clickLoadMore',
+                        label: 'Click load more buttons',
+                        description: 'Automatically click "Load More" or "Show More" buttons to reveal additional content',
+                        value: advancedOptions.clickLoadMore
                       }
                     ]}
                     renderItem={item => (
@@ -625,15 +765,32 @@ const BulkVideoUpload = () => {
             </Panel>
           </Collapse>
           
+          <Space>
           <Button 
             type="primary" 
-            onClick={extractVideos} 
+              onClick={() => extractVideos(false)} 
             loading={loading}
             icon={<PlayCircleOutlined />}
             size="large"
           >
-            Extract Videos
+              {loading ? 'Extracting...' : 'Extract Videos'}
           </Button>
+            <Button 
+              onClick={() => extractVideos(true)} 
+              disabled={loading}
+              icon={<VideoCameraOutlined />}
+              size="large"
+            >
+              Extract in Background
+            </Button>
+          </Space>
+          
+          {extractionProgress && (
+            <div style={{ marginTop: 16 }}>
+              <Progress percent={undefined} status="active" />
+              <Text type="secondary">{extractionProgress}</Text>
+            </div>
+          )}
         </Form>
       </Card>
       
@@ -663,6 +820,7 @@ const BulkVideoUpload = () => {
                 suffix={extractionStats.isAdultContent ? <Tag color="red">Adult Content</Tag> : null}
               />
             </Col>
+
           </Row>
           {extractionStats.pagination && (
             <Row gutter={16} style={{ marginTop: 16 }}>
@@ -742,15 +900,16 @@ const BulkVideoUpload = () => {
         )}
         
         <List
-          grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
+          grid={{ gutter: 12, xs: 2, sm: 3, md: 4, lg: 5, xl: 6, xxl: 8 }}
           dataSource={videos}
           renderItem={video => (
             <List.Item>
               <Card
                 hoverable
+                size="small"
                 cover={
                   <div style={{ 
-                    height: 180, 
+                    height: 120, 
                     overflow: 'hidden', 
                     display: 'flex',
                     alignItems: 'center',
@@ -761,10 +920,10 @@ const BulkVideoUpload = () => {
                     <img 
                       alt={video.title} 
                       src={video.thumbnailUrl || process.env.REACT_APP_DEFAULT_THUMBNAIL} 
-                      style={{ width: '100%' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://placehold.co/320x180?text=No+Thumbnail';
+                        e.target.src = 'https://placehold.co/200x120?text=No+Thumbnail';
                       }}
                     />
                     <a 
@@ -774,29 +933,48 @@ const BulkVideoUpload = () => {
                       onClick={(e) => e.stopPropagation()}
                       style={{
                         position: 'absolute',
-                        bottom: 8,
-                        right: 8,
-                        background: 'rgba(0, 0, 0, 0.5)',
+                        bottom: 4,
+                        right: 4,
+                        background: 'rgba(0, 0, 0, 0.7)',
                         color: 'white',
-                        padding: '5px 10px',
-                        borderRadius: '4px',
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        fontSize: '10px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px'
+                        gap: '2px'
                       }}
                     >
-                      <VideoCameraOutlined /> View
+                      <VideoCameraOutlined style={{ fontSize: '10px' }} />
                     </a>
                     {video.quality && video.quality !== 'unknown' && (
-                      <Badge 
-                        count={video.quality} 
-                        style={{ 
-                          backgroundColor: getQualityColor(video.quality),
+                      <div style={{ 
                           position: 'absolute',
-                          top: 8,
-                          right: 8
-                        }}
-                      />
+                        top: 4,
+                        right: 4,
+                        background: getQualityColor(video.quality),
+                        color: 'white',
+                        padding: '1px 4px',
+                        borderRadius: '2px',
+                        fontSize: '9px',
+                        fontWeight: 'bold'
+                      }}>
+                        {video.quality}
+                      </div>
+                    )}
+                    {video.metadata?.duration && (
+                      <div style={{ 
+                        position: 'absolute',
+                        bottom: 4,
+                        left: 4,
+                        background: 'rgba(0, 0, 0, 0.7)',
+                        color: 'white',
+                        padding: '1px 4px',
+                        borderRadius: '2px',
+                        fontSize: '9px'
+                      }}>
+                        {video.metadata.duration}
+                      </div>
                     )}
                   </div>
                 }
@@ -804,51 +982,64 @@ const BulkVideoUpload = () => {
                   <Checkbox 
                     checked={video.selected}
                     onChange={() => toggleVideoSelection(video.url)}
-                  >
-                    Select
-                  </Checkbox>
+                    size="small"
+                  />
                 ]}
                 style={{ 
-                  opacity: video.selected ? 1 : 0.6,
-                  border: video.selected ? '2px solid #1890ff' : 'none'
+                  opacity: video.selected ? 1 : 0.7,
+                  border: video.selected ? '2px solid #1890ff' : '1px solid #d9d9d9',
+                  borderRadius: '6px'
                 }}
               >
                 <Card.Meta
-                  title={video.title}
-                  description={
-                    <div>
-                      <Paragraph ellipsis={{ rows: 2 }}>
-                        {video.description || 'No description available'}
-                      </Paragraph>
-                      <Space direction="vertical" size={1} style={{ width: '100%' }}>
-                        <Text type="secondary">Source: {video.sourceWebsite || new URL(video.url).hostname}</Text>
-                        <Tooltip title={video.url}>
-                          <Text type="secondary" ellipsis style={{ width: '100%', cursor: 'pointer' }}>
-                            URL: {video.url}
-                          </Text>
+                  title={
+                    <Tooltip title={video.title}>
+                      <div style={{ 
+                        fontSize: '12px', 
+                        fontWeight: '500',
+                        lineHeight: '1.2',
+                        height: '28px',
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical'
+                      }}>
+                        {video.title}
+                      </div>
                         </Tooltip>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                  }
+                  description={
+                    <div style={{ fontSize: '10px' }}>
+                      <div style={{ 
+                        color: '#666',
+                        marginBottom: '4px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {video.sourceWebsite || new URL(video.url).hostname}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                           {video.foundBy && (
-                            <Tag color="blue">
-                              <FilterOutlined /> {video.foundBy}
+                          <Tag size="small" color="blue" style={{ fontSize: '8px', margin: 0, padding: '0 4px' }}>
+                            {video.foundBy.split(':')[0]}
                             </Tag>
                           )}
                           {video.confidence && (
-                            <Tooltip title={`Confidence: ${Math.round(video.confidence * 100)}%`}>
-                              <Tag color={getConfidenceColor(video.confidence)}>
-                                {Math.round(video.confidence * 100)}% confidence
+                          <Tag 
+                            size="small" 
+                            color={getConfidenceColor(video.confidence)} 
+                            style={{ fontSize: '8px', margin: 0, padding: '0 4px' }}
+                          >
+                            {Math.round(video.confidence * 100)}%
                               </Tag>
-                            </Tooltip>
                           )}
-                          {video.extractedAt && (
-                            <Tooltip title={`Extracted: ${new Date(video.extractedAt).toLocaleString()}`}>
-                              <Tag>
-                                {new Date(video.extractedAt).toLocaleTimeString()}
+                        {video.metadata?.views && (
+                          <Tag size="small" style={{ fontSize: '8px', margin: 0, padding: '0 4px' }}>
+                            {video.metadata.views}
                               </Tag>
-                            </Tooltip>
                           )}
                         </div>
-                      </Space>
                     </div>
                   }
                 />

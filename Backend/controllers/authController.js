@@ -60,16 +60,36 @@ exports.signup = async (req, res, next) => {
     }
 
     // Create user with role 'user' by default
-    const newUser = await User.create({
+    // Only include email if it's provided and not empty
+    const userData = {
       username,
-      email: "", // Set email to empty string instead of undefined
       password,
       role: 'user', // Default role
-    });
+    };
+    
+    // Only add email if it's provided and not empty
+    if (email && email.trim()) {
+      userData.email = email.trim().toLowerCase();
+    }
+
+    const newUser = await User.create(userData);
 
     createSendToken(newUser, 201, res);
   } catch (err) {
-    console.error(err);
+    console.error('Signup error:', err);
+    
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      const validationErrors = Object.values(err.errors).map(e => e.message);
+      return sendResponse(req, res, 400, validationErrors.join(', '), null);
+    }
+    
+    // Handle duplicate key errors
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyValue)[0];
+      return sendResponse(req, res, 400, `${field} already exists`, null);
+    }
+    
     return sendResponse(req, res, 500, "Error signing up user", null);
   }
 };
@@ -94,7 +114,14 @@ exports.login = async (req, res, next) => {
     // If everything ok, send token to client
     createSendToken(user, 200, res);
   } catch (err) {
-    console.error(err);
+    console.error('Login error:', err);
+    
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      const validationErrors = Object.values(err.errors).map(e => e.message);
+      return sendResponse(req, res, 400, validationErrors.join(', '), null);
+    }
+    
     return sendResponse(req, res, 500, "Error logging in user", null);
   }
 };

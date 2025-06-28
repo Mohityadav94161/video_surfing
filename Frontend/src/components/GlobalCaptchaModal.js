@@ -1,6 +1,6 @@
-import React from 'react';
-import { Modal } from 'antd';
-import { SafetyOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Modal, Alert } from 'antd';
+import { SafetyOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import Captcha from './Captcha';
 import { useCaptcha } from '../contexts/CaptchaContext';
 
@@ -8,15 +8,21 @@ const GlobalCaptchaModal = () => {
   const { 
     captchaModalVisible, 
     setCaptchaModalVisible, 
-    handleCaptchaVerified 
+    handleCaptchaVerified,
+    isAutoTriggered,
+    blockedRequestsCount
   } = useCaptcha();
 
   return (
     <Modal
       title={
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <SafetyOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
-          Security Verification Required
+          {isAutoTriggered ? (
+            <ExclamationCircleOutlined style={{ color: '#faad14', marginRight: '8px' }} />
+          ) : (
+            <SafetyOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
+          )}
+          {isAutoTriggered ? 'Action Blocked - Verification Required' : 'Security Verification Required'}
         </div>
       }
       open={captchaModalVisible}
@@ -24,14 +30,33 @@ const GlobalCaptchaModal = () => {
       closable={false}
       maskClosable={false}
       centered
-      width={400}
+      width={450}
     >
+      {isAutoTriggered && (
+        <Alert
+          message="Request Blocked"
+          description="Your recent action was blocked for security reasons. Complete the verification below to continue."
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
+      
       <div style={{ textAlign: "center", marginBottom: "15px" }}>
         <p>
-          Please complete the security verification below to continue browsing.
-          This helps us prevent automated access and protect our content.
+          {isAutoTriggered 
+            ? "Please complete the security verification to retry your action and continue using the platform."
+            : "Please complete the security verification below to continue browsing. This helps us prevent automated access and protect our content."
+          }
         </p>
+        {isAutoTriggered && (
+          <p style={{ fontSize: '12px', color: '#666' }}>
+            Your original request will be automatically retried after verification.
+            {blockedRequestsCount > 0 && ` (${blockedRequestsCount} request${blockedRequestsCount > 1 ? 's' : ''} pending)`}
+          </p>
+        )}
       </div>
+      
       <Captcha 
         onVerify={handleCaptchaVerified}
         onError={(errorMsg) => console.error("Captcha error:", errorMsg)}

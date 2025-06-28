@@ -24,7 +24,10 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
     views,
     sourceWebsite,
     createdAt,
-    description
+    description,
+    isRelated,
+    isSuggestion,
+    searchScore
   } = video;
 
   // Format date
@@ -91,6 +94,16 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
                   <Tag color={getCategoryColor(category)} className="category-tag">
                     {category}
                   </Tag>
+                  {isRelated && !isSuggestion && (
+                    <Tag color="orange" style={{ fontSize: '10px' }}>
+                      Related
+                    </Tag>
+                  )}
+                  {isSuggestion && (
+                    <Tag color="purple" style={{ fontSize: '10px' }}>
+                      Suggested
+                    </Tag>
+                  )}
                   {tags && tags.slice(0, 3).map((tag, index) => (
                     <Tag key={index} className="tag">
                       {tag}
@@ -154,7 +167,19 @@ const VideoCard = ({ video, viewMode = 'grid' }) => {
           title={<Title level={5} ellipsis={{ rows: 2 }} className="video-title">{title}</Title>}
           description={
             <Space direction="vertical" size={4} style={{ width: '100%' }}>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               <Tag color={getCategoryColor(category)} className="category-tag">{category}</Tag>
+                {isRelated && !isSuggestion && (
+                  <Tag color="orange" style={{ fontSize: '10px' }}>
+                    Related
+                  </Tag>
+                )}
+                {isSuggestion && (
+                  <Tag color="purple" style={{ fontSize: '10px' }}>
+                    Suggested
+                  </Tag>
+                )}
+              </div>
               
               <div className="tag-container">
                 {tags && tags.slice(0, 2).map((tag, index) => (

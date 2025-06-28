@@ -31,6 +31,8 @@ const SearchPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchType, setSearchType] = useState('none');
+  const [exactMatches, setExactMatches] = useState(0);
 
   const [pagination, setPagination] = useState({
     current: parseInt(query.get("page")) || 1,
@@ -97,6 +99,8 @@ const SearchPage = () => {
         });
 
         setVideos(res.data.data.videos || []);
+        setSearchType(res.data.searchType || 'none');
+        setExactMatches(res.data.exactMatches || 0);
         setPagination((prev) => ({
           ...prev,
           total: res.data.total || 0,
@@ -172,8 +176,40 @@ const SearchPage = () => {
         </Card>
       ) : (
         <>
+          {/* Search Results Header */}
           <div style={{ marginBottom: 16 }}>
-            <Text>Found {pagination.total} video{pagination.total !== 1 ? 's' : ''}</Text>
+            {searchType === 'exact' && (
+              <Text>Found {pagination.total} video{pagination.total !== 1 ? 's' : ''} matching "{searchQuery}"</Text>
+            )}
+            {searchType === 'related' && (
+              <div>
+                <Alert
+                  message="No exact matches found"
+                  description={`Showing ${videos.length} related videos for "${searchQuery}"`}
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+                />
+              </div>
+            )}
+            {searchType === 'mixed' && (
+              <div>
+                <Text>Found {exactMatches} exact match{exactMatches !== 1 ? 'es' : ''} for "{searchQuery}"</Text>
+                <br />
+                <Text type="secondary">+ {videos.length - exactMatches} related videos</Text>
+              </div>
+            )}
+            {searchType === 'suggestions' && (
+              <div>
+                <Alert
+                  message="No matches found"
+                  description={`No videos found for "${searchQuery}". Here are some popular videos you might like:`}
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+                />
+              </div>
+            )}
           </div>
 
           <Row gutter={[16, 16]}>

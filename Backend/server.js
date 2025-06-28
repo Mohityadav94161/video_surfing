@@ -94,6 +94,8 @@ app.use('/api', (req, res, next) => {
   requireCaptcha(req, res, next);
 });
 
+
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

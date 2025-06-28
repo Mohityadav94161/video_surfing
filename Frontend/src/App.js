@@ -6,9 +6,9 @@ import { ConfigProvider, theme, message } from 'antd';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CollectionProvider } from './contexts/CollectionContext';
 import { CaptchaProvider, useCaptcha } from './contexts/CaptchaContext';
+import { BackgroundTaskProvider } from './contexts/BackgroundTaskContext';
 
-// Custom API with captcha handling
-import { setCaptchaContext } from './utils/api';
+// Auth and API contexts
 
 // Pages
 import Home from './pages/Home';
@@ -65,19 +65,16 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   return children;
 };
 
-// CaptchaContextConnector: connect the captcha context to our API utility
+// CaptchaContextConnector: Simple wrapper for captcha events
 const CaptchaContextConnector = ({ children }) => {
   const captchaContext = useCaptcha();
   
   useEffect(() => {
-    // Set the captcha context in the API utility
-    setCaptchaContext(captchaContext);
-    
     // Dispatch custom event when captcha is verified to retry blocked requests
     if (captchaContext.captchaVerified) {
       document.dispatchEvent(new Event('captchaVerified'));
     }
-  }, [captchaContext, captchaContext.captchaVerified]);
+  }, [captchaContext.captchaVerified]);
   
   return <>{children}</>;
 };
@@ -96,7 +93,8 @@ function App() {
       <AuthProvider>
         <CollectionProvider>
           <CaptchaProvider>
-            <CaptchaContextConnector>
+            <BackgroundTaskProvider>
+              <CaptchaContextConnector>
           <Router>
                 {/* Global captcha modal that can appear on any page */}
                 <GlobalCaptchaModal />
@@ -191,7 +189,8 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
-            </CaptchaContextConnector>
+              </CaptchaContextConnector>
+            </BackgroundTaskProvider>
           </CaptchaProvider>
         </CollectionProvider>
       </AuthProvider>

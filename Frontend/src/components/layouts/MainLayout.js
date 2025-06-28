@@ -41,9 +41,10 @@ import {
 import { useAuth } from "../../contexts/AuthContext"
 import "./MainLayout.css"
 import "../../components/ModalStyles.css"
-import api from "../../utils/api"
+import api from "../../utils/axiosConfig"
 import LoginForm from "../../components/LoginForm"
 import RegisterForm from "../../components/RegisterForm"
+import BackgroundTaskIndicator from "../BackgroundTaskIndicator"
 
 const { Header, Content, Footer } = Layout
 const { Search } = Input
@@ -1306,6 +1307,9 @@ const MainLayout = () => {
           </div>
         </div>
       </Footer>
+
+      {/* Background Task Indicator */}
+      <BackgroundTaskIndicator />
     </Layout>
   )
 }

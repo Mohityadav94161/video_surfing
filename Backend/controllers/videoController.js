@@ -119,12 +119,13 @@ exports.getAllVideos = async (req, res) => {
       totalResults = await Video.countDocuments(filter);
     }
 
-    // 11. Fuzzy fallback (only if no documents returned AND some filter/search applied):
-    if (
-      videos.length === 0 &&
-      (search || category || tag || videoId)
-    ) {
-      // Fetch all matching videos (without pagination) for Fuse.js
+    // 11. Enhanced search with related videos fallback:
+    let exactMatches = videos.length;
+    let relatedVideos = [];
+    let searchType = 'exact';
+
+    if (search && videos.length < limitNum) {
+      // Always try to find related videos when searching, even if we have some exact matches
       const allVideos = await Video.find(filter).populate({
         path: 'addedBy',
         select: 'username'
@@ -139,29 +140,56 @@ exports.getAllVideos = async (req, res) => {
           'addedBy.username',
           'category'
         ],
-        threshold: 0.3
+        threshold: 0.6, // More lenient threshold for better related results
+        includeScore: true
       });
 
-      // If "search" is present, use it in Fuse. Otherwise, Fuse on empty string
-      const fuseResults = fuse.search(search || '');
+      const fuseResults = fuse.search(search);
 
-      // Extract just the matched video documents
-      const matchedDocs = fuseResults.map(r => r.item);
-      totalResults = matchedDocs.length;
+      // Filter out videos that are already in exact matches
+      const exactVideoIds = videos.map(v => v._id.toString());
+      const relatedResults = fuseResults
+        .filter(result => !exactVideoIds.includes(result.item._id.toString()))
+        .slice(0, limitNum - videos.length); // Fill up to the limit
 
-      // Apply pagination manually on the fuseResults
-      const startIndex = skip;
-      const endIndex = skip + limitNum;
-      videos = matchedDocs.slice(startIndex, endIndex);
+      relatedVideos = relatedResults.map(r => ({
+        ...r.item.toObject(),
+        searchScore: r.score,
+        isRelated: true
+      }));
+
+      // Determine search type
+      if (exactMatches === 0 && relatedVideos.length > 0) {
+        searchType = 'related';
+        videos = relatedVideos;
+        totalResults = fuseResults.length;
+      } else if (exactMatches > 0 && relatedVideos.length > 0) {
+        searchType = 'mixed';
+        // Add related videos to existing exact matches
+        videos = [...videos.map(v => ({ ...v.toObject(), isRelated: false })), ...relatedVideos];
+        totalResults = exactMatches + fuseResults.length;
+      } else if (exactMatches === 0 && relatedVideos.length === 0) {
+        // No matches at all, get some popular videos as suggestions
+        const popularVideos = await Video.find(filter)
+          .sort('-views -createdAt')
+          .limit(8)
+          .populate({ path: 'addedBy', select: 'username' });
+        
+        videos = popularVideos.map(v => ({ ...v.toObject(), isRelated: true, isSuggestion: true }));
+        searchType = 'suggestions';
+        totalResults = videos.length;
+      }
     }
 
-    // 12. Send response with pagination metadata
+    // 12. Send response with enhanced metadata
     res.status(200).json({
       status: 'success',
       results: videos.length,
       total: totalResults,
       totalPages: Math.ceil(totalResults / limitNum),
       currentPage: pageNum,
+      searchType: search ? searchType : 'none',
+      exactMatches: search ? exactMatches : videos.length,
       data: {
         videos
       }
@@ -291,6 +319,221 @@ exports.getVideo = async (req, res, next) => {
     });
   }
 };
+
+// Get related videos for a specific video
+exports.getRelatedVideos = async (req, res) => {
+  try {
+    const videoId = req.params.id;
+    const limit = parseInt(req.query.limit) || 8;
+
+    // First, get the current video to understand its properties
+    let currentVideo = null;
+    if (mongoose.Types.ObjectId.isValid(videoId)) {
+      currentVideo = await Video.findById(videoId);
+    }
+    if (!currentVideo) {
+      currentVideo = await Video.findOne({ videoId: videoId, active: true });
+    }
+
+    if (!currentVideo) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Video not found'
+      });
+    }
+
+    const baseFilter = { active: true, _id: { $ne: currentVideo._id } };
+    let relatedVideos = [];
+    let relationType = 'category';
+
+    // 1. Try to find videos from the same category
+    if (currentVideo.category) {
+      relatedVideos = await Video.find({
+        ...baseFilter,
+        category: currentVideo.category
+      })
+        .sort('-views -createdAt')
+        .limit(limit)
+        .populate({ path: 'addedBy', select: 'username' });
+    }
+
+    // 2. If not enough from category, add videos with similar tags
+    if (relatedVideos.length < limit && currentVideo.tags && currentVideo.tags.length > 0) {
+      const remainingLimit = limit - relatedVideos.length;
+      const existingIds = relatedVideos.map(v => v._id.toString());
+      
+      const tagVideos = await Video.find({
+        ...baseFilter,
+        _id: { $nin: [...existingIds, currentVideo._id] },
+        tags: { $in: currentVideo.tags }
+      })
+        .sort('-views -createdAt')
+        .limit(remainingLimit)
+        .populate({ path: 'addedBy', select: 'username' });
+
+      relatedVideos = [...relatedVideos, ...tagVideos];
+      if (tagVideos.length > 0) relationType = 'mixed';
+    }
+
+    // 3. If still not enough, use fuzzy search on title and description
+    if (relatedVideos.length < limit) {
+      const remainingLimit = limit - relatedVideos.length;
+      const existingIds = relatedVideos.map(v => v._id.toString());
+
+      // Create search terms from current video
+      const searchTerms = [
+        ...currentVideo.title.split(' ').filter(word => word.length > 3),
+        ...(currentVideo.description ? currentVideo.description.split(' ').filter(word => word.length > 3) : []),
+        ...(currentVideo.tags || [])
+      ].slice(0, 10); // Limit search terms
+
+      if (searchTerms.length > 0) {
+        try {
+          // Try text search first
+          const textSearchVideos = await Video.find({
+            ...baseFilter,
+            _id: { $nin: [...existingIds, currentVideo._id] },
+            $text: { $search: searchTerms.join(' ') }
+          }, { score: { $meta: 'textScore' } })
+            .sort({ score: { $meta: 'textScore' } })
+            .limit(remainingLimit)
+            .populate({ path: 'addedBy', select: 'username' });
+
+          relatedVideos = [...relatedVideos, ...textSearchVideos];
+          if (textSearchVideos.length > 0) relationType = relationType === 'category' ? 'mixed' : 'fuzzy';
+        } catch (textErr) {
+          // Fallback to regex search
+          const regex = new RegExp(searchTerms.slice(0, 3).join('|'), 'i');
+          const regexVideos = await Video.find({
+            ...baseFilter,
+            _id: { $nin: [...existingIds, currentVideo._id] },
+            $or: [
+              { title: regex },
+              { description: regex }
+            ]
+          })
+            .sort('-views -createdAt')
+            .limit(remainingLimit)
+            .populate({ path: 'addedBy', select: 'username' });
+
+          relatedVideos = [...relatedVideos, ...regexVideos];
+          if (regexVideos.length > 0) relationType = relationType === 'category' ? 'mixed' : 'fuzzy';
+        }
+      }
+    }
+
+    // 4. Final fallback: get popular videos if still not enough
+    if (relatedVideos.length < limit) {
+      const remainingLimit = limit - relatedVideos.length;
+      const existingIds = relatedVideos.map(v => v._id.toString());
+
+      const popularVideos = await Video.find({
+        ...baseFilter,
+        _id: { $nin: [...existingIds, currentVideo._id] }
+      })
+        .sort('-views -createdAt')
+        .limit(remainingLimit)
+        .populate({ path: 'addedBy', select: 'username' });
+
+      relatedVideos = [...relatedVideos, ...popularVideos];
+      if (popularVideos.length > 0 && relatedVideos.length === popularVideos.length) {
+        relationType = 'popular';
+      }
+    }
+
+    // Add metadata to videos indicating how they're related
+    const videosWithMetadata = relatedVideos.map(video => ({
+      ...video.toObject(),
+      relationScore: calculateRelationScore(currentVideo, video),
+      relationType: determineVideoRelationType(currentVideo, video)
+    }));
+
+    res.status(200).json({
+      status: 'success',
+      results: videosWithMetadata.length,
+      relationType,
+      data: {
+        videos: videosWithMetadata,
+        currentVideo: {
+          id: currentVideo._id,
+          title: currentVideo.title,
+          category: currentVideo.category,
+          tags: currentVideo.tags
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching related videos:', err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error fetching related videos'
+    });
+  }
+};
+
+// Helper function to calculate relation score
+function calculateRelationScore(currentVideo, relatedVideo) {
+  let score = 0;
+  
+  // Same category: +40 points
+  if (currentVideo.category === relatedVideo.category) {
+    score += 40;
+  }
+  
+  // Shared tags: +10 points per shared tag
+  if (currentVideo.tags && relatedVideo.tags) {
+    const sharedTags = currentVideo.tags.filter(tag => 
+      relatedVideo.tags.includes(tag)
+    );
+    score += sharedTags.length * 10;
+  }
+  
+  // Title similarity: +5 points per shared word (length > 3)
+  const currentWords = currentVideo.title.toLowerCase().split(' ').filter(w => w.length > 3);
+  const relatedWords = relatedVideo.title.toLowerCase().split(' ').filter(w => w.length > 3);
+  const sharedWords = currentWords.filter(word => relatedWords.includes(word));
+  score += sharedWords.length * 5;
+  
+  // Popularity bonus: +1-10 points based on views
+  const viewScore = Math.min(10, Math.floor((relatedVideo.views || 0) / 1000));
+  score += viewScore;
+  
+  return Math.min(100, score); // Cap at 100
+}
+
+// Helper function to determine video relation type
+function determineVideoRelationType(currentVideo, relatedVideo) {
+  if (currentVideo.category === relatedVideo.category) {
+    const sharedTags = currentVideo.tags?.filter(tag => 
+      relatedVideo.tags?.includes(tag)
+    ) || [];
+    
+    if (sharedTags.length > 0) {
+      return 'category-tags';
+    }
+    return 'category';
+  }
+  
+  if (currentVideo.tags && relatedVideo.tags) {
+    const sharedTags = currentVideo.tags.filter(tag => 
+      relatedVideo.tags.includes(tag)
+    );
+    if (sharedTags.length > 0) {
+      return 'tags';
+    }
+  }
+  
+  // Check title similarity
+  const currentWords = currentVideo.title.toLowerCase().split(' ').filter(w => w.length > 3);
+  const relatedWords = relatedVideo.title.toLowerCase().split(' ').filter(w => w.length > 3);
+  const sharedWords = currentWords.filter(word => relatedWords.includes(word));
+  
+  if (sharedWords.length > 0) {
+    return 'title';
+  }
+  
+  return 'popular';
+}
 
 
 // Add a new video (for both regular users and admins)
@@ -563,7 +806,11 @@ exports.extractVideosFromPage = async (req, res, next) => {
       maxScanDepth = 1,
       browser = 'chrome',
       maxPages = 1,          // Number of pages to scan (for pagination)
-      maxVideos = 500        // Maximum number of videos to extract
+      maxVideos = 500,       // Maximum number of videos to extract
+      enableAdultOptimizations = true,  // Enable adult site specific optimizations
+      extractStreamingUrls = true,      // Extract HLS/DASH streaming URLs
+      triggerLazyLoading = true,        // Try to trigger lazy loading
+      clickLoadMore = true              // Try to click "Load More" buttons
     } = req.body;
 
     if (!url) {
@@ -637,8 +884,13 @@ exports.extractVideosFromPage = async (req, res, next) => {
       // Age verification
       ageVerification: true,
       
-      // Don't take screenshots in production
-      takeScreenshot: process.env.NODE_ENV === 'development'
+      // Adult site optimizations
+      enableAdultOptimizations,
+      extractStreamingUrls,
+      triggerLazyLoading,
+      clickLoadMore,
+      
+
     };
 
     // Extract all videos from the page
@@ -674,6 +926,7 @@ exports.extractVideosFromPage = async (req, res, next) => {
         count: enhancedVideos.length,
         extractionMethods: result.metadata?.extractionMethods || [],
         pagination: result.metadata?.pagination || { totalPages: 1, pagesScanned: 1 },
+
         extractionTime: new Date().toISOString()
       },
     });

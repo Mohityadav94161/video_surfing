@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from '../utils/axiosConfig';
+import axios, { setCaptchaContextRef, resetCaptchaInProgress } from '../utils/axiosConfig';
 
 const CaptchaContext = createContext();
 
@@ -11,6 +11,7 @@ export const CaptchaProvider = ({ children }) => {
   const [captchaModalVisible, setCaptchaModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [blockedRequests, setBlockedRequests] = useState([]);
+  const [isAutoTriggered, setIsAutoTriggered] = useState(false);
   
   // Check localStorage on init to see if user already verified captcha
   useEffect(() => {
@@ -48,7 +49,7 @@ export const CaptchaProvider = ({ children }) => {
   const checkIfCaptchaRequired = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/captcha/check-required`);
+      const response = await axios.get('/captcha/check-required');
       
       if (response.data.status === 'success') {
         const { captchaRequired } = response.data.data;
@@ -72,6 +73,10 @@ export const CaptchaProvider = ({ children }) => {
     setCaptchaVerified(true);
     setCaptchaRequired(false);
     setCaptchaModalVisible(false);
+    setIsAutoTriggered(false);
+    
+    // Reset the captcha in progress flag in axios config
+    resetCaptchaInProgress();
     
     // Store verification in localStorage with 24 hour expiry
     const expiry = new Date();
@@ -101,17 +106,34 @@ export const CaptchaProvider = ({ children }) => {
   };
   
   // Reset captcha verification (used when unusual activity is detected)
-  const resetCaptchaVerification = () => {
+  const resetCaptchaVerification = (autoTriggered = false) => {
     localStorage.removeItem('captchaVerified');
     setCaptchaVerified(false);
     setCaptchaRequired(true);
     setCaptchaModalVisible(true);
+    setIsAutoTriggered(autoTriggered);
   };
   
   // Force check for captcha requirement (can be called after unusual activity)
   const forceCheckCaptchaRequired = () => {
     checkIfCaptchaRequired();
   };
+
+  // Register context functions with axios interceptor
+  useEffect(() => {
+    const contextFunctions = {
+      resetCaptchaVerification,
+      addBlockedRequest,
+      setCaptchaModalVisible
+    };
+    
+    setCaptchaContextRef(contextFunctions);
+    
+    // Cleanup on unmount
+    return () => {
+      setCaptchaContextRef(null);
+    };
+  }, []);
   
   return (
     <CaptchaContext.Provider
@@ -124,7 +146,9 @@ export const CaptchaProvider = ({ children }) => {
         resetCaptchaVerification,
         forceCheckCaptchaRequired,
         addBlockedRequest,
-        loading
+        loading,
+        isAutoTriggered,
+        blockedRequestsCount: blockedRequests.length
       }}
     >
       {children}

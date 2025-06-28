@@ -29,7 +29,7 @@ import axios from '../utils/axiosConfig';
 import VideoComments from '../components/VideoComments';
 import VideoReactions from '../components/VideoReactions';
 import AddToCollection from '../components/AddToCollection';
-import api from '../utils/api';
+import api from '../utils/axiosConfig';
 import { formatDistanceToNow } from 'date-fns';
 import './Video.css';
 
@@ -45,6 +45,7 @@ const Video = () => {
   const [collectionModalVisible, setCollectionModalVisible] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
+  const [relatedType, setRelatedType] = useState('category');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -73,40 +74,38 @@ const Video = () => {
       
       setRelatedLoading(true);
       try {
-        // Try to fetch videos from the same category first
-        let params = {
-          limit: 8,
-          page: 1
-        };
-
-        // If video has category, use it for related videos
-        if (video.category) {
-          params.category = video.category;
-        }
-        // If video has tags, use the first tag
-        else if (video.tags && video.tags.length > 0) {
-          params.tag = video.tags[0];
-        }
-
-        const res = await axios.get('/videos', { params });
-        const fetchedVideos = res.data.data.videos || [];
+        // Use the new enhanced related videos API
+        const res = await axios.get(`/videos/${video._id}/related`, {
+          params: { limit: 8 }
+        });
         
-        // Filter out the current video from related videos
-        const filteredVideos = fetchedVideos.filter(v => v._id !== video._id);
-        setRelatedVideos(filteredVideos.slice(0, 8)); // Limit to 8 videos
+        const data = res.data.data;
+        setRelatedVideos(data.videos || []);
+        setRelatedType(res.data.relationType || 'category');
       } catch (err) {
         console.error('Error fetching related videos:', err);
-        // If category/tag search fails, try to get recent videos
+        // Fallback to old method if new API fails
         try {
-          const res = await axios.get('/videos', { 
-            params: { limit: 8, page: 1, sort: 'recent' } 
-          });
+          let params = {
+            limit: 8,
+            page: 1
+          };
+
+          if (video.category) {
+            params.category = video.category;
+          } else if (video.tags && video.tags.length > 0) {
+            params.tag = video.tags[0];
+          }
+
+          const res = await axios.get('/videos', { params });
           const fetchedVideos = res.data.data.videos || [];
           const filteredVideos = fetchedVideos.filter(v => v._id !== video._id);
           setRelatedVideos(filteredVideos.slice(0, 8));
+          setRelatedType('fallback');
         } catch (fallbackErr) {
           console.error('Error fetching fallback videos:', fallbackErr);
           setRelatedVideos([]);
+          setRelatedType('none');
         }
       } finally {
         setRelatedLoading(false);
@@ -475,7 +474,19 @@ const Video = () => {
       
       {/* Related Videos Section - Full Width */}
       <div style={{ marginTop: 24 }}>
-        <Title level={3} style={{ marginBottom: 16 }}>Related Videos</Title>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <Title level={3} style={{ margin: 0 }}>Related Videos</Title>
+          {relatedVideos.length > 0 && (
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              {relatedType === 'category' && 'Same category'}
+              {relatedType === 'mixed' && 'Category + tags'}
+              {relatedType === 'fuzzy' && 'Similar content'}
+              {relatedType === 'popular' && 'Popular videos'}
+              {relatedType === 'fallback' && 'Recommended'}
+              {relatedType === 'none' && 'No related videos'}
+            </Text>
+          )}
+        </div>
         {relatedLoading ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
             <Spin size="large" />
