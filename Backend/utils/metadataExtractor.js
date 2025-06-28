@@ -27,6 +27,16 @@ const extractMetadata = async (url) => {
       return await scrapeVimeo(validatedUrl);
     } else if (domain.includes('dailymotion.com')) {
       return await scrapeDailymotion(validatedUrl);
+    } else if (domain.includes('spankbang.com')) {
+      return await scrapeSpankBang(validatedUrl);
+    } else if (domain.includes('pornhub.com')) {
+      return await scrapePornHub(validatedUrl);
+    } else if (domain.includes('xvideos.com')) {
+      return await scrapeXVideos(validatedUrl);
+    } else if (domain.includes('xhamster.com')) {
+      return await scrapeXHamster(validatedUrl);
+    } else if (domain.includes('redtube.com')) {
+      return await scrapeRedTube(validatedUrl);
     } else {
       // Generic scraper for other websites
       return await scrapeGeneric(validatedUrl);
@@ -54,7 +64,11 @@ const validateUrl = (url) => {
  */
 const scrapeYouTube = async (url) => {
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
     const $ = cheerio.load(response.data);
     
     // Extract metadata
@@ -64,11 +78,22 @@ const scrapeYouTube = async (url) => {
     const description = $('meta[property="og:description"]').attr('content') || 
                        $('meta[name="description"]').attr('content') || '';
     
+    // Extract duration from meta tags or structured data
+    let duration = null;
+    const durationMeta = $('meta[itemprop="duration"]').attr('content');
+    if (durationMeta) {
+      duration = parseDurationToSeconds(durationMeta);
+    }
+    
     // Extract tags
     const tags = [];
     $('meta[property="og:video:tag"]').each((i, el) => {
       tags.push($(el).attr('content'));
     });
+    
+    // Extract video ID
+    const videoIdMatch = url.match(/[?&]v=([^&]+)/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
     
     // Determine category based on content or default to 'Other'
     let category = determineCategory(title, description, tags);
@@ -79,6 +104,8 @@ const scrapeYouTube = async (url) => {
       description,
       tags,
       category,
+      duration,
+      videoId,
       sourceWebsite: 'YouTube'
     };
   } catch (error) {
@@ -92,7 +119,11 @@ const scrapeYouTube = async (url) => {
  */
 const scrapeVimeo = async (url) => {
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
     const $ = cheerio.load(response.data);
     
     const title = $('meta[property="og:title"]').attr('content') || 
@@ -100,6 +131,13 @@ const scrapeVimeo = async (url) => {
     const thumbnailUrl = $('meta[property="og:image"]').attr('content') || '';
     const description = $('meta[property="og:description"]').attr('content') || 
                        $('meta[name="description"]').attr('content') || '';
+    
+    // Extract duration
+    let duration = null;
+    const durationMeta = $('meta[itemprop="duration"]').attr('content');
+    if (durationMeta) {
+      duration = parseDurationToSeconds(durationMeta);
+    }
     
     // Extract tags - Vimeo specific
     const tags = [];
@@ -113,6 +151,10 @@ const scrapeVimeo = async (url) => {
       }
     });
     
+    // Extract video ID
+    const videoIdMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
     let category = determineCategory(title, description, tags);
     
     return {
@@ -121,6 +163,8 @@ const scrapeVimeo = async (url) => {
       description,
       tags,
       category,
+      duration,
+      videoId,
       sourceWebsite: 'Vimeo'
     };
   } catch (error) {
@@ -134,7 +178,11 @@ const scrapeVimeo = async (url) => {
  */
 const scrapeDailymotion = async (url) => {
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
     const $ = cheerio.load(response.data);
     
     const title = $('meta[property="og:title"]').attr('content') || 
@@ -142,6 +190,13 @@ const scrapeDailymotion = async (url) => {
     const thumbnailUrl = $('meta[property="og:image"]').attr('content') || '';
     const description = $('meta[property="og:description"]').attr('content') || 
                        $('meta[name="description"]').attr('content') || '';
+    
+    // Extract duration
+    let duration = null;
+    const durationMeta = $('meta[itemprop="duration"]').attr('content');
+    if (durationMeta) {
+      duration = parseDurationToSeconds(durationMeta);
+    }
     
     // Extract tags
     const tags = [];
@@ -154,6 +209,10 @@ const scrapeDailymotion = async (url) => {
       }
     });
     
+    // Extract video ID
+    const videoIdMatch = url.match(/dailymotion\.com\/video\/([^_]+)/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
     let category = determineCategory(title, description, tags);
     
     return {
@@ -162,6 +221,8 @@ const scrapeDailymotion = async (url) => {
       description,
       tags,
       category,
+      duration,
+      videoId,
       sourceWebsite: 'Dailymotion'
     };
   } catch (error) {
@@ -175,43 +236,138 @@ const scrapeDailymotion = async (url) => {
  */
 const scrapeGeneric = async (url) => {
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
     const $ = cheerio.load(response.data);
     
+    // Enhanced title extraction with fallbacks
     const title = $('meta[property="og:title"]').attr('content') || 
                  $('meta[name="twitter:title"]').attr('content') ||
+                 $('h1').first().text().trim() ||
+                 $('h2').first().text().trim() ||
+                 $('.title').first().text().trim() ||
+                 $('[class*="title"]').first().text().trim() ||
                  $('title').text() || 'Unknown Title';
     
     const thumbnailUrl = $('meta[property="og:image"]').attr('content') || 
-                         $('meta[name="twitter:image"]').attr('content') || '';
+                         $('meta[name="twitter:image"]').attr('content') ||
+                         $('.video-thumb img').attr('src') ||
+                         $('.thumbnail img').attr('src') ||
+                         $('video').attr('poster') || '';
     
     const description = $('meta[property="og:description"]').attr('content') || 
                         $('meta[name="twitter:description"]').attr('content') ||
-                        $('meta[name="description"]').attr('content') || '';
+                        $('meta[name="description"]').attr('content') ||
+                        $('.description').first().text().trim() ||
+                        $('[class*="description"]').first().text().trim() || '';
     
-    // Extract tags from meta keywords
+    // Enhanced duration extraction
+    let duration = null;
+    const durationSelectors = [
+      '.duration', '[class*="duration"]', '.time', '[class*="time"]',
+      '.length', '[class*="length"]', '.video-time', '.timestamp',
+      '.video-duration', '[data-duration]'
+    ];
+    
+    for (const selector of durationSelectors) {
+      const durationElement = $(selector).first();
+      if (durationElement.length) {
+        const durationText = durationElement.text().trim() || durationElement.attr('data-duration');
+        if (durationText) {
+          duration = parseDurationToSeconds(durationText);
+          if (duration > 0) break;
+        }
+      }
+    }
+    
+    // Enhanced tag extraction
     const tags = [];
+    
+    // Extract from meta keywords
     $('meta[name="keywords"]').each((i, el) => {
       const keywordsStr = $(el).attr('content');
       if (keywordsStr) {
         keywordsStr.split(',').forEach(tag => {
-          if (tag.trim()) tags.push(tag.trim());
+          const cleanTag = tag.trim();
+          if (cleanTag && !tags.includes(cleanTag)) tags.push(cleanTag);
         });
       }
     });
+    
+    // Extract from tag elements
+    const tagSelectors = [
+      '.tag', '.tags a', '.tag-item', '.tag-link', '[class*="tag"]',
+      '.category', '.categories a', '[class*="category"]',
+      '.keyword', '.keywords a', '[class*="keyword"]'
+    ];
+    
+    tagSelectors.forEach(selector => {
+      $(selector).each((i, el) => {
+        const tagText = $(el).text().trim();
+        if (tagText && tagText.length < 50 && !tags.includes(tagText)) {
+          tags.push(tagText);
+        }
+      });
+    });
+    
+    // Extract category from specific elements
+    let category = null;
+    const categorySelectors = [
+      '.category a', '.categories a', '.main-category', 
+      '[class*="category"]', '.breadcrumb a:last-child',
+      '.nav-breadcrumb a:last-child'
+    ];
+    
+    for (const selector of categorySelectors) {
+      const categoryElement = $(selector).first();
+      if (categoryElement.length) {
+        const categoryText = categoryElement.text().trim();
+        if (categoryText && categoryText.length < 30) {
+          category = categoryText;
+          break;
+        }
+      }
+    }
+    
+    // Fallback to category determination
+    if (!category) {
+      category = determineCategory(title, description, tags);
+    }
+    
+    // Extract video ID from URL patterns
+    let videoId = null;
+    const videoIdPatterns = [
+      /\/video\/([^\/\?]+)/i,
+      /\/watch\/([^\/\?]+)/i,
+      /\/v\/([^\/\?]+)/i,
+      /\/([^\/\?]+)\/play$/i,
+      /id=([^&]+)/i,
+      /video_id=([^&]+)/i
+    ];
+    
+    for (const pattern of videoIdPatterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        videoId = match[1];
+        break;
+      }
+    }
     
     // Determine source website
     const domain = new URL(url).hostname;
     const sourceWebsite = domain.replace(/^www\./, '');
     
-    let category = determineCategory(title, description, tags);
-    
     return {
-      title,
+      title: title.substring(0, 200), // Limit title length
       thumbnailUrl,
-      description,
-      tags,
+      description: description.substring(0, 500), // Limit description length
+      tags: tags.slice(0, 20), // Limit number of tags
       category,
+      duration,
+      videoId,
       sourceWebsite
     };
   } catch (error) {
@@ -258,12 +414,35 @@ const determineCategory = (title, description, tags) => {
  */
 const fallbackMetadata = (url, sourceWebsite) => {
   const domain = new URL(url).hostname;
+  
+  // Try to extract video ID from URL as fallback
+  let videoId = null;
+  const videoIdPatterns = [
+    /\/video\/([^\/\?]+)/i,
+    /\/watch\/([^\/\?]+)/i,
+    /\/v\/([^\/\?]+)/i,
+    /\/([^\/\?]+)\/play$/i,
+    /id=([^&]+)/i,
+    /video_id=([^&]+)/i,
+    /viewkey=([^&]+)/i
+  ];
+  
+  for (const pattern of videoIdPatterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      videoId = match[1];
+      break;
+    }
+  }
+  
   return {
     title: `Video from ${sourceWebsite}`,
     thumbnailUrl: '',
     description: `This is a video from ${sourceWebsite}`,
     tags: [sourceWebsite],
     category: 'Other',
+    duration: null,
+    videoId,
     sourceWebsite
   };
 };
@@ -4847,6 +5026,315 @@ function generateNextPageUrl(currentUrl) {
     return null;
   }
 }
+
+/**
+ * SpankBang specific scraper
+ */
+const scrapeSpankBang = async (url) => {
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    const $ = cheerio.load(response.data);
+    
+    // SpankBang specific title extraction
+    const title = $('h1.main_content_title').text().trim() ||
+                 $('h1.main_content_title').attr('title') ||
+                 $('meta[property="og:title"]').attr('content') || 
+                 $('title').text().replace(' - SpankBang', '') || 'Unknown Title';
+    
+    // Extract thumbnail
+    const thumbnailUrl = $('meta[property="og:image"]').attr('content') || 
+                         $('.player-thumb img').attr('src') ||
+                         $('.video-thumb img').attr('src') || '';
+    
+    // Extract description
+    const description = $('meta[property="og:description"]').attr('content') || 
+                       $('.video-description').text().trim() ||
+                       $('.description').text().trim() || '';
+    
+    // Extract duration from video page specific elements
+    let duration = null;
+    const durationText = $('.video-badge.l').text().trim() || 
+                        $('.duration').text().trim() ||
+                        $('[class*="duration"]').text().trim();
+    
+    if (durationText) {
+      duration = parseDurationToSeconds(durationText);
+    }
+    
+    // Extract tags from SpankBang specific elements
+    const tags = [];
+    $('.tag-item a').each((i, el) => {
+      const tag = $(el).text().trim();
+      if (tag) tags.push(tag);
+    });
+    
+    $('.tags a').each((i, el) => {
+      const tag = $(el).text().trim();
+      if (tag && !tags.includes(tag)) tags.push(tag);
+    });
+    
+    // Extract categories
+    const categoryElement = $('.category a').first().text().trim() ||
+                           $('.categories a').first().text().trim() ||
+                           $('[class*="category"] a').first().text().trim();
+    
+    let category = categoryElement || determineCategory(title, description, tags);
+    
+    // Extract video ID from URL
+    const videoIdMatch = url.match(/\/([^\/]+)\/play$/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
+    return {
+      title,
+      thumbnailUrl,
+      description,
+      tags,
+      category,
+      duration,
+      videoId,
+      sourceWebsite: 'SpankBang'
+    };
+  } catch (error) {
+    console.error('Error scraping SpankBang:', error);
+    return fallbackMetadata(url, 'SpankBang');
+  }
+};
+
+/**
+ * PornHub specific scraper
+ */
+const scrapePornHub = async (url) => {
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    const $ = cheerio.load(response.data);
+    
+    const title = $('h1.title span').text().trim() ||
+                 $('meta[property="og:title"]').attr('content') || 
+                 $('title').text().replace(' - Pornhub.com', '') || 'Unknown Title';
+    
+    const thumbnailUrl = $('meta[property="og:image"]').attr('content') || '';
+    
+    const description = $('meta[property="og:description"]').attr('content') || 
+                       $('.video-detailed-info').text().trim() || '';
+    
+    // Extract duration
+    let duration = null;
+    const durationText = $('.duration').text().trim();
+    if (durationText) {
+      duration = parseDurationToSeconds(durationText);
+    }
+    
+    // Extract tags
+    const tags = [];
+    $('.categoriesWrapper a').each((i, el) => {
+      const tag = $(el).text().trim();
+      if (tag) tags.push(tag);
+    });
+    
+    $('.tagsWrapper a').each((i, el) => {
+      const tag = $(el).text().trim();
+      if (tag && !tags.includes(tag)) tags.push(tag);
+    });
+    
+    const category = $('.category a').first().text().trim() || 
+                    determineCategory(title, description, tags);
+    
+    // Extract video ID
+    const videoIdMatch = url.match(/viewkey=([^&]+)/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
+    return {
+      title,
+      thumbnailUrl,
+      description,
+      tags,
+      category,
+      duration,
+      videoId,
+      sourceWebsite: 'PornHub'
+    };
+  } catch (error) {
+    console.error('Error scraping PornHub:', error);
+    return fallbackMetadata(url, 'PornHub');
+  }
+};
+
+/**
+ * XVideos specific scraper
+ */
+const scrapeXVideos = async (url) => {
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    const $ = cheerio.load(response.data);
+    
+    const title = $('meta[property="og:title"]').attr('content') || 
+                 $('h2.page-title').text().trim() ||
+                 $('title').text().replace(' - XVIDEOS.COM', '') || 'Unknown Title';
+    
+    const thumbnailUrl = $('meta[property="og:image"]').attr('content') || '';
+    
+    const description = $('meta[property="og:description"]').attr('content') || '';
+    
+    // Extract duration
+    let duration = null;
+    const durationText = $('.duration').text().trim();
+    if (durationText) {
+      duration = parseDurationToSeconds(durationText);
+    }
+    
+    // Extract tags
+    const tags = [];
+    $('.video-metadata .metadata a').each((i, el) => {
+      const tag = $(el).text().trim();
+      if (tag) tags.push(tag);
+    });
+    
+    const category = determineCategory(title, description, tags);
+    
+    // Extract video ID
+    const videoIdMatch = url.match(/\/video(\d+)\//);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
+    return {
+      title,
+      thumbnailUrl,
+      description,
+      tags,
+      category,
+      duration,
+      videoId,
+      sourceWebsite: 'XVideos'
+    };
+  } catch (error) {
+    console.error('Error scraping XVideos:', error);
+    return fallbackMetadata(url, 'XVideos');
+  }
+};
+
+/**
+ * XHamster specific scraper
+ */
+const scrapeXHamster = async (url) => {
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    const $ = cheerio.load(response.data);
+    
+    const title = $('meta[property="og:title"]').attr('content') || 
+                 $('h1.with-player-container').text().trim() ||
+                 $('title').text().replace(' - xHamster', '') || 'Unknown Title';
+    
+    const thumbnailUrl = $('meta[property="og:image"]').attr('content') || '';
+    
+    const description = $('meta[property="og:description"]').attr('content') || '';
+    
+    // Extract duration
+    let duration = null;
+    const durationText = $('.duration').text().trim() || $('.time').text().trim();
+    if (durationText) {
+      duration = parseDurationToSeconds(durationText);
+    }
+    
+    // Extract tags
+    const tags = [];
+    $('.categories-container a').each((i, el) => {
+      const tag = $(el).text().trim();
+      if (tag) tags.push(tag);
+    });
+    
+    const category = determineCategory(title, description, tags);
+    
+    // Extract video ID
+    const videoIdMatch = url.match(/videos\/([^\/]+)/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
+    return {
+      title,
+      thumbnailUrl,
+      description,
+      tags,
+      category,
+      duration,
+      videoId,
+      sourceWebsite: 'XHamster'
+    };
+  } catch (error) {
+    console.error('Error scraping XHamster:', error);
+    return fallbackMetadata(url, 'XHamster');
+  }
+};
+
+/**
+ * RedTube specific scraper
+ */
+const scrapeRedTube = async (url) => {
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    const $ = cheerio.load(response.data);
+    
+    const title = $('meta[property="og:title"]').attr('content') || 
+                 $('h1.videoTitle').text().trim() ||
+                 $('title').text().replace(' - RedTube', '') || 'Unknown Title';
+    
+    const thumbnailUrl = $('meta[property="og:image"]').attr('content') || '';
+    
+    const description = $('meta[property="og:description"]').attr('content') || '';
+    
+    // Extract duration
+    let duration = null;
+    const durationText = $('.duration').text().trim();
+    if (durationText) {
+      duration = parseDurationToSeconds(durationText);
+    }
+    
+    // Extract tags
+    const tags = [];
+    $('.video_tags a').each((i, el) => {
+      const tag = $(el).text().trim();
+      if (tag) tags.push(tag);
+    });
+    
+    const category = $('.breadcrumb a').last().text().trim() || 
+                    determineCategory(title, description, tags);
+    
+    // Extract video ID
+    const videoIdMatch = url.match(/\/(\d+)$/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    
+    return {
+      title,
+      thumbnailUrl,
+      description,
+      tags,
+      category,
+      duration,
+      videoId,
+      sourceWebsite: 'RedTube'
+    };
+  } catch (error) {
+    console.error('Error scraping RedTube:', error);
+    return fallbackMetadata(url, 'RedTube');
+  }
+};
 
 module.exports = {
   scrapePageForVideos,

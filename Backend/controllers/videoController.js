@@ -23,6 +23,13 @@ exports.getAllVideos = async (req, res) => {
 
     // Check if the request is from an admin user
     const isAdmin = req.user && req.user.role === 'admin';
+
+     // 2.1. Pagination setup:
+     const pageNum = parseInt(page, 10);
+     const limitNum = parseInt(limit, 10);
+     const skip = (pageNum - 1) * limitNum;
+ 
+     
     
     // 3. Build a base filter - only include active videos for non-admin users
     const filter = isAdmin ? {} : { active: true };
@@ -34,8 +41,46 @@ exports.getAllVideos = async (req, res) => {
     let useTextSearch = false;
     let query;
 
-    // 4. Attempt a text-search if "search" param is provided:
-    if (search) {
+    // 4. Check for exact videoId match first
+    let exactVideoIdMatch = null;
+    if (search && !filter.videoId) {
+      try {
+        exactVideoIdMatch = await Video.findOne({
+          ...filter,
+          videoId: search
+        }).populate({
+          path: 'addedBy',
+          select: 'username'
+        });
+      } catch (err) {
+        console.log('Error checking for exact videoId match:', err);
+      }
+    }
+
+    // 5. If we found an exact videoId match, return it as the primary result
+    if (exactVideoIdMatch) {
+      // Still search for related videos to fill the rest of the results
+      try {
+        const regex = new RegExp(search, 'i');
+        query = Video.find({
+          ...filter,
+          _id: { $ne: exactVideoIdMatch._id }, // Exclude the exact match
+          $or: [
+            { title: regex },
+            { description: regex },
+            { tags: regex },
+            { category: regex }
+          ]
+        }).limit(limitNum - 1); // Leave space for the exact match
+        
+        useTextSearch = false;
+      } catch (err) {
+        query = Video.find(filter).limit(limitNum - 1);
+        useTextSearch = false;
+      }
+    } 
+    // 6. Attempt a text-search if "search" param is provided and no exact videoId match:
+    else if (search) {
       try {
         useTextSearch = true;
 
@@ -51,8 +96,9 @@ exports.getAllVideos = async (req, res) => {
             score: { $meta: 'textScore' }
           });
       } catch (err) {
-        // If combining $text and other operators throws "NoQueryExecutionPlans," fall back to regex:
-        console.warn('Text-search failed, falling back to regex-style search:', err);
+        // If text search fails (e.g., no text index), fall back to regex:
+        console.warn('Text-search failed, falling back to regex-style search:', err.message);
+        useTextSearch = false;
 
         const regex = new RegExp(search, 'i');
         query = Video.find({
@@ -65,10 +111,9 @@ exports.getAllVideos = async (req, res) => {
             { category: regex }
           ]
         });
-        useTextSearch = false;
       }
     } else {
-      // 5. If no "search" param, start from a plain find(filter):
+      // 7. If no "search" param, start from a plain find(filter):
       query = Video.find(filter);
     }
 
@@ -93,11 +138,6 @@ exports.getAllVideos = async (req, res) => {
       query = query.select('-__v'); // Exclude __v by default
     }
 
-    // 8. Pagination setup:
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-    const skip = (pageNum - 1) * limitNum;
-
     query = query.skip(skip).limit(limitNum);
 
     // 9. Execute the query (populate "addedBy.username"):
@@ -106,23 +146,58 @@ exports.getAllVideos = async (req, res) => {
       select: 'username'
     });
 
-    // 10. Determine totalResults (for pagination metadata):
+    // 10. If we have an exact videoId match, prepend it to the results
+    if (exactVideoIdMatch) {
+      videos = [exactVideoIdMatch, ...videos];
+    }
+
+    // 11. Determine totalResults (for pagination metadata):
     let totalResults;
-    if (useTextSearch) {
-      // When using a text query, countDocuments must include the same $text filter
-      totalResults = await Video.countDocuments({
+    if (exactVideoIdMatch) {
+      // When we have an exact match, count related videos + 1 for the exact match
+      const regex = new RegExp(search, 'i');
+      const relatedCount = await Video.countDocuments({
         ...filter,
-        $text: { $search: search }
+        _id: { $ne: exactVideoIdMatch._id },
+        $or: [
+          { title: regex },
+          { description: regex },
+          { tags: regex },
+          { category: regex }
+        ]
       });
+      totalResults = relatedCount + 1;
+    } else if (useTextSearch) {
+      // When using a text query, countDocuments must include the same $text filter
+      try {
+        totalResults = await Video.countDocuments({
+          ...filter,
+          $text: { $search: search }
+        });
+      } catch (err) {
+        // If text search count fails, fall back to regex count
+        console.warn('Text search count failed, falling back to regex count:', err.message);
+        const regex = new RegExp(search, 'i');
+        totalResults = await Video.countDocuments({
+          ...filter,
+          $or: [
+            { title: regex },
+            { description: regex },
+            { tags: regex },
+            { videoId: regex },
+            { category: regex }
+          ]
+        });
+      }
     } else {
       // If no text search, just count with the base "filter"
       totalResults = await Video.countDocuments(filter);
     }
 
-    // 11. Enhanced search with related videos fallback:
-    let exactMatches = videos.length;
+    // 12. Enhanced search with related videos fallback:
+    let exactMatches = exactVideoIdMatch ? 1 : videos.length;
     let relatedVideos = [];
-    let searchType = 'exact';
+    let searchType = exactVideoIdMatch ? 'exact-videoid' : 'exact';
 
     if (search && videos.length < limitNum) {
       // Always try to find related videos when searching, even if we have some exact matches
@@ -181,7 +256,7 @@ exports.getAllVideos = async (req, res) => {
       }
     }
 
-    // 12. Send response with enhanced metadata
+    // 13. Send response with enhanced metadata
     res.status(200).json({
       status: 'success',
       results: videos.length,
@@ -547,7 +622,9 @@ exports.addVideo = async (req, res, next) => {
       description,
       tags,
       category,
-      sourceWebsite
+      sourceWebsite,
+      duration,
+      videoId: providedVideoId
     } = req.body;
 
     if (!originalUrl) {
@@ -579,8 +656,9 @@ exports.addVideo = async (req, res, next) => {
         category,
         sourceWebsite: sourceWebsite || new URL(originalUrl).hostname,
         videoType: videoType || 'normal',
-        videoId: videoId,
+        videoId: providedVideoId || videoId, // Use provided videoId if available, otherwise use generated one
         addedBy: req.user.id,
+        duration: duration || null,
       };
     } else {
       // Otherwise extract metadata from URL
@@ -596,7 +674,8 @@ exports.addVideo = async (req, res, next) => {
           category: category || metadata.category,
           sourceWebsite: sourceWebsite || metadata.sourceWebsite,
           videoType: videoType || 'normal',
-          videoId:videoId,
+          videoId: providedVideoId || metadata.videoId || videoId,
+          duration: duration || metadata.duration || null,
           addedBy: req.user.id,
         };
       } catch (metadataErr) {
@@ -619,7 +698,8 @@ exports.addVideo = async (req, res, next) => {
           sourceWebsite: sourceWebsite || new URL(originalUrl).hostname,
           videoType: videoType || 'normal',
           addedBy: req.user.id,
-          videoId:videoId
+          videoId: providedVideoId || videoId,
+          duration: duration || null
         };
       }
     }

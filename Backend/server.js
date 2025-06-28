@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const { logRequest } = require('./middleware/analyticsMiddleware');
 const { detectUnusualActivity, requireCaptcha } = require('./middleware/captchaMiddleware');
+const { ensureIndexes } = require('./utils/ensureIndexes');
 
 // Load environment variables
 dotenv.config();
@@ -148,8 +149,16 @@ app.use((err, req, res, next) => {
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log('Connected to MongoDB');
+    
+    // Ensure all necessary indexes are created
+    try {
+      await ensureIndexes();
+    } catch (error) {
+      console.error('Warning: Failed to ensure indexes:', error.message);
+    }
+    
     // Start server
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

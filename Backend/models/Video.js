@@ -67,6 +67,10 @@ const videoSchema = new mongoose.Schema(
       required: [true, 'Source website is required'],
       trim: true,
     },
+    duration: {
+      type: Number, // Duration in seconds
+      default: null,
+    },
     // New fields for reactions summary
     likesCount: {
       type: Number,
@@ -89,7 +93,25 @@ const videoSchema = new mongoose.Schema(
 );
 
 // Index for search optimization
-videoSchema.index({ title: 'text', tags: 'text', description: 'text',videoId:'text',addedBy:'text', category:'text' });
+videoSchema.index({ 
+  title: 'text', 
+  tags: 'text', 
+  description: 'text',
+  videoId: 'text',
+  addedBy: 'text', 
+  category: 'text' 
+}, {
+  name: 'search_text_index',
+  weights: {
+    title: 10,
+    tags: 8,
+    description: 6,
+    videoId: 5,
+    category: 4,
+    addedBy: 2
+  },
+  default_language: 'english'
+});
 
 // Pre-save middleware to extract source website from URL
 videoSchema.pre('save', function (next) {
