@@ -24,11 +24,14 @@ import {
   CopyOutlined,
   FolderAddOutlined,
   HeartOutlined,
+  ExceptionOutlined,
+  
 } from '@ant-design/icons';
 import axios from '../utils/axiosConfig';
 import VideoComments from '../components/VideoComments';
 import VideoReactions from '../components/VideoReactions';
 import AddToCollection from '../components/AddToCollection';
+import VideoReportModal from '../components/VideoReportModal';
 import api from '../utils/axiosConfig';
 import { formatDistanceToNow } from 'date-fns';
 import './Video.css';
@@ -43,6 +46,7 @@ const Video = () => {
   const [error, setError] = useState(null);
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [collectionModalVisible, setCollectionModalVisible] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const [relatedVideos, setRelatedVideos] = useState([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
   const [relatedType, setRelatedType] = useState('category');
@@ -406,7 +410,9 @@ const Video = () => {
     type="text" 
     size="small"
     danger
+    icon={<ExceptionOutlined />}
     style={{ padding: '0 8px' }}
+    onClick={() => setReportModalVisible(true)}
   >
     Report
   </Button>
@@ -589,6 +595,13 @@ const Video = () => {
             </Text>
         </Space>
       </Modal>
+      
+      {/* Video Report Modal */}
+      <VideoReportModal
+        visible={reportModalVisible}
+        onCancel={() => setReportModalVisible(false)}
+        video={video}
+      />
     </div>
   );
 };

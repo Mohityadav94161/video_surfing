@@ -107,10 +107,13 @@ const SupportSubmissions = () => {
         params.set('limit', pagination.pageSize);
         
         // Get submissions with filters and pagination
-        const submissionsResponse = await axiosInstance.get(`/api/support/submissions?${params.toString()}`);
+        console.log('Making request to:', `/support/submissions?${params.toString()}`);
+        console.log('Axios baseURL:', axiosInstance.defaults.baseURL);
+        const submissionsResponse = await axiosInstance.get(`/support/submissions?${params.toString()}`);
         
         // Get stats data
-        const statsResponse = await axiosInstance.get('/api/support/stats');
+        console.log('Making request to:', '/support/stats');
+        const statsResponse = await axiosInstance.get('/support/stats');
         
         // Process submissions data
         const submissionsData = submissionsResponse.data.data.submissions;
@@ -184,7 +187,7 @@ const SupportSubmissions = () => {
 
   const handleDeleteSubmission = async (submissionId) => {
     try {
-      await axiosInstance.delete(`/api/support/submissions/${submissionId}`);
+      await axiosInstance.delete(`/support/submissions/${submissionId}`);
       
       // Update the UI
       setSubmissions(prevSubmissions => prevSubmissions.filter(submission => submission._id !== submissionId));
@@ -208,7 +211,7 @@ const SupportSubmissions = () => {
       
       if (!currentSubmission) return;
       
-      const response = await axiosInstance.patch(`/api/support/submissions/${currentSubmission._id}`, {
+      const response = await axiosInstance.patch(`/support/submissions/${currentSubmission._id}`, {
         status: values.status,
         adminNotes: values.adminNotes
       });

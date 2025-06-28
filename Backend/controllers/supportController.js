@@ -21,10 +21,10 @@ exports.createSubmission = async (req, res) => {
     }
 
     // Validate type is one of the allowed values
-    if (!['contact-us', 'partnership-program', 'content-removal'].includes(type)) {
+    if (!['contact-us', 'partnership-program', 'content-removal', 'video-report'].includes(type)) {
       return res.status(400).json({
         status: 'fail',
-        message: 'Invalid submission type. Must be one of: contact-us, partnership-program, content-removal'
+        message: 'Invalid submission type. Must be one of: contact-us, partnership-program, content-removal, video-report'
       });
     }
 

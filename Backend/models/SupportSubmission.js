@@ -5,7 +5,7 @@ const supportSubmissionSchema = new mongoose.Schema(
     type: {
       type: String,
       required: [true, 'Submission type is required'],
-      enum: ['contact-us', 'partnership-program', 'content-removal'],
+      enum: ['contact-us', 'partnership-program', 'content-removal', 'video-report'],
     },
     name: {
       type: String,

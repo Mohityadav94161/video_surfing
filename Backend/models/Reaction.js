@@ -30,7 +30,7 @@ reactionSchema.index({ video: 1, user: 1 }, { unique: true });
 reactionSchema.statics.getReactionStats = async function(videoId) {
   const stats = await this.aggregate([
     {
-      $match: { video: mongoose.Types.ObjectId(videoId) }
+      $match: { video: new mongoose.Types.ObjectId(videoId) }
     },
     {
       $group: {

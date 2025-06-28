@@ -59,7 +59,41 @@ const TermsOfService = ({ inSupportPage = false }) => {
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
-        <Title level={3} style={{color: 'white'}}>5. Prohibited Uses</Title>
+        <Title level={3} style={{color: 'white'}}>5. Content Hosting and Third-Party Liability Disclaimer</Title>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>Content Aggregation Service:</Text> Our platform operates as a content aggregation and indexing service. We do not host, store, upload, or control any video content displayed on our platform. All video content is hosted on third-party websites and platforms.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>User-Submitted Links:</Text> Video links, thumbnails, and metadata are submitted by users. We act solely as an intermediary platform that indexes and organizes these user-submitted links to external content.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>No Content Ownership or Control:</Text> We do not own, control, or have any editorial control over the content hosted on third-party websites. We are not responsible for:
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <ul>
+            <li>The accuracy, legality, or appropriateness of content on external websites;</li>
+            <li>Copyright infringement or intellectual property violations by third-party content;</li>
+            <li>The availability or functionality of external websites or their content;</li>
+            <li>Any damages or harm caused by accessing or viewing third-party content;</li>
+            <li>The privacy practices or security of external websites.</li>
+          </ul>
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>DMCA Safe Harbor:</Text> We comply with the Digital Millennium Copyright Act (DMCA) and maintain a policy for terminating accounts of repeat infringers. If you believe content linked on our platform infringes your copyright, please submit a DMCA takedown notice.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>Age-Restricted Content:</Text> Some content may not be suitable for minors. We implement age verification measures, but users are ultimately responsible for ensuring they meet legal age requirements for accessing certain content.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>Content Removal:</Text> We reserve the right to remove links to content that violates our terms or applicable laws. However, we are under no obligation to monitor or review content and do not guarantee the removal of any specific content.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>External Website Risks:</Text> When you click on video links, you will be redirected to external websites that are not under our control. These websites may contain malware, inappropriate content, or engage in practices that violate your privacy. Access external content at your own risk.
+        </Paragraph>
+      </Card>
+      
+      <Card style={{ marginBottom: '30px' }}>
+        <Title level={3} style={{color: 'white'}}>6. Prohibited Uses</Title>
         <Paragraph style={{color: 'white'}}>
           You may use our platform only for lawful purposes and in accordance with these Terms of Service. You agree not to use our platform:
         </Paragraph>
@@ -74,7 +108,7 @@ const TermsOfService = ({ inSupportPage = false }) => {
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
-        <Title level={3} style={{color: 'white'}}>6. Disclaimer</Title>
+        <Title level={3} style={{color: 'white'}}>7. Disclaimer</Title>
         <Paragraph style={{color: 'white'}}>
           The materials on XFansTube are provided on an 'as is' basis. XFansTube makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
         </Paragraph>
@@ -84,28 +118,28 @@ const TermsOfService = ({ inSupportPage = false }) => {
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
-        <Title level={3} style={{color: 'white'}}>7. Limitations</Title>
+        <Title level={3} style={{color: 'white'}}>8. Limitations</Title>
         <Paragraph style={{color: 'white'}}>
           In no event shall XFansTube or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on XFansTube, even if XFansTube or a XFansTube authorized representative has been notified orally or in writing of the possibility of such damage.
         </Paragraph>
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
-        <Title level={3} style={{color: 'white'}}>8. Revisions and Errata</Title>
+        <Title level={3} style={{color: 'white'}}>9. Revisions and Errata</Title>
         <Paragraph style={{color: 'white'}}>
           The materials appearing on XFansTube could include technical, typographical, or photographic errors. XFansTube does not warrant that any of the materials on its website are accurate, complete or current. XFansTube may make changes to the materials contained on its website at any time without notice. XFansTube does not, however, make any commitment to update the materials.
         </Paragraph>
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
-        <Title level={3} style={{color: 'white'}}>9. Governing Law</Title>
+        <Title level={3} style={{color: 'white'}}>10. Governing Law</Title>
         <Paragraph style={{color: 'white'}}>
           These terms and conditions are governed by and construed in accordance with the laws of the United States and you irrevocably submit to the exclusive jurisdiction of the courts in that State or location.
         </Paragraph>
       </Card>
       
       <Card style={{ marginBottom: '30px' }}>
-        <Title level={3} style={{color: 'white'}}>10. Changes to Terms</Title>
+        <Title level={3} style={{color: 'white'}}>11. Changes to Terms</Title>
         <Paragraph style={{color: 'white'}}>
           XFansTube reserves the right, at its sole discretion, to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
         </Paragraph>
@@ -115,7 +149,7 @@ const TermsOfService = ({ inSupportPage = false }) => {
       </Card>
       
       <Card>
-        <Title level={3} style={{color: 'white'}}>11. Contact Information</Title>
+        <Title level={3} style={{color: 'white'}}>12. Contact Information</Title>
         <Paragraph style={{color: 'white'}}>
           If you have any questions about these Terms, please contact us at:
         </Paragraph>

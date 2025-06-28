@@ -164,11 +164,11 @@ const AdminLayout = () => {
               icon: <CloudUploadOutlined />,
               label: <Link to="/admin/bulk-upload">Bulk Upload</Link>,
             },
-            {
-              key: 'analytics',
-              icon: <BarChartOutlined />,
-              label: <Link to="/admin/analytics">Analytics & Tracking</Link>,
-            },
+            // {
+            //   key: 'analytics',
+            //   icon: <BarChartOutlined />,
+            //   label: <Link to="/admin/analytics">Analytics & Tracking</Link>,
+            // },
             {
               key: 'support-submissions',
               icon: <MessageOutlined />,

@@ -138,7 +138,26 @@ const PrivacyPolicy = ({ inSupportPage = false }) => {
       </Card>
       
       <Card style={{ marginBottom: '30px',color: 'white' }}>
-        <Title level={3} style={{color: 'white'}}>10. Changes to This Privacy Policy</Title>
+        <Title level={3} style={{color: 'white'}}>10. Content Hosting and Liability Disclaimer</Title>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>Third-Party Content:</Text> Our platform serves as an aggregator and index of video content hosted on third-party websites. We do not host, store, or control any video content on our servers. All videos are hosted by external websites and platforms.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>User-Generated Links:</Text> Video links and metadata are submitted by users of our platform. We are not responsible for the accuracy, legality, or appropriateness of content hosted on external websites.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>No Content Ownership:</Text> We do not claim ownership of any video content accessible through our platform. All intellectual property rights remain with the original content creators and hosting platforms.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>Content Removal:</Text> If you believe that content linked on our platform infringes your rights or violates applicable laws, please contact us immediately. We will investigate and remove links to infringing content when appropriate.
+        </Paragraph>
+        <Paragraph style={{color: 'white'}}>
+          <Text strong style={{color: 'white'}}>Age Verification:</Text> We implement age verification measures for content that may not be suitable for minors. Users are responsible for ensuring they meet age requirements for accessing certain content.
+        </Paragraph>
+      </Card>
+      
+      <Card style={{ marginBottom: '30px',color: 'white' }}>
+        <Title level={3} style={{color: 'white'}}>11. Changes to This Privacy Policy</Title>
         <Paragraph style={{color: 'white'}}>
           We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date at the top of this Privacy Policy.
         </Paragraph>
@@ -148,7 +167,7 @@ const PrivacyPolicy = ({ inSupportPage = false }) => {
       </Card>
       
       <Card>
-        <Title level={3} style={{color: 'white'}}>11. Contact Us</Title>
+        <Title level={3} style={{color: 'white'}}>12. Contact Us</Title>
         <Paragraph style={{color: 'white'}}>
           If you have any questions about this Privacy Policy, please contact us:
         </Paragraph>

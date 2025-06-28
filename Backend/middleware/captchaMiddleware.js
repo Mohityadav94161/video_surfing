@@ -117,9 +117,9 @@ exports.detectUnusualActivity = async (req, res, next) => {
     // - More than 120 requests in 5 minutes
     // - More than 500 requests in 1 hour
     if (
-      requestCountLastMinute > 100 || 
-      requestCountLastFiveMinutes > 320 || 
-      requestCountLastHour > 700
+      requestCountLastMinute > 200 || 
+      requestCountLastFiveMinutes > 420 || 
+      requestCountLastHour > 3000
     ) {
       // Record unusual activity
       console.warn(`Unusual activity detected from IP: ${ipAddress}`);

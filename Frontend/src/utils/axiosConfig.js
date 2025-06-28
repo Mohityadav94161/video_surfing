@@ -16,8 +16,9 @@ export const resetCaptchaInProgress = () => {
 };
 
 // Use the full API base URL from environment variable which includes /api
+console.log('🌍 Environment variable REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
 const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-console.log('API base URL configured as:', apiBaseUrl);
+console.log('📍 Final API base URL configured as:', apiBaseUrl);
 
 // Set up default configuration
 const axiosInstance = axios.create({
@@ -54,10 +55,14 @@ const requestInterceptor = config => {
   }
   
   // Log full request details
-  console.log(`Request: ${config.method?.toUpperCase() || 'GET'} ${config.baseURL}${config.url}`, 
-              `Headers:`, config.headers,
-              `Authorization: ${config.headers['Authorization'] ? 'Yes' : 'No'}`,
-              `Timeout: ${config.timeout}ms`);
+  console.log(`🔍 Request Debug:`, {
+    method: config.method?.toUpperCase() || 'GET',
+    baseURL: config.baseURL,
+    url: config.url,
+    fullURL: `${config.baseURL}${config.url}`,
+    hasAuth: config.headers['Authorization'] ? 'Yes' : 'No',
+    timeout: `${config.timeout}ms`
+  });
   
   return config;
 };
@@ -74,9 +79,9 @@ longRunningAxios.interceptors.request.use(requestInterceptor, requestErrorInterc
 // Add a response interceptor to handle response for both instances
 const responseInterceptor = response => {
   // Log success responses with more detail
-  console.log(`Response from ${response.config.url}:`, 
-              `Status: ${response.status}`,
-              `Data:`, response.data);
+  // console.log(`Response from ${response.config.url}:`, 
+  //             `Status: ${response.status}`,
+  //             `Data:`, response.data);
   return response;
 };
 
