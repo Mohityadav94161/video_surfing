@@ -49,7 +49,7 @@
   display: none;
 }
 
-/* New Desktop navigation layout */
+/* New Desktop navigation layout - Fixed perfect alignment */
 .desktop-nav-new {
   display: flex;
   align-items: center;
@@ -57,7 +57,7 @@
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  height: 60px;
+  height: 64px; /* Match header height */
 }
 
 .desktop-left {
@@ -65,6 +65,7 @@
   align-items: center;
   gap: 15px;
   flex: 0 0 auto;
+  height: 64px; /* Match exact header height */
 }
 
 .desktop-center {
@@ -73,6 +74,8 @@
   flex: 2;
   max-width: none;
   margin: 0 20px;
+  height: 100%; /* Full height for proper alignment */
+  align-items: center; /* Center vertically */
 }
 
 .desktop-right {
@@ -80,18 +83,41 @@
   align-items: center;
   justify-content: flex-end;
   flex: 0 0 auto;
+  height: 100%; /* Full height for proper alignment */
 }
 
+/* Fixed desktop menu button alignment - perfect centering */
 .desktop-menu-button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 48px;
   height: 48px;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  /* Ensure perfect vertical centering */
+  align-self: center;
 }
 
-.desktop-menu-button:hover {
-  background: none !important;
+.desktop-menu-button:hover,
+.desktop-menu-button:focus,
+.desktop-menu-button:active {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  transform: none !important;
+}
+
+/* Override Ant Design button hover states for desktop menu button */
+.desktop-menu-button.ant-btn:hover,
+.desktop-menu-button.ant-btn:focus,
+.desktop-menu-button.ant-btn:active {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: inherit !important;
   box-shadow: none !important;
 }
 
@@ -104,8 +130,25 @@
 .desktop-logo-container {
   display: flex;
   align-items: center;
+  height: 64px; /* Match exact header height */
+  /* Ensure perfect vertical centering */
+  align-self: center;
 }
 
+/* Ensure logo itself is perfectly centered */
+.desktop-logo-container .logo {
+  display: flex;
+  align-items: center;
+  height: auto;
+  line-height: 1;
+}
+
+.desktop-logo-container .logo img {
+  display: block;
+  vertical-align: middle;
+}
+
+/* Fixed desktop avatar button alignment and removed hover effects */
 .desktop-avatar-button {
   display: flex;
   align-items: center;
@@ -113,13 +156,29 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  transition: all 0.3s ease;
   padding: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-.desktop-avatar-button:hover {
-  background: rgba(255, 20, 147, 0.1);
-  transform: scale(1.1);
+.desktop-avatar-button:hover,
+.desktop-avatar-button:focus,
+.desktop-avatar-button:active {
+  background: transparent !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Override Ant Design button hover states for desktop avatar button */
+.desktop-avatar-button.ant-btn:hover,
+.desktop-avatar-button.ant-btn:focus,
+.desktop-avatar-button.ant-btn:active {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: inherit !important;
+  box-shadow: none !important;
 }
 
 .desktop-avatar {
@@ -322,23 +381,36 @@
   width: 100%;
 }
 
-/* Mobile navigation layout */
+/* Mobile navigation layout - Fixed perfect alignment */
 .mobile-nav {
   display: none;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   padding: 0 5px;
+  height: 64px; /* Match header height */
 }
 
 .mobile-logo-container {
   flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
+  height: 64px; /* Match exact header height */
+  /* Ensure perfect vertical centering */
+  align-self: center;
 }
 
 .mobile-logo-container .logo {
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+  height: auto;
+  line-height: 1;
+}
+
+.mobile-logo-container .logo img {
+  display: block;
+  vertical-align: middle;
 }
 
 .mobile-logo-container .logo:hover {
@@ -350,21 +422,46 @@
   margin-right: 0;
 }
 
+/* Fixed mobile button alignment - perfect centering */
 .mobile-menu-button,
 .mobile-search-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  /* Ensure perfect vertical centering */
+  align-self: center;
 }
 
 .mobile-menu-button:hover,
-.mobile-search-button:hover {
-  background: rgba(255, 20, 147, 0.1);
-  transform: scale(1.1);
+.mobile-menu-button:focus,
+.mobile-menu-button:active,
+.mobile-search-button:hover,
+.mobile-search-button:focus,
+.mobile-search-button:active {
+  background: transparent !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Override Ant Design button hover states for mobile buttons */
+.mobile-menu-button.ant-btn:hover,
+.mobile-menu-button.ant-btn:focus,
+.mobile-menu-button.ant-btn:active,
+.mobile-search-button.ant-btn:hover,
+.mobile-search-button.ant-btn:focus,
+.mobile-search-button.ant-btn:active {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: inherit !important;
+  box-shadow: none !important;
 }
 
 .mobile-avatar {
@@ -374,21 +471,37 @@
   height: 32px;
 }
 
+/* Fixed mobile avatar button alignment and removed hover effects */
 .mobile-avatar-button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  padding: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
   margin-left: 10px; /* Add space between search and avatar */
 }
 
-.mobile-avatar-button:hover {
-  background: rgba(255, 20, 147, 0.1);
-  transform: scale(1.1);
+.mobile-avatar-button:hover,
+.mobile-avatar-button:focus,
+.mobile-avatar-button:active {
+  background: transparent !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Override Ant Design button hover states for mobile avatar button */
+.mobile-avatar-button.ant-btn:hover,
+.mobile-avatar-button.ant-btn:focus,
+.mobile-avatar-button.ant-btn:active {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: inherit !important;
+  box-shadow: none !important;
 }
 
 /* Mobile search overlay covering navbar */
@@ -541,13 +654,6 @@
 .recommendation-item:hover .recommendation-icon {
   color: white;
 }
-
-/* Content container */
-/* .content-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  transition: all 0.3s ease;
-} */
 
 /* Menu hover effects */
 .ant-menu-item {
@@ -730,7 +836,6 @@
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
-
 }
 
 .header-dropdown-card:hover {
@@ -818,8 +923,6 @@
   }
 }
 
-
-
 @media (max-width: 768px) {
   /* Logo styles are now handled by SVG images */
 
@@ -827,16 +930,65 @@
     display: none;
   }
 
+  /* Mobile navigation layout - Fixed perfect alignment */
+  .mobile-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 5px;
+    height: 64px; /* Match header height */
+  }
+
+  /* Fixed mobile button alignment - perfect centering */
+  .mobile-menu-button,
+  .mobile-search-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    /* Ensure perfect vertical centering */
+    align-self: center;
+  }
+
+  .mobile-logo-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 64px; /* Match exact header height */
+    /* Ensure perfect vertical centering */
+    align-self: center;
+  }
+
+  .mobile-logo-container .logo {
+    display: flex;
+    align-items: center;
+    height: auto;
+    line-height: 1;
+  }
+
+  .mobile-logo-container .logo img {
+    display: block;
+    vertical-align: middle;
+  }
+
   .mobile-nav {
     display: flex;
   }
 
   .content-container {
-    padding: 1px !important;
+    padding: 15px !important;
   }
 
   .ant-layout-content {
-    padding: px !important;
+    padding: 10px !important;
   }
 
   .ant-layout-footer {
@@ -891,7 +1043,7 @@
   }
 
   .content-container {
-    padding: 1px !important;
+    padding: 10px !important;
   }
 
   .footer-links {

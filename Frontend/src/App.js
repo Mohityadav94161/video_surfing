@@ -27,6 +27,11 @@ import MyCollections from './pages/collections/MyCollections';
 import CollectionDetail from './pages/collections/CollectionDetail';
 import CreateCollection from './pages/collections/CreateCollection';
 import TrendingPage from './pages/TrendingPage';
+import CategoryPage from './pages/CategoryPage';
+import PornstarPage from './pages/PornstarPage';
+import RecommendedPage from './pages/RecommendedPage';
+import CategoriesListPage from './pages/CategoriesListPage';
+import PornstarsListPage from './pages/PornstarsListPage';
 
 // Footer Pages
 import Support from './pages/Support';
@@ -106,6 +111,11 @@ function App() {
                 <Route path="video/:id" element={<Video />} />
                 <Route path="search" element={<Search />} />
                 <Route path="trending" element={<TrendingPage />} />
+                <Route path="categories" element={<CategoriesListPage />} />
+                <Route path="categories/:category" element={<CategoryPage />} />
+                <Route path="pornstars" element={<PornstarsListPage />} />
+                <Route path="pornstars/:pornstar" element={<PornstarPage />} />
+                <Route path="recommended" element={<RecommendedPage />} />
                 
                 {/* Footer pages */}
                 <Route path="support" element={<Support />} />

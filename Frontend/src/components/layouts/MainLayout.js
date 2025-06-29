@@ -13,7 +13,6 @@ import {
   Typography,
   Drawer,
   Modal,
-  Form,
   message,
   Row,
   Col,
@@ -63,21 +62,21 @@ const MainLayout = () => {
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [menuData, setMenuData] = useState({
-    'Trending': [],
-    'Categories': [],
-    'Pornstars': [],
-    'Recommended': [],
-    'home': []
+    Trending: [],
+    Categories: [],
+    Pornstars: [],
+    Recommended: [],
+    home: [],
   })
   const [pendingAction, setPendingAction] = useState(null)
   // Add state for displayed videos limit and pagination
   const [displayLimit, setDisplayLimit] = useState({
-    Trending: 12,
-    Categories: 12,
-    Pornstars: 12,
-    Recommended: 12
+    Trending: 6,
+    Categories: 6,
+    Pornstars: 6,
+    Recommended: 6,
   })
-  
+
   // Search recommendations
   const searchRecommendations = ["Hot", "Blonde", "Short", "Blondie", "Brunette", "Busty", "Asian", "Ebony", "Lesbian"]
 
@@ -101,8 +100,8 @@ const MainLayout = () => {
 
   // Scroll to top on route changes
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname, location.search]);
+    window.scrollTo(0, 0)
+  }, [location.pathname, location.search])
 
   // Close mobile menu when navigating
   useEffect(() => {
@@ -121,131 +120,142 @@ const MainLayout = () => {
     }
   }, [isAuthenticated, pendingAction])
 
-  useEffect(()=>{
-     const fetchMenuData = async () => {
+  useEffect(() => {
+    const fetchMenuData = async () => {
       try {
         // Fetch categories
-        const categoryResponse = await api.get("/videos/categories");
-        const categories = categoryResponse.data.data.categories || [];
-        
+        const categoryResponse = await api.get("/videos/categories")
+        const categories = categoryResponse.data.data.categories || []
+
         // Fetch tags for trending and pornstars
-        const tagsResponse = await api.get("/videos/tags");
-        const tags = tagsResponse.data.data.tags || [];
-        
+        const tagsResponse = await api.get("/videos/tags")
+        const tags = tagsResponse.data.data.tags || []
+
         // Make sure tags are properly formatted
-        const formattedTags = tags.map(tag => {
+        const formattedTags = tags.map((tag) => {
           // If tag is already an object with name property, return it
-          if (tag && typeof tag === 'object' && tag.name) {
-            return tag;
+          if (tag && typeof tag === "object" && tag.name) {
+            return tag
           }
           // If tag is a string, convert it to object with name property
-          if (typeof tag === 'string') {
-            return { name: tag };
+          if (typeof tag === "string") {
+            return { name: tag }
           }
           // Default fallback
-          return { name: String(tag || 'Unknown') };
-        });
-        
+          return { name: String(tag || "Unknown") }
+        })
+
         // For trending videos, find actual videos with isTrending flag
         const trendingResponse = await api.get("/videos", {
           params: {
             isTrending: true,
-            limit: 12
-          }
-        });
-        
+            limit: 12,
+          },
+        })
+
         // Create trending tags with thumbnails
-        const trendingVideos = trendingResponse.data.data.videos || [];
-        const trendingTags = trendingVideos.map(video => ({
+        const trendingVideos = trendingResponse.data.data.videos || []
+        const trendingTags = trendingVideos.map((video) => ({
           name: video.title,
           thumbnail: video.thumbnailUrl,
-          tag: video.tags?.[0]?.name || 'trending',
-          id: video._id
-        }));
-        
+          tag: video.tags?.[0]?.name || "trending",
+          id: video._id,
+        }))
+
         // If not enough trending videos, supplement with regular tags
         if (trendingTags.length < 12) {
           const additionalTags = formattedTags
-            .filter(tag => !trendingTags.find(t => t.tag === tag.name))
+            .filter((tag) => !trendingTags.find((t) => t.tag === tag.name))
             .slice(0, 12 - trendingTags.length)
-            .map(tag => ({
+            .map((tag) => ({
               name: tag.name,
-              tag: tag.name
-            }));
-          
-          trendingTags.push(...additionalTags);
+              tag: tag.name,
+            }))
+
+          trendingTags.push(...additionalTags)
         }
-        
+
         // Filter tags for pornstars (using some tags as pornstar names for demo)
-        const pornstarTags = formattedTags.filter(tag => 
-          ["Brunette", "Blonde", "Asian", "Ebony", "Latina", "Redhead"].includes(tag?.name)
-        ).slice(0, 12);
-        
+        const pornstarTags = formattedTags
+          .filter((tag) => ["Brunette", "Blonde", "Asian", "Ebony", "Latina", "Redhead"].includes(tag?.name))
+          .slice(0, 12)
+
         // For recommended, we'll fetch most popular videos
         const videosResponse = await api.get("/videos", {
           params: {
             sort: "-views",
-            limit: 12
-          }
-        });
-        
+            limit: 12,
+          },
+        })
+
         // Extract categories from popular videos
         const recommendedCategories = videosResponse.data.data.videos
-          .map(video => video.category)
+          .map((video) => video.category)
           .filter(Boolean)
           .filter((value, index, self) => self.indexOf(value) === index)
-          .slice(0, 12);
-        
+          .slice(0, 12)
+
         // Fallback categories if none found
-        const fallbackCategories = ["Amateur", "Anal", "Asian", "BBW", "Big Ass", "Big Tits", "Blonde", "Blowjob", "Brunette", "Cumshot", "Ebony", "MILF"];
-        const finalCategories = categories.length > 0 ? categories : fallbackCategories;
-        
+        const fallbackCategories = [
+          "Amateur",
+          "Anal",
+          "Asian",
+          "BBW",
+          "Big Ass",
+          "Big Tits",
+          "Blonde",
+          "Blowjob",
+          "Brunette",
+          "Cumshot",
+          "Ebony",
+          "MILF",
+        ]
+        const finalCategories = categories.length > 0 ? categories : fallbackCategories
+
         // Fallback recommended if none found
-        const finalRecommended = recommendedCategories.length > 0 ? recommendedCategories : fallbackCategories.slice(0, 8);
-        
+        const finalRecommended =
+          recommendedCategories.length > 0 ? recommendedCategories : fallbackCategories.slice(0, 8)
+
         // Enhanced pornstar tags with more variety
         const enhancedPornstarTags = [
           ...pornstarTags,
-          ...formattedTags.filter(tag => 
-            ["Teen", "MILF", "Mature", "Young", "Petite", "Curvy"].includes(tag?.name)
-          ).slice(0, 12 - pornstarTags.length)
-        ];
-        
+          ...formattedTags
+            .filter((tag) => ["Teen", "MILF", "Mature", "Young", "Petite", "Curvy"].includes(tag?.name))
+            .slice(0, 12 - pornstarTags.length),
+        ]
+
         // Add home menu with recent items
-        const homeMenu = videosResponse.data.data.videos
-          .slice(0, 6)
-          .map(video => ({ 
-            name: video.title,
-            thumbnail: video.thumbnailUrl,
-            id: video._id
-          }));
-        
+        const homeMenu = videosResponse.data.data.videos.slice(0, 6).map((video) => ({
+          name: video.title,
+          thumbnail: video.thumbnailUrl,
+          id: video._id,
+        }))
+
         setMenuData({
-          'home': homeMenu,
-          'Categories': finalCategories,
-          'Trending': trendingTags,
-          'Pornstars': enhancedPornstarTags,
-          'Recommended': finalRecommended
-        });
+          home: homeMenu,
+          Categories: finalCategories,
+          Trending: trendingTags,
+          Pornstars: enhancedPornstarTags,
+          Recommended: finalRecommended,
+        })
       } catch (err) {
-        console.error("Error fetching menu data:", err);
+        console.error("Error fetching menu data:", err)
       }
-    };
+    }
 
-    fetchMenuData();
-
-  },[])
-  console.log('object ',menuData[activeDropdown])
+    fetchMenuData()
+  }, [])
+  console.log("object ", menuData[activeDropdown])
 
   const handleSearch = (value) => {
     if (value.trim()) {
       // First save the search term to avoid race conditions
-      const searchValue = value.trim();
-      setSearchTerm(searchValue);
-      
+      const searchValue = value.trim()
+      setSearchTerm(searchValue)
+
       // Navigate to search page with the query
       navigate(`/search?q=${encodeURIComponent(searchValue)}`)
-      
+
       // Close search overlay on mobile
       setSearchVisible(false)
     }
@@ -437,6 +447,17 @@ const MainLayout = () => {
               icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
               onClick={() => setDesktopMenuOpen(!desktopMenuOpen)}
               className="desktop-menu-button"
+              style={{
+                border: "none",
+                background: "transparent",
+                boxShadow: "none",
+                padding: 0,
+                width: "48px",
+                height: "48px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             />
 
             <div className="desktop-logo-container">
@@ -468,14 +489,28 @@ const MainLayout = () => {
               trigger={["click"]}
               overlayClassName="desktop-avatar-dropdown"
             >
-              <Button type="text" className="desktop-avatar-button">
+              <Button
+                type="text"
+                className="desktop-avatar-button"
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  boxShadow: "none",
+                  padding: 0,
+                  width: "48px",
+                  height: "48px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 {!isAuthenticated ? (
                   <Avatar className="desktop-avatar" icon={<UserOutlined />} />
                 ) : (
                   <Badge dot={isAdmin} color="green">
-                    <Avatar 
-                      className="desktop-avatar" 
-                      src={user?.avatar || '/avatars/banana.png'}
+                    <Avatar
+                      className="desktop-avatar"
+                      src={user?.avatar || "/avatars/banana.png"}
                       icon={!user?.avatar && <UserOutlined />}
                     />
                   </Badge>
@@ -492,12 +527,23 @@ const MainLayout = () => {
             icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
             onClick={() => setMobileMenuOpen(true)}
             className="mobile-menu-button"
+            style={{
+              border: "none",
+              background: "transparent",
+              boxShadow: "none",
+              padding: 0,
+              width: "40px",
+              height: "40px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           />
 
           <div className="mobile-logo-container">
-          <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
-                <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "24px", width: "auto" }} />
-              </Link>
+            <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
+              <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "24px", width: "auto" }} />
+            </Link>
           </div>
 
           <Button
@@ -505,12 +551,38 @@ const MainLayout = () => {
             icon={<SearchOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
             onClick={() => setSearchVisible(!searchVisible)}
             className="mobile-search-button"
+            style={{
+              border: "none",
+              background: "transparent",
+              boxShadow: "none",
+              padding: 0,
+              width: "40px",
+              height: "40px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           />
 
-          <Button type="text" onClick={() => setAvatarMenuOpen(true)} className="mobile-avatar-button">
-            <Avatar 
-              className="mobile-avatar" 
-              src={isAuthenticated ? (user?.avatar || '/avatars/banana.png') : undefined}
+          <Button
+            type="text"
+            onClick={() => setAvatarMenuOpen(true)}
+            className="mobile-avatar-button"
+            style={{
+              border: "none",
+              background: "transparent",
+              boxShadow: "none",
+              padding: 0,
+              width: "40px",
+              height: "40px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Avatar
+              className="mobile-avatar"
+              src={isAuthenticated ? user?.avatar || "/avatars/banana.png" : undefined}
               icon={<UserOutlined />}
             />
           </Button>
@@ -567,7 +639,7 @@ const MainLayout = () => {
           <div
             className="header-menu-item"
             onClick={() => {
-              window.location.href = "/";
+              window.location.href = "/"
             }}
           >
             Home
@@ -576,29 +648,33 @@ const MainLayout = () => {
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Trending")}
             onMouseLeave={handleHeaderMenuLeave}
+            onClick={() => navigate("/trending")}
           >
-            Trending <CaretDownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+            Trending <CaretDownOutlined style={{ fontSize: "12px", marginLeft: "4px" }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Categories")}
             onMouseLeave={handleHeaderMenuLeave}
+            onClick={() => navigate("/categories")}
           >
-            Categories <CaretDownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+            Categories <CaretDownOutlined style={{ fontSize: "12px", marginLeft: "4px" }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Pornstars")}
             onMouseLeave={handleHeaderMenuLeave}
+            onClick={() => navigate("/pornstars")}
           >
-            Pornstars <CaretDownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+            Pornstars <CaretDownOutlined style={{ fontSize: "12px", marginLeft: "4px" }} />
           </div>
           <div
             className="header-menu-item"
             onMouseEnter={() => handleHeaderMenuHover("Recommended")}
             onMouseLeave={handleHeaderMenuLeave}
+            onClick={() => navigate("/recommended")}
           >
-            Recommended <CaretDownOutlined style={{ fontSize: '12px', marginLeft: '4px' }} />
+            Recommended <CaretDownOutlined style={{ fontSize: "12px", marginLeft: "4px" }} />
           </div>
         </div>
       </div>
@@ -613,115 +689,107 @@ const MainLayout = () => {
             onMouseLeave={handleHeaderMenuLeave}
           >
             <div className="header-dropdown-grid">
-              {activeDropdown === 'Trending' && Array.isArray(menuData[activeDropdown]) && menuData[activeDropdown].slice(0, displayLimit.Trending).map((item, index) => (
-                <div
-                  key={index}
-                  className="header-dropdown-card"
-                  onClick={() => {
-                    if (item.id) {
-                      // If it's a video, navigate to video page
-                      navigate(`/video/${item.id}`);
-                    } else {
-                      // Otherwise filter by tag
-                      navigate(`/?tag=${item.tag || item.name}`);
-                    }
-                    setActiveDropdown(null);
-                    
-                    // Force a page refresh to ensure filters apply correctly
-                    if (window.location.pathname === '/' && !item.id) {
-                      window.location.reload();
-                    }
-                  }}
-                >
-                  <img 
-                    src={item.thumbnail || `/placeholder.svg?height=120&width=200&text=${encodeURIComponent(item.name)}`} 
-                    alt={item.name} 
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/home.jpg";
-                    }}
-                  />
-                  <div className="header-dropdown-card-content">
-                    <h4 className="header-dropdown-card-title">
-                      {item.name}
-                    </h4>
-                  </div>
-                </div>
-              ))}
-              
-              {activeDropdown === 'Categories' && Array.isArray(menuData[activeDropdown]) && menuData[activeDropdown].slice(0, displayLimit.Categories).map((item, index) => (
-                <div
-                  key={index}
-                  className="header-dropdown-card"
-                  onClick={() => {
-                    navigate(`/?category=${item}`);
-                    setActiveDropdown(null);
-                    
-                    // Force a page refresh to ensure filters apply correctly
-                    if (window.location.pathname === '/') {
-                      window.location.reload();
-                    }
-                  }}
-                >
-                  <img 
-                    src={`/categories/${item.toLowerCase()}.jpg`} 
-                    alt={item} 
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      // Fallback to a default category image or home.jpg
-                      e.target.src = "/home.jpg";
-                    }}
-                  />
-                  <div className="header-dropdown-card-content">
-                    <h4 className="header-dropdown-card-title">
-                      {item}
-                    </h4>
-                  </div>
-                </div>
-              ))}
+              {activeDropdown === "Trending" &&
+                Array.isArray(menuData[activeDropdown]) &&
+                menuData[activeDropdown].slice(0, displayLimit.Trending).map((item, index) => (
+                  <div
+                    key={index}
+                    className="header-dropdown-card"
+                    onClick={() => {
+                      if (item.id) {
+                        // If it's a video, navigate to video page
+                        navigate(`/video/${item.id}`)
+                      } else {
+                        // Otherwise filter by tag
+                        navigate(`/?tag=${item.tag || item.name}`)
+                      }
+                      setActiveDropdown(null)
 
-              {(activeDropdown !== 'home' && activeDropdown !== 'Trending' && activeDropdown !== 'Categories') && 
-               Array.isArray(menuData[activeDropdown]) && 
-               menuData[activeDropdown].slice(0, displayLimit[activeDropdown]).map((item, index) => (
-                <div
-                  key={index}
-                  className="header-dropdown-card"
-                  onClick={() => {
-                    // Handle navigation based on dropdown type
-                    if (activeDropdown === 'Pornstars') {
-                      navigate(`/?tag=${item?.name || item}`);
-                    } else if (activeDropdown === 'Recommended') {
-                      navigate(`/?category=${item}`);
-                    }
-                    setActiveDropdown(null);
-                    
-                    // Force a page refresh to ensure filters apply correctly
-                    if (window.location.pathname === '/') {
-                      window.location.reload();
-                    }
-                  }}
-                >
-                  <img 
-                    src={`/placeholder.svg?height=120&width=200&text=${encodeURIComponent(item?.name || item)}`} 
-                    alt={`${activeDropdown} ${index + 1}`} 
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/home.jpg";
+                      // Force a page refresh to ensure filters apply correctly
+                      if (window.location.pathname === "/" && !item.id) {
+                        window.location.reload()
+                      }
                     }}
-                  />
-                  <div className="header-dropdown-card-content">
-                    <h4 className="header-dropdown-card-title">
-                      {item?.name || item}
-                    </h4>
+                  >
+                    <img
+                      src={
+                        item.thumbnail || `/placeholder.svg?height=120&width=200&text=${encodeURIComponent(item.name)}`
+                      }
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.onerror = null
+                        e.target.src = "/home.jpg"
+                      }}
+                    />
+                    <div className="header-dropdown-card-content">
+                      <h4 className="header-dropdown-card-title">{item.name}</h4>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+
+              {activeDropdown === "Categories" &&
+                Array.isArray(menuData[activeDropdown]) &&
+                menuData[activeDropdown].slice(0, displayLimit.Categories).map((item, index) => (
+                  <div
+                    key={index}
+                    className="header-dropdown-card"
+                    onClick={() => {
+                      navigate(`/categories/${encodeURIComponent(item)}`)
+                      setActiveDropdown(null)
+                    }}
+                  >
+                    <img
+                      src={`/categories/${item.toLowerCase()}.jpg`}
+                      alt={item}
+                      onError={(e) => {
+                        e.target.onerror = null
+                        // Fallback to a default category image or home.jpg
+                        e.target.src = "/home.jpg"
+                      }}
+                    />
+                    <div className="header-dropdown-card-content">
+                      <h4 className="header-dropdown-card-title">{item}</h4>
+                    </div>
+                  </div>
+                ))}
+
+              {activeDropdown !== "home" &&
+                activeDropdown !== "Trending" &&
+                activeDropdown !== "Categories" &&
+                Array.isArray(menuData[activeDropdown]) &&
+                menuData[activeDropdown].slice(0, displayLimit[activeDropdown]).map((item, index) => (
+                  <div
+                    key={index}
+                    className="header-dropdown-card"
+                    onClick={() => {
+                      // Handle navigation based on dropdown type
+                      if (activeDropdown === "Pornstars") {
+                        navigate(`/pornstars/${encodeURIComponent(item?.name || item)}`)
+                      } else if (activeDropdown === "Recommended") {
+                        navigate(`/recommended`)
+                      }
+                      setActiveDropdown(null)
+                    }}
+                  >
+                    <img
+                      src={`/placeholder.svg?height=120&width=200&text=${encodeURIComponent(item?.name || item)}`}
+                      alt={`${activeDropdown} ${index + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null
+                        e.target.src = "/home.jpg"
+                      }}
+                    />
+                    <div className="header-dropdown-card-content">
+                      <h4 className="header-dropdown-card-title">{item?.name || item}</h4>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         </>
       )}
 
-      {/* Desktop menu drawer */}
+      {/* Desktop menu drawer - Fixed alignment */}
       <Drawer
         title={
           <div style={{ display: "flex", alignItems: "center", color: "white" }}>
@@ -729,14 +797,20 @@ const MainLayout = () => {
               type="text"
               icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
               onClick={() => setDesktopMenuOpen(false)}
-              style={{ padding: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", height: "48px", width: "48px" }}
+              style={{
+                padding: 0,
+                marginRight: 8,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "48px",
+                width: "48px",
+                border: "none",
+                background: "transparent",
+                boxShadow: "none",
+              }}
             />
-            <Link
-              to="/"
-              className="logo"
-              aria-label="XFansTube Home"
-              onClick={handleLogoClick}
-            >
+            <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
               <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "36px", width: "auto" }} />
             </Link>
           </div>
@@ -746,7 +820,7 @@ const MainLayout = () => {
         open={desktopMenuOpen}
         width={360}
         styles={{
-          header: { backgroundColor: "black", color: "white" },
+          header: { backgroundColor: "black", color: "white", paddingLeft: "40px" }, // Align with navbar
           body: { backgroundColor: "black", padding: 0 },
           footer: { backgroundColor: "black" },
         }}
@@ -817,7 +891,7 @@ const MainLayout = () => {
         </div>
       </Drawer>
 
-      {/* Mobile menu drawer - Footer links only */}
+      {/* Mobile menu drawer - Fixed alignment */}
       <Drawer
         title={
           <div style={{ display: "flex", alignItems: "center", color: "white" }}>
@@ -825,14 +899,20 @@ const MainLayout = () => {
               type="text"
               icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
               onClick={() => setMobileMenuOpen(false)}
-              style={{ padding: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", height: "36px", width: "36px" }}
+              style={{
+                padding: 0,
+                marginRight: 8,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "40px",
+                width: "40px",
+                border: "none",
+                background: "transparent",
+                boxShadow: "none",
+              }}
             />
-            <Link
-              to="/"
-              className="logo"
-              aria-label="XFansTube Home"
-              onClick={handleLogoClick}
-            >
+            <Link to="/" className="logo" aria-label="XFansTube Home" onClick={handleLogoClick}>
               <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "24px", width: "auto" }} />
             </Link>
           </div>
@@ -842,7 +922,7 @@ const MainLayout = () => {
         open={mobileMenuOpen}
         width={280}
         styles={{
-          header: { backgroundColor: "black", color: "white" },
+          header: { backgroundColor: "black", color: "white", paddingLeft: "20px" }, // Align with mobile navbar
           body: { backgroundColor: "black", padding: 0 },
           footer: { backgroundColor: "black" },
         }}
@@ -1079,17 +1159,17 @@ const MainLayout = () => {
         centered
         className="auth-modal custom-login-modal"
       >
-        <LoginForm 
+        <LoginForm
           onLoginSuccess={(user) => {
-            console.log('MainLayout: Login success callback triggered with user:', user);
-            setLoginVisible(false);
-            message.success("Logged in successfully!");
-            console.log('MainLayout: Reloading page to refresh auth state');
-            window.location.reload(); // Ensure the page refreshes with the new auth state
+            console.log("MainLayout: Login success callback triggered with user:", user)
+            setLoginVisible(false)
+            message.success("Logged in successfully!")
+            console.log("MainLayout: Reloading page to refresh auth state")
+            window.location.reload() // Ensure the page refreshes with the new auth state
           }}
           onSwitchToRegister={() => {
-            setLoginVisible(false);
-            setRegisterVisible(true);
+            setLoginVisible(false)
+            setRegisterVisible(true)
           }}
         />
       </Modal>
@@ -1103,15 +1183,15 @@ const MainLayout = () => {
         centered
         className="auth-modal custom-register-modal"
       >
-        <RegisterForm 
+        <RegisterForm
           onRegisterSuccess={() => {
-            setRegisterVisible(false);
-            message.success("Registered successfully!");
-            window.location.reload(); // Ensure the page refreshes with the new auth state
+            setRegisterVisible(false)
+            message.success("Registered successfully!")
+            window.location.reload() // Ensure the page refreshes with the new auth state
           }}
           onSwitchToLogin={() => {
-            setRegisterVisible(false);
-            setLoginVisible(true);
+            setRegisterVisible(false)
+            setLoginVisible(true)
           }}
         />
       </Modal>
@@ -1130,13 +1210,13 @@ const MainLayout = () => {
                 Help & Support
               </Title>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <a 
-                  href="/support" 
-                  className="footer-link" 
+                <a
+                  href="/support"
+                  className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = "/support";
+                    e.preventDefault()
+                    window.location.href = "/support"
                   }}
                 >
                   Support Center
@@ -1146,31 +1226,31 @@ const MainLayout = () => {
                   className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = "/support?page=contact-us";
+                    e.preventDefault()
+                    window.location.href = "/support?page=contact-us"
                   }}
                 >
                   Contact Us
                 </a>
-                <a 
-                  href="/faq" 
-                  className="footer-link" 
+                <a
+                  href="/faq"
+                  className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = "/faq";
+                    e.preventDefault()
+                    window.location.href = "/faq"
                   }}
                 >
                   FAQs
                 </a>
                 {isAuthenticated && (
-                  <a 
-                    href="/feedback" 
-                    className="footer-link" 
+                  <a
+                    href="/feedback"
+                    className="footer-link"
                     style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                     onClick={(e) => {
-                      e.preventDefault();
-                      window.location.href = "/feedback";
+                      e.preventDefault()
+                      window.location.href = "/feedback"
                     }}
                   >
                     Feedback
@@ -1184,35 +1264,35 @@ const MainLayout = () => {
                 Legal
               </Title>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <a 
-                  href="/terms-of-service" 
-                  className="footer-link" 
+                <a
+                  href="/terms-of-service"
+                  className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = "/terms-of-service";
+                    e.preventDefault()
+                    window.location.href = "/terms-of-service"
                   }}
                 >
                   Terms of Service
                 </a>
-                <a 
-                  href="/privacy-policy" 
-                  className="footer-link" 
+                <a
+                  href="/privacy-policy"
+                  className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = "/privacy-policy";
+                    e.preventDefault()
+                    window.location.href = "/privacy-policy"
                   }}
                 >
                   Privacy Policy
                 </a>
-                <a 
-                  href="/support?page=eu-dsa" 
-                  className="footer-link" 
+                <a
+                  href="/support?page=eu-dsa"
+                  className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = "/support?page=eu-dsa";
+                    e.preventDefault()
+                    window.location.href = "/support?page=eu-dsa"
                   }}
                 >
                   EU DSA
@@ -1222,8 +1302,8 @@ const MainLayout = () => {
                   className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = "/support?page=2257-statement";
+                    e.preventDefault()
+                    window.location.href = "/support?page=2257-statement"
                   }}
                 >
                   2257 Statement
@@ -1283,8 +1363,8 @@ const MainLayout = () => {
                   className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    handleProtectedAction(() => navigate("/upload-video"));
+                    e.preventDefault()
+                    handleProtectedAction(() => navigate("/upload-video"))
                   }}
                 >
                   Upload Videos
@@ -1293,8 +1373,8 @@ const MainLayout = () => {
                   className="footer-link"
                   style={{ margin: "5px 0", color: "#FF1493", cursor: "pointer" }}
                   onClick={(e) => {
-                    e.preventDefault();
-                    handleProtectedAction(() => navigate("/profile"));
+                    e.preventDefault()
+                    handleProtectedAction(() => navigate("/profile"))
                   }}
                 >
                   Manage Profile
@@ -1304,16 +1384,20 @@ const MainLayout = () => {
           </Row>
 
           <Divider style={{ margin: "20px 0", color: "rgba(255, 255, 255, 0.80)" }} />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <div style={{ flex: 1, textAlign: 'center' }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            <div style={{ flex: 1, textAlign: "center" }}>
               <Text style={{ color: "rgba(255, 255, 255, 0.80)" }}>
-              <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "20px", width: "auto", marginRight: "8px", verticalAlign: "middle" }} />
-              ©{new Date().getFullYear()} - All rights reserved
+                <img
+                  src="/xfans_logo.svg"
+                  alt="XFansTube"
+                  style={{ height: "20px", width: "auto", marginRight: "8px", verticalAlign: "middle" }}
+                />
+                ©{new Date().getFullYear()} - All rights reserved
               </Text>
             </div>
-              <a href="https://www.rtalabel.org/" target="_blank" rel="noopener noreferrer">
-                <img src="/RTA_v1.svg" alt="RTA" style={{ height: '24px' }} />
-              </a>
+            <a href="https://www.rtalabel.org/" target="_blank" rel="noopener noreferrer">
+              <img src="/RTA_v1.svg" alt="RTA" style={{ height: "24px" }} />
+            </a>
           </div>
         </div>
       </Footer>
