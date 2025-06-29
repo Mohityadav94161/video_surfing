@@ -727,9 +727,9 @@ const MainLayout = () => {
           <div style={{ display: "flex", alignItems: "center", color: "white" }}>
             <Button
               type="text"
-              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "36px" }} />}
+              icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
               onClick={() => setDesktopMenuOpen(false)}
-              style={{ padding: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", height: "36px" }}
+              style={{ padding: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", height: "48px", width: "48px" }}
             />
             <Link
               to="/"
@@ -825,7 +825,7 @@ const MainLayout = () => {
               type="text"
               icon={<MenuOutlined style={{ color: "#FF1493", fontSize: "24px" }} />}
               onClick={() => setMobileMenuOpen(false)}
-              style={{ padding: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", height: "24px" }}
+              style={{ padding: 0, marginRight: 8, display: "flex", alignItems: "center", justifyContent: "center", height: "36px", width: "36px" }}
             />
             <Link
               to="/"
@@ -1307,7 +1307,8 @@ const MainLayout = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ flex: 1, textAlign: 'center' }}>
               <Text style={{ color: "rgba(255, 255, 255, 0.80)" }}>
-              <span className="logo-text"><span>XFans</span><span style={{color:'#fff'}}>Tube</span></span> ©{new Date().getFullYear()} - All rights reserved
+              <img src="/xfans_logo.svg" alt="XFansTube" style={{ height: "20px", width: "auto", marginRight: "8px", verticalAlign: "middle" }} />
+              ©{new Date().getFullYear()} - All rights reserved
               </Text>
             </div>
               <a href="https://www.rtalabel.org/" target="_blank" rel="noopener noreferrer">

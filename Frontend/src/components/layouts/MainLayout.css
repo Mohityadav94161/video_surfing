@@ -57,6 +57,7 @@
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  height: 60px;
 }
 
 .desktop-left {
@@ -85,9 +86,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  transition: all 0.3s ease;
+  width: 48px;
+  height: 48px;
+}
+
+.desktop-menu-button:hover {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove hover effects from drawer menu buttons */
+.ant-drawer-header .ant-btn:hover {
+  background: none !important;
+  box-shadow: none !important;
 }
 
 .desktop-logo-container {
@@ -99,8 +110,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   transition: all 0.3s ease;
   padding: 0;

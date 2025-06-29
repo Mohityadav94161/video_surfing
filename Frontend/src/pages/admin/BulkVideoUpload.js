@@ -46,7 +46,8 @@ import {
   AppleOutlined,
   MobileOutlined,
   EyeOutlined,
-  TagsOutlined
+  TagsOutlined,
+  VideoCameraOutlined
 } from '@ant-design/icons';
 import axios, { longRunningAxios } from '../../utils/axiosConfig';
 import { useBackgroundTask } from '../../contexts/BackgroundTaskContext';
