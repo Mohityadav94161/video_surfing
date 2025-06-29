@@ -145,7 +145,6 @@
 
 .desktop-logo-container .logo img {
   display: block;
-  vertical-align: middle;
 }
 
 /* Fixed desktop avatar button alignment and removed hover effects */
@@ -410,7 +409,6 @@
 
 .mobile-logo-container .logo img {
   display: block;
-  vertical-align: middle;
 }
 
 .mobile-logo-container .logo:hover {
@@ -976,7 +974,6 @@
 
   .mobile-logo-container .logo img {
     display: block;
-    vertical-align: middle;
   }
 
   .mobile-nav {
