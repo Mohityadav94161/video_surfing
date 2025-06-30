@@ -22,7 +22,7 @@ const GlobalCaptchaModal = () => {
           ) : (
             <SafetyOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
           )}
-          {isAutoTriggered ? 'Action Blocked - Verification Required' : 'Security Verification Required'}
+          {isAutoTriggered ? 'Please verify you are not a bot' : 'Please verify you are not a bot'}
         </div>
       }
       open={captchaModalVisible}
@@ -32,22 +32,22 @@ const GlobalCaptchaModal = () => {
       centered
       width={450}
     >
-      {isAutoTriggered && (
+      {/* {isAutoTriggered && (
         <Alert
-          message="Request Blocked"
-          description="Your recent action was blocked for security reasons. Complete the verification below to continue."
+          message=""
+          description=""
           type="warning"
           showIcon
           style={{ marginBottom: 16 }}
         />
-      )}
+      )} */}
       
       <div style={{ textAlign: "center", marginBottom: "15px" }}>
         <p>
-          {isAutoTriggered 
-            ? "Please complete the security verification to retry your action and continue using the platform."
+          {/* {isAutoTriggered 
+            ? "Please complete the security verification to retr your action and continue using the platform."
             : "Please complete the security verification below to continue browsing. This helps us prevent automated access and protect our content."
-          }
+          } */}
         </p>
         {isAutoTriggered && (
           <p style={{ fontSize: '12px', color: '#666' }}>

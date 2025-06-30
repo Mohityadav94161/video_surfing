@@ -12,13 +12,13 @@ export const setCaptchaContextRef = (contextRef) => {
 // Function to reset captcha in progress flag
 export const resetCaptchaInProgress = () => {
   captchaInProgress = false;
-  console.log('Captcha in progress flag reset');
+  // console.log('Captcha in progress flag reset');
 };
 
 // Use the full API base URL from environment variable which includes /api
-console.log('🌍 Environment variable REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+// console.log('🌍 Environment variable REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
 const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-console.log('📍 Final API base URL configured as:', apiBaseUrl);
+// console.log('📍 Final API base URL configured as:', apiBaseUrl);
 
 // Set up default configuration
 const axiosInstance = axios.create({
@@ -51,7 +51,7 @@ const requestInterceptor = config => {
   const currentToken = localStorage.getItem('token');
   if (currentToken && !config.headers['Authorization']) {
     config.headers['Authorization'] = `Bearer ${currentToken}`;
-    console.log(`Adding Authorization header to request to ${config.url}`);
+    // console.log(`Adding Authorization header to request to ${config.url}`);
   }
   
   // Log full request details
@@ -101,7 +101,7 @@ const responseErrorInterceptor = error => {
         // Check if captcha is already in progress to prevent multiple modals
         if (!captchaInProgress) {
           captchaInProgress = true;
-          console.log('Starting captcha verification process');
+          // console.log('Starting captcha verification process');
           
           // Reset captcha verification and show modal (mark as auto-triggered)
           captchaContextRef.resetCaptchaVerification(true);

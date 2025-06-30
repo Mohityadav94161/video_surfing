@@ -70,7 +70,7 @@ export const CollectionProvider = ({ children }) => {
       console.error('Error fetching collections:', err);
       
       if (err.response?.status === 404 || err.message.includes('Network Error')) {
-        console.log('API not available, using mock collection data');
+        // console.log('API not available, using mock collection data');
         setCollections(MOCK_COLLECTIONS);
         message.warning('Using sample collection data for demonstration');
       } else {

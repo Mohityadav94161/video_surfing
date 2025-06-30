@@ -91,7 +91,7 @@ const Dashboard = () => {
         // Verify token is valid and user is admin
         const result = await loadUser(true);
         if (!result.success || !result.user || result.user.role !== 'admin') {
-          console.log('Admin verification failed:', result);
+          // console.log('Admin verification failed:', result);
           message.error('Authentication failed. Please login again.');
           navigate('/');
         }
@@ -107,7 +107,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        console.log('Fetching categories with auth token');
+        // console.log('Fetching categories with auth token');
         const response = await axiosInstance.get('/videos/categories');
         setCategories(response.data.data.categories || []);
       } catch (err) {
@@ -149,12 +149,12 @@ const Dashboard = () => {
         // Sort by newest first
         params.set('sort', '-createdAt');
         
-        console.log('Fetching videos list with auth token');
+        // console.log('Fetching videos list with auth token');
         // Get videos with filters and pagination
         const videosResponse = await axiosInstance.get(`/videos?${params.toString()}`);
         
         // Get stats data - for admin, we show all videos including inactive ones
-        console.log('Fetching video stats with auth token');
+        // console.log('Fetching video stats with auth token');
         const statsPromise = axiosInstance.get('/videos/stats');
         const tagsPromise = axiosInstance.get('/videos/tags');
         
@@ -172,7 +172,7 @@ const Dashboard = () => {
         
         // Update state
         setVideos(videosData);
-        console.log('vide data ',videosData)
+        // console.log('vide data ',videosData)
         setStats({
           totalVideos,
           totalViews,

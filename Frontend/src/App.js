@@ -62,8 +62,8 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   }
   
   if (adminOnly && (!user || user.role !== 'admin')) {
-    console.log('Admin access required but user is not admin, redirecting to home');
-    message.error('You do not have admin privileges.');
+    // console.log('Admin access required but user is not admin, redirecting to home');
+    // message.error('You do not have admin privileges.');
     return <Navigate to="/" replace />;
   }
   

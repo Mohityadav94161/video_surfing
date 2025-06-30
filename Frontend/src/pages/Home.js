@@ -174,8 +174,8 @@ const Home = () => {
         setSelectedTag(matchedTag || null)
         const tagName = matchedTag?.name
 
-        console.log("Tag param:", tagParam)
-        console.log("Selected tag:", matchedTag)
+        // console.log("Tag param:", tagParam)
+        // console.log("Selected tag:", matchedTag)
 
         // 3. Fetch Videos based on tag/category + currentPage
         const videoResponse = await api.get("/videos", {
@@ -188,13 +188,13 @@ const Home = () => {
           },
         })
 
-        console.log("API request params:", {
-          page: currentPage,
-          limit: 12,
-          tag: tagName,
-          category: categoryParam,
-          sort: getSortParameter(sortOption),
-        })
+        // console.log("API request params:", {
+        //   page: currentPage,
+        //   limit: 12,
+        //   tag: tagName,
+        //   category: categoryParam,
+        //   sort: getSortParameter(sortOption),
+        // })
 
         // Extract data from response
         const responseData = videoResponse.data
@@ -203,9 +203,9 @@ const Home = () => {
         const totalPages = responseData.totalPages
         const currentPageFromAPI = responseData.currentPage || 1
 
-        console.log("API Response:", responseData)
-        console.log(`Total videos: ${totalCount}, Pages: ${totalPages}, Current page: ${currentPageFromAPI}`)
-        console.log("Fetched videos count:", fetchedVideos.length)
+        // console.log("API Response:", responseData)
+        // console.log(`Total videos: ${totalCount}, Pages: ${totalPages}, Current page: ${currentPageFromAPI}`)
+        // console.log("Fetched videos count:", fetchedVideos.length)
 
         const processedVideos = fetchedVideos.map((video) => ({
           ...video,
@@ -276,8 +276,8 @@ const Home = () => {
         filtered = filtered.slice(0, 20)
       }
 
-      console.log("Original videos count:", videos.length)
-      console.log("Filtered videos count:", filtered.length)
+      // console.log("Original videos count:", videos.length)
+      // console.log("Filtered videos count:", filtered.length)
 
       setFilteredVideos(filtered)
     }
@@ -299,7 +299,7 @@ const Home = () => {
   const handleTagClick = (tag) => {
     if (!tag || !tag.name) return // Make sure we have a valid tag
 
-    console.log("Clicked tag:", tag)
+    // console.log("Clicked tag:", tag)
     const currentTag = searchParams.get("tag")
 
     // Clear any category filter first
@@ -374,7 +374,7 @@ const Home = () => {
           localStorage.getItem("accessToken") ||
           localStorage.getItem("jwt")
 
-        console.log("Token found:", !!token) // Debug log
+        // console.log("Token found:", !!token) // Debug log
 
         if (token) {
           // Verify token with server
@@ -387,21 +387,21 @@ const Home = () => {
 
             if (response.data.success) {
               setIsAuthenticated(true)
-              console.log("User authenticated successfully") // Debug log
+              // console.log("User authenticated successfully") // Debug log
             } else {
               setIsAuthenticated(false)
-              console.log("Token verification failed") // Debug log
+              // console.log("Token verification failed") // Debug log
             }
           } catch (verifyError) {
             console.error("Token verification error:", verifyError)
             // If verification fails, still try to use the token
             // Some APIs might not have a verify endpoint
             setIsAuthenticated(true)
-            console.log("Using token without verification") // Debug log
+            // console.log("Using token without verification") // Debug log
           }
         } else {
           setIsAuthenticated(false)
-          console.log("No token found") // Debug log
+          // console.log("No token found") // Debug log
         }
       } catch (err) {
         console.error("Error checking authentication:", err)
@@ -523,7 +523,7 @@ const Home = () => {
         })
         .then((response) => {
           const trendingVideos = response.data.data.videos || []
-          console.log("Trending videos:", trendingVideos.length)
+          // console.log("Trending videos:", trendingVideos.length)
           if (trendingVideos.length > 0) {
             setVideos(trendingVideos)
             setFilteredVideos(trendingVideos)

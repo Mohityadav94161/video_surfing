@@ -107,12 +107,12 @@ const SupportSubmissions = () => {
         params.set('limit', pagination.pageSize);
         
         // Get submissions with filters and pagination
-        console.log('Making request to:', `/support/submissions?${params.toString()}`);
-        console.log('Axios baseURL:', axiosInstance.defaults.baseURL);
+        // console.log('Making request to:', `/support/submissions?${params.toString()}`);
+        // console.log('Axios baseURL:', axiosInstance.defaults.baseURL);
         const submissionsResponse = await axiosInstance.get(`/support/submissions?${params.toString()}`);
         
         // Get stats data
-        console.log('Making request to:', '/support/stats');
+        // console.log('Making request to:', '/support/stats');
         const statsResponse = await axiosInstance.get('/support/stats');
         
         // Process submissions data

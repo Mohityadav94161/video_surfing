@@ -109,7 +109,7 @@ export const BackgroundTaskProvider = ({ children }) => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('Notification clicked, navigating to bulk upload...');
+                  // console.log('Notification clicked, navigating to bulk upload...');
                   // Navigate to bulk upload page
                   window.location.href = '/admin/bulk-upload';
                 }}
@@ -129,7 +129,7 @@ export const BackgroundTaskProvider = ({ children }) => {
         duration: 12,
         placement: 'bottomRight',
         onClick: () => {
-          console.log('Notification body clicked, navigating to bulk upload...');
+          // console.log('Notification body clicked, navigating to bulk upload...');
           // Also make the entire notification clickable
           window.location.href = '/admin/bulk-upload';
         },

@@ -35,12 +35,12 @@ const AdminLayout = () => {
   // Verify admin authentication only once on component mount
   useEffect(() => {
     const verifyAdminAuth = async () => {
-      console.log('Verifying admin authentication...');
+      // console.log('Verifying admin authentication...');
       setVerifyingAuth(true);
       
       // Check if user is already loaded and is admin
       if (user && user.role === 'admin') {
-        console.log('User already authenticated as admin');
+        // console.log('User already authenticated as admin');
         setVerifyingAuth(false);
         return;
       }
@@ -48,23 +48,23 @@ const AdminLayout = () => {
       try {
         // Try to load the user only if we need to
         const result = await loadUser(true);
-        console.log('Load user result:', result);
+        // console.log('Load user result:', result);
         
         if (!result.success) {
-          console.log('Authentication failed:', result.reason);
+          // console.log('Authentication failed:', result.reason);
           message.error('Authentication failed. Please login again.');
           navigate('/');
           return;
         }
         
         if (!result.user || result.user.role !== 'admin') {
-          console.log('Not an admin user:', result.user);
+          // console.log('Not an admin user:', result.user);
           message.error('You do not have admin privileges.');
           navigate('/');
           return;
         }
         
-        console.log('Admin authentication successful');
+        // console.log('Admin authentication successful');
       } catch (err) {
         console.error('Verification error:', err);
         message.error('Authentication error. Please login again.');
@@ -108,7 +108,7 @@ const AdminLayout = () => {
   // If not admin after verification, we shouldn't get here due to the redirect,
   // but this is an extra safety check
   if (!isAdmin) {
-    console.log('User is not admin, redirecting');
+    // console.log('User is not admin, redirecting');
     navigate('/');
     return null;
   }

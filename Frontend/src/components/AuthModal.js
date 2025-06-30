@@ -5,7 +5,7 @@ import RegisterForm from './RegisterForm';
 import './AuthModal.css'; // Ensure this import is correct
 
 const AuthModal = ({ visible, onClose, initialTab = 'login' }) => {
-  console.log('Modal props:', { visible, initialTab }); // Debugging
+  // console.log('Modal props:', { visible, initialTab }); .// Debugging
 
   return (
     <Modal

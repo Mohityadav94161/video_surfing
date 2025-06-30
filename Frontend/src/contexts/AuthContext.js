@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
 
   // Set up axios with token whenever token changes
   useEffect(() => {
-    console.log('Setting up axios token:', token ? 'present' : 'absent');
+    // // console.log('Setting up axios token:', token ? 'present' : 'absent');
     
     if (token) {
       // Always set the token in axios headers when available
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     const storedToken = token || localStorage.getItem('token');
     const expiryTimeString = localStorage.getItem('tokenExpiry');
     
-    console.log('loadUser called, token exists:', !!storedToken);
+    // console.log('loadUser called, token exists:', !!storedToken);
     
     if (!storedToken) {
       setLoading(false);
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
       const expiryTime = parseInt(expiryTimeString);
       if (Date.now() > expiryTime) {
         // Token is expired
-        console.log('Token expired, clearing auth state');
+        // console.log('Token expired, clearing auth state');
         setToken(null);
         setUser(null);
         localStorage.removeItem('token');
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     
     // Set token in headers in case it's not set
     if (!axiosInstance.defaults.headers.common['Authorization'] && storedToken) {
-      console.log('Setting missing Authorization header');
+      // console.log('Setting missing Authorization header');
       axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
       
       // Also update local state if needed
@@ -76,10 +76,10 @@ export const AuthProvider = ({ children }) => {
     }
     
     try {
-      console.log('Fetching user data from API');
+      // console.log('Fetching user data from API');
       // Token is valid, load user data
       const res = await axiosInstance.get('/auth/me');
-      console.log('User data response:', res.data);
+      // console.log('User data response:', res.data);
       
       // Check for user data in the nested response
       if (!res.data || !res.data.data || !res.data.data.user) {
@@ -112,18 +112,18 @@ export const AuthProvider = ({ children }) => {
 
   // Load user on initial render if token exists
   useEffect(() => {
-    console.log('Initial auth check...');
+    // console.log('Initial auth check...');
     loadUser();
   }, []); // Only run once on mount, not on token changes to avoid loops
 
   // Setup axios response interceptor to handle token expiration
   useEffect(() => {
-    console.log('Setting up axios interceptor');
+    // console.log('Setting up axios interceptor');
     const interceptor = axiosInstance.interceptors.response.use(
       response => response,
       async error => {
         if (error.response && error.response.status === 401 && token) {
-          console.log('401 error intercepted, clearing auth state');
+          // console.log('401 error intercepted, clearing auth state');
           // Token is invalid or expired, log out the user
           setToken(null);
           setUser(null);
@@ -143,7 +143,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       setLoading(true);
-      console.log('Logging in user:', username);
+      // console.log('Logging in user:', username);
       
       // Clear any existing token before login
       localStorage.removeItem('token');
@@ -152,7 +152,7 @@ export const AuthProvider = ({ children }) => {
       
       const res = await axiosInstance.post('/auth/login', { username, password });
       
-      console.log('Login response:', res.data);
+      // console.log('Login response:', res.data);
       
       // Check for token in the nested data structure
       if (!res.data || !res.data.data || !res.data.data.token) {
@@ -178,7 +178,7 @@ export const AuthProvider = ({ children }) => {
       setToken(newToken);
       setUser(res.data.data.user);
       
-      console.log('Login successful, token stored');
+      // console.log('Login successful, token stored');
       return { success: true, user: res.data.data.user };
     } catch (err) {
       console.error('Login error:', err);
@@ -233,7 +233,7 @@ export const AuthProvider = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    console.log('Logging out user');
+    // console.log('Logging out user');
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');

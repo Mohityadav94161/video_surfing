@@ -12,16 +12,16 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
     try {
       setError(null);
       setLoading(true);
-      console.log('LoginForm: Login attempt with:', values.username);
+      // console.log('LoginForm: Login attempt with:', values.username);
       
       const result = await login(values.username, values.password);
-      console.log('LoginForm: Login result:', result);
+      // console.log('LoginForm: Login result:', result);
       
       if (!result.success) {
         console.error('LoginForm: Login failed:', result.message);
         setError(result.message || 'Login failed. Please try again.');
       } else {
-        console.log('LoginForm: Login successful, calling success callback');
+        // console.log('LoginForm: Login successful, calling success callback');
         // Call the success callback if provided
         if (onLoginSuccess && typeof onLoginSuccess === 'function') {
           onLoginSuccess(result.user);

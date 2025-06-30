@@ -1,15 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from '../utils/axiosConfig';
 import './Captcha.css';
 import { Button, Input } from 'antd';
 
 const Captcha = ({ onVerify, onError }) => {
   const [captchaId, setCaptchaId] = useState(null);
-  const [captchaImage, setCaptchaImage] = useState('');
+  const [captchaText, setCaptchaText] = useState('');
   const [captchaValue, setCaptchaValue] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [attemptsLeft, setAttemptsLeft] = useState(15);
+  const canvasRef = useRef(null);
+  
+  // Generate captcha image from text using canvas
+  const drawCaptcha = (text) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size
+    canvas.width = 200;
+    canvas.height = 70;
+
+    // Clear
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Background
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Noise lines
+    for (let i = 0; i < 6; i++) {
+      ctx.strokeStyle = `rgba(0,0,0,${Math.random()})`;
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+      ctx.stroke();
+    }
+
+    // Captcha text
+    ctx.font = '28px Courier';
+    ctx.fillStyle = '#333';
+    for (let i = 0; i < text.length; i++) {
+      const x = 15 + i * 25;
+      const y = 35 + Math.random() * 5;
+      const angle = (Math.random() - 0.5) * 0.5;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillText(text[i], 0, 0);
+      ctx.restore();
+    }
+  };
   
   // Generate new captcha
   const generateCaptcha = async () => {
@@ -21,7 +64,10 @@ const Captcha = ({ onVerify, onError }) => {
       
       if (response.data.status === 'success') {
         setCaptchaId(response.data.data.captchaId);
-        setCaptchaImage(response.data.data.captchaImage);
+        setCaptchaText(response.data.data.captchaValue); // Use the actual captcha value
+        // Generate image from text
+        // console.log('captcha ',response.data.data.captchaValue)
+        drawCaptcha(response.data.data.captchaValue);
       } else {
         setError('Failed to load captcha');
         if (onError) onError('Failed to load captcha');
@@ -98,10 +144,10 @@ const Captcha = ({ onVerify, onError }) => {
       ) : (
         <>
           <div className="captcha-image-container">
-            <img 
-              src={captchaImage} 
-              alt="Captcha" 
+            <canvas 
+              ref={canvasRef}
               className="captcha-image" 
+              style={{ border: '1px solid #ddd', borderRadius: '4px' }}
             />
             <Button 
               className="refresh-captcha-btn" 

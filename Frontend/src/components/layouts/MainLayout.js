@@ -243,9 +243,10 @@ const MainLayout = () => {
       }
     }
 
-    fetchMenuData()
-  }, [])
-  console.log("object ", menuData[activeDropdown])
+    fetchMenuData();
+
+  },[])
+  // console.log('object ',menuData[activeDropdown])
 
   const handleSearch = (value) => {
     if (value.trim()) {
@@ -1161,11 +1162,11 @@ const MainLayout = () => {
       >
         <LoginForm
           onLoginSuccess={(user) => {
-            console.log("MainLayout: Login success callback triggered with user:", user)
-            setLoginVisible(false)
-            message.success("Logged in successfully!")
-            console.log("MainLayout: Reloading page to refresh auth state")
-            window.location.reload() // Ensure the page refreshes with the new auth state
+            // console.log('MainLayout: Login success callback triggered with user:', user);
+            setLoginVisible(false);
+            message.success("Logged in successfully!");
+            // console.log('MainLayout: Reloading page to refresh auth state');
+            window.location.reload(); // Ensure the page refreshes with the new auth state
           }}
           onSwitchToRegister={() => {
             setLoginVisible(false)

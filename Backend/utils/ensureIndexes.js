@@ -8,6 +8,28 @@ async function ensureIndexes() {
   try {
     console.log('🔍 Ensuring database indexes...');
 
+    // First, check for existing text indexes and drop them if they conflict
+    try {
+      const existingIndexes = await Video.collection.listIndexes().toArray();
+      const textIndexes = existingIndexes.filter(index => 
+        index.key && Object.values(index.key).includes('text')
+      );
+      
+      if (textIndexes.length > 0) {
+        console.log('🔄 Found existing text indexes, dropping them to recreate with new options...');
+        for (const index of textIndexes) {
+          try {
+            await Video.collection.dropIndex(index.name);
+            console.log(`✅ Dropped existing text index: ${index.name}`);
+          } catch (dropErr) {
+            console.log(`⚠️ Could not drop index ${index.name}:`, dropErr.message);
+          }
+        }
+      }
+    } catch (err) {
+      console.log('⚠️ Error checking existing indexes:', err.message);
+    }
+
     // Ensure text index exists for search functionality
     try {
       await Video.collection.createIndex(
@@ -37,7 +59,16 @@ async function ensureIndexes() {
       if (err.code === 85) {
         // Index already exists with different options, drop and recreate
         console.log('🔄 Recreating text index with updated options...');
-        await Video.collection.dropIndex('search_text_index');
+        try {
+          await Video.collection.dropIndex('search_text_index');
+        } catch (dropErr) {
+          // If index doesn't exist, that's fine - just continue
+          if (dropErr.code !== 27) { // 27 is IndexNotFound
+            console.log('⚠️ Error dropping index:', dropErr.message);
+          }
+        }
+        
+        // Recreate the index
         await Video.collection.createIndex(
           { 
             title: 'text', 
@@ -112,7 +143,8 @@ async function ensureIndexes() {
     console.log('✅ All indexes ensured successfully');
   } catch (error) {
     console.error('❌ Error ensuring indexes:', error);
-    throw error;
+    // Don't throw the error, just log it as a warning
+    console.log('⚠️ Warning: Failed to ensure indexes:', error.message);
   }
 }
 

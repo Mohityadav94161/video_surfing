@@ -99,9 +99,9 @@ const BulkVideoUpload = () => {
 
   // Check for extraction results from background task on component mount
   React.useEffect(() => {
-    console.log('BulkVideoUpload component mounted, checking for extraction results...');
+    // console.log('BulkVideoUpload component mounted, checking for extraction results...');
     const extractionResults = sessionStorage.getItem('extractionResults');
-    console.log('Extraction results from sessionStorage:', extractionResults ? 'Found' : 'Not found');
+    // console.log('Extraction results from sessionStorage:', extractionResults ? 'Found' : 'Not found');
     
     if (extractionResults) {
       try {
@@ -442,10 +442,10 @@ const BulkVideoUpload = () => {
   // Test authentication
   const testAuthentication = async () => {
     try {
-      console.log('Testing authentication...');
-      console.log('Current axios headers:', axios.defaults.headers.common);
+      // console.log('Testing authentication...');
+      // console.log('Current axios headers:', axios.defaults.headers.common);
       const response = await axios.get('/auth/me');
-      console.log('Auth test successful:', response.data);
+      // console.log('Auth test successful:', response.data);
       message.success('Authentication test successful!');
     } catch (error) {
       console.error('Auth test failed:', error);
@@ -525,11 +525,11 @@ const BulkVideoUpload = () => {
     // Check authentication
     if (!user) {
       message.error('You must be logged in to upload videos. Please log in and try again.');
-      console.log('Authentication check failed:', { user: !!user, token: !!token });
+      // console.log('Authentication check failed:', { user: !!user, token: !!token });
       return;
     }
     
-    console.log('User authenticated:', { userId: user.id, username: user.username, role: user.role, hasToken: !!token });
+    // console.log('User authenticated:', { userId: user.id, username: user.username, role: user.role, hasToken: !!token });
     
     setUploading(true);
     setUploadProgress(0);
@@ -541,11 +541,11 @@ const BulkVideoUpload = () => {
       let failed = 0;
       const failedVideos = [];
       
-      console.log(`Starting upload of ${totalVideos} videos...`);
+      // console.log(`Starting upload of ${totalVideos} videos...`);
       
       for (const video of selectedVideoObjects) {
         try {
-          console.log(`Uploading video: ${video.title} from ${video.url}`);
+          // console.log(`Uploading video: ${video.title} from ${video.url}`);
           
           const uploadData = {
             originalUrl: video.url,
@@ -561,10 +561,10 @@ const BulkVideoUpload = () => {
             quality: video.quality
           };
           
-          console.log('Upload data:', uploadData);
+          // console.log('Upload data:', uploadData);
           
           const response = await axios.post('/videos', uploadData);
-          console.log(`Successfully uploaded: ${video.title}`, response.data);
+          // console.log(`Successfully uploaded: ${video.title}`, response.data);
           
           uploaded++;
           setUploadProgress(Math.floor((uploaded / totalVideos) * 100));
@@ -589,7 +589,7 @@ const BulkVideoUpload = () => {
         }
       }
       
-      console.log(`Upload completed. Uploaded: ${uploaded}, Failed: ${failed}`);
+      // console.log(`Upload completed. Uploaded: ${uploaded}, Failed: ${failed}`);
       
       if (uploaded > 0) {
         if (failed === 0) {

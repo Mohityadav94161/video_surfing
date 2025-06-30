@@ -46,7 +46,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
     try {
       setError(null);
       setLoading(true);
-      console.log('Register attempt with:', values.username);
+      // console.log('Register attempt with:', values.username);
       
       const result = await register(values.username, values.password);
       
@@ -54,7 +54,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
         console.error('Registration failed:', result.message);
         setError(result.message || 'Registration failed. Please try again.');
       } else {
-        console.log('Registration successful, token stored');
+        // console.log('Registration successful, token stored');
         // Call the success callback if provided
         if (onRegisterSuccess && typeof onRegisterSuccess === 'function') {
           onRegisterSuccess(result.user);
